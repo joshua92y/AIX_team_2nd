@@ -1,9 +1,13 @@
-name: Log only when pushed
+name: Log Commits
 
 on:
   push:
     branches:
       - main  # 또는 'master' 등 사용 중인 브랜치 이름
+
+permissions:
+  contents: read  # 로그를 커밋하려면 write 권한 필요
+  packages: write
 
 jobs:
   log-job:
@@ -16,3 +20,26 @@ jobs:
           echo "🕒 Timestamp: $(date)"
           echo "📦 Repository: ${{ github.repository }}"
           echo "👤 Triggered by: ${{ github.actor }}"
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Git user
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions@github.com"
+
+      - name: Extract commit info
+        if: "!contains(github.event.head_commit.message, '[bot]')"  # 봇 커밋 제외
+        run: |
+          echo "==== New Push ====" >> commit-log.txt
+          echo "Time: $(date '+%Y-%m-%d %H:%M:%S')" >> commit-log.txt
+          git log -1 --pretty=format:"Author: %an%nMessage: %s%nCommit: %H%n" >> commit-log.txt
+          echo "" >> commit-log.txt
+
+      - name: Commit and push log file
+        if: "!contains(github.event.head_commit.message, '[bot]')"  # 봇 커밋 제외
+        run: |
+          git add commit-log.txt
+          git commit -m "Update commit-log.txt [bot]" || echo "No changes to commit"
+          git push

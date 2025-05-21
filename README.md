@@ -9,3 +9,5 @@ docker run -it --rm -v "${PWD}:/app" aix2nd bash #도커 마운트
 pip freeze > requirements.txt #pip 저장
 pip install -r requirements.txt #pip 설치
 git merge #머지는 신중히
+
+2.django
