@@ -4,3 +4,9 @@ Author: joshua
 Message: 대소문자 수정
 Commit: fd3ee1fbd46970638b5ece9ed7dc62522364ff56
 
+==== New Push ====
+Time: 2025-05-21 06:07:14
+Author: joshua
+Message: Merge branch 'joshua' of https://github.com/joshua92y/AIX_team_2nd into joshua
+Commit: 3e226dc8761da3725389dd2b1271e335080addd1
+
