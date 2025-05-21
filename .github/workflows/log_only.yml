@@ -3,7 +3,7 @@ name: Log Commits
 on:
   push:
     branches:
-      - main  # 또는 'master' 등 사용 중인 브랜치 이름
+      - joshua  # 또는 'master' 등 사용 중인 브랜치 이름
 
 permissions:
   contents: read  # 로그를 커밋하려면 write 권한 필요
