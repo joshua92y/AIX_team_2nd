@@ -32,10 +32,12 @@ jobs:
       - name: Extract commit info
         if: "!contains(github.event.head_commit.message, '[bot]')"  # 봇 커밋 제외
         run: |
-          echo "==== New Push ====" >> commit-log.txt
-          echo "Time: $(date '+%Y-%m-%d %H:%M:%S')" >> commit-log.txt
-          git log -1 --pretty=format:"Author: %an%nMessage: %s%nCommit: %H%n" >> commit-log.txt
-          echo "" >> commit-log.txt
+          AUTHOR_NAME=$(git log -1 --pretty=format:"%an" | tr -d ' ')
+          FILENAME="commit-log-${AUTHOR_NAME}.txt"
+          echo "==== New Push ====" >> $FILENAME
+          echo "Time: $(date '+%Y-%m-%d %H:%M:%S')" >> $FILENAME
+          git log -1 --pretty=format:"Author: %an%nMessage: %s%nCommit: %H%n" >> $FILENAME
+          echo "" >> $FILENAME
 
       - name: Commit and push log file
         if: "!contains(github.event.head_commit.message, '[bot]')"  # 봇 커밋 제외
