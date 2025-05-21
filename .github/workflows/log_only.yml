@@ -6,7 +6,7 @@ on:
       - joshua  # 또는 'master' 등 사용 중인 브랜치 이름
 
 permissions:
-  contents: Write  # 로그를 커밋하려면 write 권한 필요
+  contents: write  # 로그를 커밋하려면 write 권한 필요
   packages: write
 
 jobs:
