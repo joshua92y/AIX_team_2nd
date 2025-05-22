@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"name": "frontend",
+			"path": "../frontend"
+		},
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "flex"
+	}
+}
