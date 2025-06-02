@@ -4,16 +4,26 @@
 {% block title %}상권 분석{% endblock %}
 
 {% block content %}
-  {% include 'includes/header.html' %}
+{% include 'includes/header.html' %}
+
+  <style>
+    /* 기본 primary 버튼 disabled 시 커스텀 스타일 */
+    .btn-primary.custom {
+      color: #fff;
+      background-color: #0d6efd; /* 원래 primary 색 */
+      opacity: 0.65;  /* 투명도 조절로 흐릿하게 표시 */
+    }
+  </style>
 
   <!-- Page Title -->
-  <div class="container my-6" style="margin-top: 120px; margin-bottom: 100px; ">
+  <div class="container my-6" style="margin-top: 20px; margin-bottom: 100px; ">
     
     <!-- 상권 분석 정보 입력 -->
     <div class="row">
       <div class="col-lg-12 mb-4">
         <div class="card p-4 shadow-sm">
-          <h3 class="mb-3">상권 분석 정보입력</h3>
+          <h3 class="mb-3">상권 정보입력</h3>
+
           <form>
             <div class="row g-3">
               <!-- 업종 선택 -->
@@ -64,11 +74,14 @@
 
               <!-- 주소 입력 -->
               <div class="col-md-3">
+                <input type="hidden" id="latitude" name="latitude">
+                <input type="hidden" id="longitude" name="longitude">
                 <label for="address" class="form-label">주소</label>
                 <div class="input-group">
-                  <input type="text" class="form-control" id="address" name="address" placeholder="주소를 입력해주세요" readonly required>
+                  <input type="text" class="form-control" id="address" name="address" placeholder="주소를 입력해주세요" readonly>
                   <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#addressModal">검색</button>
                 </div>
+                <ul id="addressResultList"></ul>
               </div>
 
               <!-- 주소 입력 모달 -->
@@ -76,12 +89,12 @@
                 <div class="modal-dialog modal-dialog-centered">
                   <div class="modal-content">
                     <div class="modal-header">
-                      <h5 class="modal-title" id="addressModalLabel">주소 검색 및 좌표 변환</h5>
+                      <h5 class="modal-title" id="addressModalLabel">주소 검색</h5>
                       <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
                     </div>
                     <div class="modal-body">
                       <input type="text" id="modalAddressInput" class="form-control mb-2" placeholder="예: 서울특별시 강남구 테헤란로 231" />
-                      <button id="convertBtn" class="btn btn-primary w-100 mb-3">좌표 변환</button>
+                      <button type="button" id="convertBtn" class="btn btn-primary custom w-100 mb-3">검색</button>
                       <div id="modalResult" class="text-muted small"></div>
                     </div>
                     <div class="modal-footer">
@@ -110,7 +123,7 @@
 
             <!-- 버튼 -->
             <div class="text-center mt-4">
-              <button type="button" class="btn btn-primary px-5" disabled>상권 분석하기</button>
+              <button type="button" class="btn btn-primary custom px-5" onclick="getFormData();">상권 분석하기</button>
             </div>
           </form>
 
@@ -162,7 +175,7 @@
             </div>
           </div>
           <p class="text-muted">* 분석 결과는 이곳에 표시됩니다.</p>
-          <button class="btn btn-primary mt-3" disabled>PDF로 저장</button>
+          <button class="btn btn-primary custom mt-3">PDF로 저장</button>
         </div>
       </div>
 
@@ -201,43 +214,123 @@
 
   <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=7c59e20b66722b3db31164cd5f88d3a5&libraries=services,coord"></script>
 
-  <script>
-    kakao.maps.load(function () {
-      console.log("kakao.maps.load 콜백 실행됨");
+    // 카카오맵 init
+    <script>
+      kakao.maps.load(function () {
+        const geocoder = new kakao.maps.services.Geocoder();
 
-      const geocoder = new kakao.maps.services.Geocoder();
+        function convertAddress() {
+          const address = document.getElementById("modalAddressInput").value;
+          const resultList = document.getElementById("modalResult");
+          resultList.innerHTML = "";
 
-      function convertAddress() {
-        const address = document.getElementById("modalAddressInput").value;
-        if (!address) {
-          alert("주소를 입력하세요");
-          return;
-        }
-        geocoder.addressSearch(address, function (result, status) {
-          if (status === kakao.maps.services.Status.OK) {
-            console.log("주소검색 결과", result);
-            const lat = result[0].y;
-            const lng = result[0].x;
-            const fullAddr = result[0].address.address_name;
-
-            document.getElementById("modalResult").innerText =
-              `위도: ${lat}, 경도: ${lng}\n주소: ${fullAddr}`;
-
-            document.getElementById("address").value = fullAddr;
-            // 모달 닫기
-            const modalEl = document.getElementById("addressModal");
-            const modal = bootstrap.Modal.getInstance(modalEl);
-            modal.hide();
-
-          } else {
-            alert("주소 검색에 실패했습니다.");
+          if (!address) {
+            alert("주소를 입력하세요");
+            return;
           }
-        });
+
+          geocoder.addressSearch(address, function (result, status) {
+            if (status === kakao.maps.services.Status.OK) {
+              resultList.innerHTML = "";
+
+              result.forEach((item) => {
+                const fullAddr = item.road_address?.address_name || item.address.address_name;
+                const lat = item.y;
+                const lng = item.x;
+
+                const div = document.createElement("div");
+                div.textContent = fullAddr;
+                div.classList.add("search-result-item");
+                div.style.cursor = "pointer";
+                div.style.border = "1px solid #ccc";
+                div.style.borderRadius = "5px";
+                div.style.padding = "8px";
+                div.style.marginBottom = "5px";
+
+                div.addEventListener("click", () => {
+                  // 주소 값들 입력창에 넣기
+                  document.getElementById("latitude").value = lat;
+                  document.getElementById("longitude").value = lng;
+                  document.getElementById("address").value = fullAddr;
+
+                  // 모달 컨텐츠 초기화
+                  document.getElementById("modalAddressInput").value = '';
+                  resultList.innerHTML = "";
+
+                  // 모달 닫기
+                  const modalEl = document.getElementById("addressModal");
+                  const modal = bootstrap.Modal.getInstance(modalEl);
+                  modal.hide();
+                });
+
+                resultList.appendChild(div);
+              });
+
+            } else {
+              resultList.innerHTML = '<div class="text-danger">주소 검색에 실패했습니다.</div>';
+            }
+          });
+        }
+
+        // 검색 버튼 이벤트 등록
+        document.getElementById("convertBtn").addEventListener("click", convertAddress);
+      });
+    
+    // 입력정보 전송
+    function getFormData() {
+      const industry = $('#industry').val();
+      const address = $('#address').val();
+      const area = $('#area').val();
+      const service = $('#service').val();
+
+      const lat = $('#latitude').val();
+      const lon = $('#longitude').val();
+
+      if (!industry || !address || !area || !service) {
+        alert("모든 필드를 입력해주세요.");
+        return;
       }
 
-      // 버튼에 이벤트 리스너 추가
-      document.getElementById("convertBtn").addEventListener("click", convertAddress);
+      // console.log("업종:", industry, "주소:", address, "면적:", area, "주류 판매 여부:", service);
+      const paramData = {
+        industry: industry,
+        address: address,
+        area: area,
+        service: service,
+        latitude: lat,
+        longitude: lon
+      };
 
-    });
+      $.ajax(createPostAjaxOption('analyze', paramData));
+    }
+
+    function createPostAjaxOption(requestType, paramData) {
+      
+      const csrfToken = '{{ csrf_token }}';
+      let url;
+
+      if ( 'analyze' === requestType ) {
+        url = '/api/';
+      } else if ( 'pdf' === 'pdf' ) {
+        url = '/api/pdf/';
+      }
+      
+      paramData.csrfmiddlewaretoken = csrfToken;
+            
+      return {
+        url: url,
+        type: 'POST',
+        data: paramData,
+        success: function(response) {
+          alert('분석 요청 성공:'+response.message);
+        },
+        error: function(xhr, status, error) {
+          console.error("분석 요청 실패:", error);
+          alert("상권 분석 요청에 실패했습니다.");
+        }
+      }
+    }
+
+
   </script>
 {% endblock %}

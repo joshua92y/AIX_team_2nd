@@ -14,4 +14,5 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(next_page='index'), name='logout'),
     path('users/', include('users.urls')),
     path('', include('main.urls')),
+    path('api/', views.blog_api, name='blog_api'), #임시 api url
 ]
