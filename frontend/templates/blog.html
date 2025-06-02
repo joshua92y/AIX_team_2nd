@@ -16,23 +16,76 @@
           <h3 class="mb-3">상권 분석 정보입력</h3>
           <form>
             <div class="row g-3">
-              <div class="col-md-4">
+              <!-- 업종 선택 -->
+              <div class="col-md-3">
+                <label for="industry" class="form-label">업종</label>
+                <select class="form-select" id="industry" name="industry" required>
+                  <option selected disabled>업종을 선택해주세요</option>
+                  <option value="0">감성주점</option>
+                  <option value="1">경양식</option>
+                  <option value="2">관광호텔</option>
+                  <option value="3">극장</option>
+                  <option value="4">기타</option>
+                  <option value="5">기타 휴게음식점</option>
+                  <option value="6">김밥(도시락)</option>
+                  <option value="7">까페</option>
+                  <option value="8">냉면집</option>
+                  <option value="9">다방</option>
+                  <option value="10">떡카페</option>
+                  <option value="11">라이브카페</option>
+                  <option value="12">백화점</option>
+                  <option value="13">복어취급</option>
+                  <option value="14">분식</option>
+                  <option value="15">뷔페식</option>
+                  <option value="16">식육(숯불구이)</option>
+                  <option value="17">아이스크림</option>
+                  <option value="18">외국음식전문점(인도, 태국 등)</option>
+                  <option value="19">유원지</option>
+                  <option value="20">일반조리판매</option>
+                  <option value="21">일식</option>
+                  <option value="22">전통찻집</option>
+                  <option value="23">정종/대포집/소주방</option>
+                  <option value="24">중국식</option>
+                  <option value="25">철도역구내</option>
+                  <option value="26">출장조리</option>
+                  <option value="27">커피숍</option>
+                  <option value="28">키즈카페</option>
+                  <option value="29">탕류(보신용)</option>
+                  <option value="30">통닭(치킨)</option>
+                  <option value="31">패밀리레스토랑</option>
+                  <option value="32">패스트푸드</option>
+                  <option value="33">편의점</option>
+                  <option value="34">푸드트럭</option>
+                  <option value="35">한식</option>
+                  <option value="36">호프/통닭</option>
+                  <option value="37">횟집</option>
+                </select>
+              </div>
+
+              <!-- 주소 입력 -->
+              <div class="col-md-3">
+                <label for="address" class="form-label">주소</label>
+                <input type="text" class="form-control" id="address" name="address" placeholder="예: 서울시 강남구 ..." required>
+              </div>
+
+              <!-- 점포 면적 입력 -->
+              <div class="col-md-3">
                 <label for="area" class="form-label">점포 면적 (㎡)</label>
-                <input type="number" class="form-control" id="area" placeholder="예: 33.2">
+                <input type="number" class="form-control" id="area" name="area" placeholder="예: 33.2" required>
               </div>
-              <div class="col-md-4">
-                <label for="total_lv" class="form-label">총 지가 (₩)</label>
-                <input type="number" class="form-control" id="total_lv" placeholder="예: 180000000">
-              </div>
-              <div class="col-md-4">
+
+              <!-- 주류 판매 여부 선택 -->
+              <div class="col-md-3">
                 <label for="service" class="form-label">주류 판매 여부</label>
-                <select class="form-select" id="service">
+                <select class="form-select" id="service" name="service" required>
                   <option selected disabled>선택</option>
                   <option value="1">판매함</option>
                   <option value="0">판매 안함</option>
                 </select>
               </div>
             </div>
+
+            <!-- 버튼 -->
             <div class="text-center mt-4">
               <button type="button" class="btn btn-primary px-5" disabled>상권 분석하기</button>
             </div>
