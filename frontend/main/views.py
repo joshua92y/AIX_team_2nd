@@ -6,7 +6,6 @@ from django.shortcuts import render
 from django.shortcuts import render
 
 def index(request):
-    print("Template DIRS:", settings.TEMPLATES[0]['DIRS'])
     return render(request, 'index.html')
 
 def blog(request):
