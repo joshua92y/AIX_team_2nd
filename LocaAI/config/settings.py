@@ -12,10 +12,11 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -27,11 +28,12 @@ SECRET_KEY = "django-insecure-your-secret-key"
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
+ASGI_APPLICATION = "config.asgi.application"
 
 # Application definition
 
 INSTALLED_APPS = [
+    "rest_framework",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -39,7 +41,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "border",
+    "channels",
     "custom_auth",
+    "chatbot",
 ]
 
 MIDDLEWARE = [
@@ -58,7 +62,7 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
-            os.path.join(BASE_DIR, 'templates'),
+            os.path.join(BASE_DIR, "templates"),
         ],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -122,13 +126,13 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR, "static"),
 ]
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Media files
-MEDIA_URL = 'media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = "media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -136,6 +140,40 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Login settings
-LOGIN_URL = 'custom_auth:login'
-LOGIN_REDIRECT_URL = 'border:inquiry_list'
-LOGOUT_REDIRECT_URL = 'border:inquiry_list'
+LOGIN_URL = "custom_auth:login"
+LOGIN_REDIRECT_URL = "border:inquiry_list"
+LOGOUT_REDIRECT_URL = "border:inquiry_list"
+
+# RAG Settings
+RAG_SETTINGS = {
+    "QDRANT_URL": os.getenv("QDRANT_URL"),
+    "QDRANT_API_KEY": os.getenv("QDRANT_API_KEY"),
+    "COLLECTIONS": ["workpeople_zones"],  # "zone_2", "zone_3"
+    "EMBEDDING_MODEL": "upskyy/bge-m3-korean",
+    "MEMORY_K": 5,
+    "RETRIEVER_K": 3,
+}
+
+# Channels 설정
+CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "[{levelname}] {asctime} {name}:{lineno} - {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "DEBUG",  # 개발 시엔 DEBUG, 운영 시엔 WARNING 이상 권장
+    },
+}
