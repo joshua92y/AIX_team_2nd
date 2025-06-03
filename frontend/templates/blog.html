@@ -76,6 +76,8 @@
               <div class="col-md-3">
                 <input type="hidden" id="latitude" name="latitude">
                 <input type="hidden" id="longitude" name="longitude">
+                <input type="hidden" id="tm_x" name="tm_x">
+                <input type="hidden" id="tm_y" name="tm_y">
                 <label for="address" class="form-label">주소</label>
                 <div class="input-group">
                   <input type="text" class="form-control" id="address" name="address" placeholder="주소를 입력해주세요" readonly>
@@ -213,9 +215,13 @@
   </script>
 
   <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=7c59e20b66722b3db31164cd5f88d3a5&libraries=services,coord"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.7.5/proj4.js"></script>
+
+    
 
     {% comment %} // 카카오맵 init {% endcomment %}
     <script>
+      // 카카오 지도 API 로드 및 주소 검색 기능 구현
       kakao.maps.load(function () {
         const geocoder = new kakao.maps.services.Geocoder();
 
@@ -233,10 +239,41 @@
             if (status === kakao.maps.services.Status.OK) {
               resultList.innerHTML = "";
 
+            const invalid = result.some((item) => {
+              const roadAddr = item.road_address;
+              // 도로명 주소가 없거나, main_building_no가 없거나 "0"이면 무효
+              return !roadAddr || !roadAddr.main_building_no || roadAddr.main_building_no === "0";
+            });
+
+            if (invalid) {
+              alert("정확한 도로명 주소를 입력해주세요. 예: 서울 강남구 테헤란로 231");
+              return;
+            }
+
               result.forEach((item) => {
+                const roadAddr = item.road_address;
+                const jibunAddr = item.address;
                 const fullAddr = item.road_address?.address_name || item.address.address_name;
-                const lat = item.y;
-                const lng = item.x;
+                // 위도 경도 (WGS84)
+                const lat = parseFloat(item.y);
+                const lng = parseFloat(item.x);
+
+                let tmX = null;
+                let tmY = null;
+                
+                // proj4 정의 (5186 좌표계 정의, 공식 문서나 EPSG 코드로 확인)
+                proj4.defs("EPSG:5186", "+proj=tmerc +lat_0=38 +lon_0=127 +k=1 +x_0=1000000 +y_0=2000000 +ellps=GRS80 +units=m +no_defs");
+                
+                
+                if (!isFinite(lat) || !isFinite(lng)) {
+                  console.error("유효하지 않은 좌표값:", lat, lng);
+                } else {
+                  // 변환 실행 (proj4에서 [경도, 위도] 순서임)
+                  const [x, y] = proj4("EPSG:4326", "EPSG:5186", [lng, lat]);
+                  tmX = x;
+                  tmY = y;
+                  console.log("변환된 좌표:", x, y);
+                }
 
                 const div = document.createElement("div");
                 div.textContent = fullAddr;
@@ -251,6 +288,8 @@
                   // 주소 값들 입력창에 넣기
                   document.getElementById("latitude").value = lat;
                   document.getElementById("longitude").value = lng;
+                  document.getElementById("tm_x").value = tmX.toFixed(2);  // 소수점 2자리까지
+                  document.getElementById("tm_y").value = tmY.toFixed(2);
                   document.getElementById("address").value = fullAddr;
 
                   // 모달 컨텐츠 초기화
@@ -282,9 +321,8 @@
       const address = $('#address').val();
       const area = $('#area').val();
       const service = $('#service').val();
-
-      const lat = $('#latitude').val();
-      const lon = $('#longitude').val();
+      const tmX = $('#tm_x').val();
+      const tmY = $('#tm_y').val();
 
       if (!industry || !address || !area || !service) {
         alert("모든 필드를 입력해주세요.");
@@ -297,8 +335,8 @@
         address: address,
         area: area,
         service: service,
-        latitude: lat,
-        longitude: lon
+        tm_x: tmX,
+        tm_y: tmY
       };
 
       $.ajax(createPostAjaxOption('analyze', paramData));
