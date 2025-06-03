@@ -1,11 +1,10 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password, make_password
-from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q
 from .models import Post, Comment
-from .forms import PostForm, CommentForm, PostSearchForm
+from .forms import PostForm, CommentForm
 
 def post_list(request, board_type):
     # 검색 처리
