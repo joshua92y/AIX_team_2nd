@@ -46,25 +46,15 @@ class PostForm(forms.ModelForm):
         fields = ['title', 'thumbnail', 'description', 'file', 'is_private', 'guest_name', 'guest_password', 'board_type']
 
     def __init__(self, *args, **kwargs):
-        print("\n=== PostForm 초기화 시작 ===")
         self.user = kwargs.pop('user', None)  # user 객체를 kwargs에서 추출
         super().__init__(*args, **kwargs)
-        print(f"instance 존재 여부: {self.instance is not None}")
-        print(f"instance pk: {self.instance.pk if self.instance else None}")
-        print(f"user 객체: {self.user}")
         
         if self.instance and self.instance.pk:
-            print("\n기존 게시글 데이터로 초기화")
-            print(f"제목: {self.instance.title}")
-            print(f"내용: {self.instance.description}")
-            print(f"게스트 이름: {self.instance.guest_name}")
-            print(f"비공개 여부: {self.instance.is_private}")
             
             self.fields['guest_name'].initial = self.instance.guest_name
             self.fields['title'].initial = self.instance.title
             self.fields['description'].initial = self.instance.description
             self.fields['is_private'].initial = self.instance.is_private
-            print("초기값 설정 완료")
 
     def clean(self):
         print("\n=== PostForm clean 메서드 시작 ===")
@@ -80,9 +70,6 @@ class PostForm(forms.ModelForm):
 
         guest_name = cleaned_data.get('guest_name')
         new_guest_password = cleaned_data.get('guest_password')
-        print(f"게스트 이름: {guest_name}")
-        print(f"새 비밀번호: {new_guest_password}")
-        print(f"user 객체: {self.user}")
 
         # 회원인 경우 게스트 정보 제거
         if self.user and self.user.is_authenticated:
