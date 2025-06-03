@@ -25,10 +25,10 @@ def blog_api(request):
         address = request.POST.get('address')
         area = request.POST.get('area')
         service = request.POST.get('service')
-        latitude = request.POST.get('latitude')
-        longitude = request.POST.get('longitude')
+        tm_x = request.POST.get('tm_x')  # 추가
+        tm_y = request.POST.get('tm_y')  # 추가
         
-        print(f"industry: {industry}, address: {address}, area: {area}, service: {service}, latitude: {latitude}, longitude: {longitude}")
+        print(f"industry: {industry}, address: {address}, area: {area}, service: {service}, tm_x: {tm_x}, tm_y: {tm_y}")
         
         # 정상 응답 예시
         return JsonResponse({'message': '데이터 잘 받았습니다!'})
