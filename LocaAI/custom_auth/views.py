@@ -1,10 +1,12 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from .models import User
 import uuid
+from django.contrib import messages
+from .forms import UserRegistrationForm
 
 # Create your views here.
 
@@ -32,13 +34,13 @@ def login_view(request):
     return JsonResponse({'status': 'error', 'message': 'Invalid credentials'}, status=401)
 
 @login_required
-@require_http_methods(["POST"])
 def logout_view(request):
     user = request.user
     user.session_token = None
     user.save()
     logout(request)
-    return JsonResponse({'status': 'success'})
+    messages.success(request, '로그아웃되었습니다.')
+    return redirect('border:inquiry_list')
 
 @login_required
 def get_user_info(request):
@@ -49,3 +51,15 @@ def get_user_info(request):
         'role': user.role,
         'session_token': str(user.session_token) if user.session_token else None
     })
+
+def register(request):
+    if request.method == 'POST':
+        form = UserRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, '회원가입이 완료되었습니다.')
+            return redirect('border:inquiry_list')
+    else:
+        form = UserRegistrationForm()
+    return render(request, 'custom_auth/register.html', {'form': form})
