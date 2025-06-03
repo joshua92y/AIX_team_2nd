@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}게시글 삭제 - LocaAI{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-body">
+            <h2 class="card-title mb-4">게시글 삭제</h2>
+            <div class="alert alert-warning">
+                <p>정말로 "{{ post.title }}" 게시글을 삭제하시겠습니까?</p>
+                <p class="mb-0">이 작업은 되돌릴 수 없습니다.</p>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                {% if not user.is_authenticated and post.guest_password %}
+                <div class="mb-3">
+                    <label for="password" class="form-label">비밀번호</label>
+                    <input type="password" class="form-control" id="password" name="password" required>
+                </div>
+                {% endif %}
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-danger">삭제</button>
+                    <a href="{% url 'border:post_detail' post.pk %}" class="btn btn-secondary">취소</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 
