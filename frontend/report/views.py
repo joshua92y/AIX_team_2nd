@@ -1,23 +1,21 @@
 import os
 import json
-from django.shortcuts import render
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from django.template.loader import render_to_string
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import render
+from datetime import datetime
+from django.template import TemplateDoesNotExist
 
-def index(request):
-    return render(request, 'index.html')
 
-def blog(request):
-    return render(request, 'blog.html')
-
-def blog_detail(request):
-    return render(request, 'blog-details.html')
+def report_main(request):
+    return render(request, 'report/report.html')
 
 @csrf_exempt
-def blog_api(request):
+def report_api(request):
     if request.method == 'POST':
-        # ✅ 1. 사용자 입력값 받기
+        
+        # ✅ 1. 사용자 입력 받기
         industry_code = request.POST.get('industry')
         address = request.POST.get('address')
         area = request.POST.get('area')
@@ -26,8 +24,6 @@ def blog_api(request):
         tm_y = request.POST.get('tm_y')
         latitude = request.POST.get('latitude')
         longitude = request.POST.get('longitude')
-
-        print(f"industry: {industry_code}, address: {address}, area: {area}, service: {service}, tm_x: {tm_x}, tm_y: {tm_y}")
 
         # ✅ 2. 업종코드 → 업종명 매핑
         industry_map = {
@@ -40,14 +36,15 @@ def blog_api(request):
             "29": "탕류(보신용)", "30": "통닭(치킨)", "31": "패밀리레스토랑", "32": "패스트푸드",
             "33": "편의점", "34": "푸드트럭", "35": "한식", "36": "호프/통닭", "37": "횟집"
         }
+
         industry_name = industry_map.get(industry_code, "기타")
 
-        # ✅ 3. 더미 데이터 불러오기
-        dummy_path = os.path.join(os.path.dirname(__file__), 'dummy_data.json')
+        # ✅ 3. 더미 JSON 불러오기
+        dummy_path = os.path.join(os.path.dirname(__file__), 'data', 'dummy_data.json')
         with open(dummy_path, 'r', encoding='utf-8') as f:
             context = json.load(f)
 
-        # ✅ 4. 입력 정보 덮어쓰기
+        # ✅ 4. 입력값 덮어쓰기
         context['input'] = {
             '업종코드': industry_code,
             '업종': industry_name,
@@ -57,13 +54,21 @@ def blog_api(request):
             '위도': latitude,
             '경도': longitude
         }
-
+        # 단위 변환 영역
         context['survival_prob_percent'] = round(context['survival_prob'] * 100, 1)
         context['shap_json'] = json.dumps(context['shap'], ensure_ascii=False)
+        
+        # ✅ 5. 현재 날짜 및 시간 추가
+        context['analyzed_date'] = datetime.now().strftime('%Y-%m-%d %H:%M')
 
-        # ✅ 5. 리포트 템플릿 조각 렌더링 후 반환
-        rendered_html = render_to_string('report_partial.html', context)
-        return JsonResponse({'html': rendered_html})
+       # ✅ 6. 리포트 템플릿 렌더링 (디버깅용 예외 처리 추가)
+        try:
+            html = render_to_string('report/report_partial.html', context)
+            return JsonResponse({'html': html})
+        except TemplateDoesNotExist as e:
+            return JsonResponse({'error': f"템플릿 없음: {str(e)}"})
+        except Exception as e:
+            return JsonResponse({'error': f"렌더링 실패: {str(e)}", 'context': context})
 
-    # POST 아닌 경우: 페이지 자체 렌더링
-    return render(request, 'blog.html')
+        # 응답 전송
+        return JsonResponse({'html': html})

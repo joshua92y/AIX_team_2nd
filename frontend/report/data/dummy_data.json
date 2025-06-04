@@ -7,8 +7,7 @@
   },
   "survival_prob": 0.8234,
   "prediction": {
-    "생존여부": "높음",
-    "confidence": 0.82
+    "생존여부": "높음"
   },
   "features": {
     "유사업종수_300m": 12,

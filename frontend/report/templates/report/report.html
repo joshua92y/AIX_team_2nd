@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_head %}
+  <!-- 필요하면 여기에 html2pdf css 포함 -->
+{% endblock %}
+
+{% block content %}
+<div class="container py-8">
+  <h2 class="text-2xl font-bold text-blue-800 mb-4">📊 상권 분석 보고서</h2>
+
+  <!-- 분석 결과만 partial로 불러옴 -->
+  <div id="report-wrapper">
+  <div id="report-section">
+      {% include 'report/report_partial.html' %}
+  </div>
+  </div>
+
+{% endblock %}
+
+{% block script %}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="{% static 'report/pdf.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% load static %}
+{% load humanize %}
+<!-- report_partial.html 리팩토링: 상권 분석 보고서 -->
+<div id="report-section" class="space-y-8">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap" rel="stylesheet">
+
+  <!-- 1. 헤더: 기본 정보 -->
+  <section class="bg-white p-6 rounded shadow">
+    <h2 class="text-2xl font-bold text-blue-800 mb-2">📍 상권 분석 결과</h2>
+    <p><strong>주소:</strong> {{ input.주소 }}</p>
+    <p><strong>업종:</strong> {{ input.업종 }}</p>
+    <p><strong>면적:</strong> {{ input.면적 }}㎡</p>
+    <p><strong>분석 반경:</strong> 100m</p>
+    <p><strong>분석일:</strong> {{ analyzed_date }}</p>
+  </section>
+
+  <!-- 2. 핵심 지표 카드 + 생존 확률 -->
+  <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="bg-blue-50 p-4 rounded shadow text-center">
+      <h4 class="text-sm text-gray-600">유사업종 수</h4>
+      <p class="text-xl font-bold text-blue-800">{{ features.유사업종수_300m }}</p>
+    </div>
+    <div class="bg-blue-50 p-4 rounded shadow text-center">
+      <h4 class="text-sm text-gray-600">전체 음식업체 수</h4>
+      <p class="text-xl font-bold text-blue-800">{{ features.전체음식업체수 }}</p>
+    </div>
+    <div class="bg-blue-50 p-4 rounded shadow text-center">
+      <h4 class="text-sm text-gray-600">직장인구수</h4>
+      <p class="text-xl font-bold text-blue-800">{{ features.직장인구수 }}</p>
+    </div>
+    <div class="bg-green-50 p-4 rounded shadow text-center">
+      <h4 class="text-sm text-gray-600">생존 확률</h4>
+      <p class="text-xl font-bold text-green-700">{{ survival_prob_percent }}%</p>
+    </div>
+    <div class="bg-blue-50 p-4 rounded shadow text-center">
+      <h4 class="text-sm text-gray-600">공시지가 (₩)</h4>
+      <p class="text-xl font-bold text-blue-800">{{ features.공시지가|intcomma }}</p>
+    </div>
+  </section>
+
+  <!-- 3. 유동인구 시각화 -->
+  <section class="bg-white p-6 rounded shadow">
+    <h3 class="text-lg font-semibold mb-2">👣 유동 인구 구성</h3>
+    <canvas id="populationDonut"
+      data-pop20="{{ features.유동인구.20대 }}"
+      data-pop30="{{ features.유동인구.30대 }}"
+      data-pop40="{{ features.유동인구.40대 }}"
+      data-pop50="{{ features.유동인구.50대 }}"
+      class="w-full max-w-md mx-auto"></canvas>
+  </section>
+
+  <!-- 4. SHAP 기여도 시각화 -->
+  <section class="bg-white p-6 rounded shadow">
+    <h3 class="text-lg font-semibold mb-2">📈 주요 피처 기여도 (SHAP)</h3>
+    <canvas id="shapChart" data-shap='{{ shap_json|safe }}'></canvas>
+  </section>
+
+  <!-- 5. 주변 시설 -->
+  <section class="grid grid-cols-2 gap-4 bg-white p-6 rounded shadow">
+    <div class="text-center">
+      <h4 class="text-sm text-gray-600">공공시설 수</h4>
+      <p class="text-xl font-bold">{{ features.공공시설수 }}개</p>
+    </div>
+    <div class="text-center">
+      <h4 class="text-sm text-gray-600">학교 수</h4>
+      <p class="text-xl font-bold">{{ features.학교수 }}개</p>
+    </div>
+  </section>
+
+  <!-- 6. 상권 경쟁 분석 -->
+  <section class="bg-white p-6 rounded shadow">
+    <h3 class="text-lg font-semibold mb-4">📊 상권 경쟁 분석 (300m 반경)</h3>
+    <div class="grid grid-cols-3 gap-4 text-center">
+      <div>
+        <p class="text-sm text-gray-600">전체 음식업체 수</p>
+        <p class="text-lg font-bold">{{ features.전체음식업체수 }}</p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-600">경쟁업체 비율</p>
+        <p class="text-lg font-bold">{{ features.경쟁비율|floatformat:1 }}%</p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-600">업종 다양성</p>
+        <p class="text-lg font-bold">{{ features.업종다양성 }}종류</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. AI 인사이트 요약 -->
+  <section class="bg-yellow-50 p-6 rounded shadow">
+    <h3 class="text-lg font-semibold text-yellow-900 mb-2">🤖 AI 분석 요약</h3>
+    <p><strong>📉 리스크:</strong> {{ insight.risk }}</p>
+    <p><strong>💡 전략:</strong> {{ insight.strategy }}</p>
+    <p><strong>📌 요약:</strong> {{ insight.summary }}</p>
+  </section>
+
+</div>
+<!-- 저장 버튼 추가 -->
+  <div class="text-center mt-6">
+    <button id="save-pdf-button" class="btn btn-primary mt-4">PDF로 저장</button>
+  </div>
+</div>
