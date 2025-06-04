@@ -1,3 +1,4 @@
+# LocaAI/config/settings.py
 """
 Django settings for config project.
 
