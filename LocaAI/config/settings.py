@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from chatbot.rag_settings import RAG_SETTINGS
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -145,15 +146,7 @@ LOGIN_REDIRECT_URL = "border:inquiry_list"
 LOGOUT_REDIRECT_URL = "border:inquiry_list"
 
 # RAG Settings
-RAG_SETTINGS = {
-    "QDRANT_URL": os.getenv("QDRANT_URL"),
-    "QDRANT_API_KEY": os.getenv("QDRANT_API_KEY"),
-    "COLLECTIONS": ["workpeople_zones"],  # "zone_2", "zone_3"
-    "EMBEDDING_MODEL": "upskyy/bge-m3-korean",
-    "MEMORY_K": 5,
-    "RETRIEVER_K": 3,
-}
-
+RAG_SETTINGS = RAG_SETTINGS
 # Channels 설정
 CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
 
