@@ -1,64 +1,79 @@
-# apps/chatbot/consumers.py
+# LocaAI/chatbot/consumers.py
+
 import json
 import logging
+import uuid
 from channels.generic.websocket import AsyncWebsocketConsumer
-from .rag_pipeline import final_chain, summary_memory, build_final_chain
-from .memory import DjangoConversationMemory
-from .models import ConversationLog
-import asyncio
+from asgiref.sync import sync_to_async
+from django.utils.timezone import now
 
+from .models import ChatSession
+from .core.rag_builder import run_rag_pipeline
+from django.contrib.auth import get_user_model
+User = get_user_model()
 logger = logging.getLogger(__name__)
+
+
+def clean_uuid(raw_id: str) -> uuid.UUID:
+    try:
+        return uuid.UUID(raw_id.split("_")[-1])
+    except ValueError:
+        raise ValueError(f"Invalid UUID format: {raw_id}")
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         await self.accept()
-        logger.info("WebSocket connection established")
+        logger.info("✅ WebSocket 연결됨")
 
     async def disconnect(self, close_code):
-        logger.info(f"WebSocket disconnected with code: {close_code}")
+        logger.info(f"❎ WebSocket 연결 종료: {close_code}")
 
     async def receive(self, text_data):
-        logger.debug(f"📨 WebSocket 메시지 수신: {text_data}")
         try:
             data = json.loads(text_data)
-            user_id = data.get("user_id")
+            raw_user_id = data.get("user_id")
             session_id = data.get("session_id")
             question = data.get("question")
 
-            if not user_id or not question:
-                logger.warning("⚠️ 필수 필드 누락 (user_id 또는 question)")
-                await self.send(
-                    text_data=json.dumps({"error": "user_id and question required"})
-                )
+            if not raw_user_id or not question:
+                await self.send(text_data=json.dumps({"error": "user_id와 question은 필수입니다."}))
                 return
 
-            logger.debug(f"👤 사용자: {user_id}, 세션: {session_id}")
-            chain_func = await build_final_chain(user_id, session_id)
-            logger.debug("🔧 RAG 체인 생성 완료")
+            try:
+                user_id = clean_uuid(raw_user_id)
+                logger.debug(f"✅ 받은 user_id: {user_id}")
+                user = await sync_to_async(User.objects.get)(id=user_id)
+            except (ValueError, User.DoesNotExist):
+                await self.send(text_data=json.dumps({"error": "유효하지 않거나 존재하지 않는 사용자입니다."}))
+                return
 
-            response = await chain_func({"question": question})
-            logger.debug("✅ RAG 체인 응답 수신")
 
-            # 스트리밍 여부 판단
-            if hasattr(response, "content"):
-                content = response.content
-                chunk_size = 50
-                logger.debug("📤 응답 스트리밍 시작")
-
-                for i in range(0, len(content), chunk_size):
-                    chunk = content[i : i + chunk_size]
-                    await self.send(text_data=json.dumps({"chunk": chunk}))
-                    await asyncio.sleep(0.1)
-
-                await self.send(text_data=json.dumps({"done": True}))
-                logger.debug("🏁 응답 스트리밍 완료")
+            # 세션이 없으면 생성
+            if not session_id:
+                session = await sync_to_async(ChatSession.objects.create)(user_id=user_id)
+                session_id = f"{now().strftime('%Y%m%d')}-{session.pk}"
+                session.session_id = session_id
+                await sync_to_async(session.save)()
+                logger.info(f"🆕 세션 자동 생성: {session_id}")
             else:
-                await self.send(text_data=json.dumps({"answer": str(response)}))
-                logger.debug("📤 단일 응답 전송 완료")
+                await sync_to_async(ChatSession.objects.get_or_create)(
+                    user_id=user_id, session_id=session_id
+                )
+
+            logger.info(f"💬 질문 수신 | user_id={user_id}, session_id={session_id}")
+
+            # RAG 체인 실행 및 스트리밍 전송
+            async for chunk in run_rag_pipeline(user_id, session_id, question):
+                await self.send(text_data=json.dumps({"chunk": chunk}))
+
+            # 응답 완료 전송
+            await self.send(text_data=json.dumps({
+                "done": True,
+                "session_id": session_id
+            }))
+            logger.info("✅ 응답 스트리밍 완료")
 
         except Exception as e:
-            logger.error("❌ WebSocket 처리 중 오류 발생", exc_info=True)
-            await self.send(
-                text_data=json.dumps({"error": "Error processing your request"})
-            )
+            logger.exception("❌ WebSocket 처리 중 오류 발생")
+            await self.send(text_data=json.dumps({"error": str(e)}))
