@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>분석 결과 - AI Analyzer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        
+        .metric-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .metric-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .section-title {
+            color: #667eea;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 0.5rem;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 1rem 0;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+        }
+        
+        .location-info {
+            background: linear-gradient(135deg, #f8f9ff 0%, #e8ecff 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .score-bar {
+            background: #e9ecef;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+        
+        .score-fill {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+        
+        .risk-low { background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important; }
+        .risk-medium { background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%) !important; }
+        .risk-high { background: linear-gradient(135deg, #dc3545 0%, #e91e63 100%) !important; }
+        
+        .survival-percentage {
+            font-size: 4rem;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="gradient-bg">
+    <div class="container py-4">
+        <!-- Header -->
+        <div class="text-center mb-4">
+            <h1 class="text-white mb-3">
+                <i class="fas fa-chart-line me-2"></i>
+                상권분석 결과
+            </h1>
+            <a href="{% url 'locai:index' %}" class="btn btn-light">
+                <i class="fas fa-arrow-left me-2"></i>
+                새로운 분석하기
+            </a>
+        </div>
+
+        <!-- 위치 정보 -->
+        <div class="location-info">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h4 class="mb-2">
+                        <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                        {{ request.address }}
+                    </h4>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <strong>업종:</strong> {{ request.business_type.name }}
+                        </div>
+                        <div class="col-md-4">
+                            <strong>면적:</strong> {{ request.area }}㎡
+                        </div>
+                        <div class="col-md-4">
+                            <strong>유형:</strong> 
+                            {% if request.service_type == 1 %}일반음식점{% else %}휴게음식점{% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <small class="text-muted">분석일시: {{ request.created_at|date:"Y-m-d H:i" }}</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- 핵심 지표 -->
+        <div class="card">
+            <div class="card-header bg-white">
+                <h3 class="section-title mb-0">
+                    <i class="fas fa-tachometer-alt me-2"></i>
+                    핵심 지표
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-number">{{ result.life_pop_300m|floatformat:0 }}</div>
+                            <div class="metric-label">300m 내 생활인구</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-number">{{ result.working_pop_300m|floatformat:0 }}</div>
+                            <div class="metric-label">300m 내 직장인구</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-number">{{ result.competitor_300m }}</div>
+                            <div class="metric-label">동일업종 경쟁업체</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-number">{{ result.total_land_value|floatformat:0 }}</div>
+                            <div class="metric-label">총 공시지가 (원)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI 예측 생존 확률 -->
+        <div class="card">
+            <div class="card-header bg-white">
+                <h3 class="section-title mb-0">
+                    <i class="fas fa-brain me-2"></i>
+                    AI 예측 분석
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="text-center">
+                            <div class="survival-percentage 
+                                        {% if result.survival_percentage >= 80 %}text-success
+                                        {% elif result.survival_percentage >= 60 %}text-warning
+                                        {% else %}text-danger{% endif %}">
+                                {{ result.survival_percentage|default:0 }}%
+                            </div>
+                            <h4 class="mb-3">장기 생존 확률</h4>
+                            <div class="score-bar">
+                                <div class="score-fill {% if result.survival_percentage >= 80 %}risk-low
+                                                      {% elif result.survival_percentage >= 60 %}risk-medium
+                                                      {% else %}risk-high{% endif %}" 
+                                     style="width: {{ result.survival_percentage|default:0 }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3">
+                            <h5 class="mb-3">AI 분석 결과</h5>
+                            {% if result.survival_percentage >= 80 %}
+                                <div class="alert alert-success">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    <strong>높은 생존 가능성</strong><br>
+                                    현재 위치는 장기적으로 사업을 지속하기에 매우 좋은 조건을 갖추고 있습니다.
+                                </div>
+                            {% elif result.survival_percentage >= 60 %}
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>보통 생존 가능성</strong><br>
+                                    현재 위치는 사업 지속에 적절한 조건을 갖추고 있으나, 추가적인 전략 검토가 필요합니다.
+                                </div>
+                            {% else %}
+                                <div class="alert alert-danger">
+                                    <i class="fas fa-times-circle me-2"></i>
+                                    <strong>낮은 생존 가능성</strong><br>
+                                    현재 위치는 장기 사업 지속에 어려움이 예상됩니다. 신중한 검토가 필요합니다.
+                                </div>
+                            {% endif %}
+                            
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                AI 모델이 25개 지표를 종합 분석한 결과입니다.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- 생활인구 분석 -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h4 class="section-title mb-0">
+                            <i class="fas fa-users me-2"></i>
+                            생활인구 분석
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <h6>300m 내 연령대별 분포</h6>
+                        <div class="chart-container">
+                            <canvas id="ageChart300"></canvas>
+                        </div>
+                        
+                        <h6 class="mt-4">1000m 내 연령대별 분포</h6>
+                        <div class="chart-container">
+                            <canvas id="ageChart1000"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 외국인 & 시설 분석 -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h4 class="section-title mb-0">
+                            <i class="fas fa-globe me-2"></i>
+                            외국인 & 주변시설
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <strong>단기체류외국인 (1000m)</strong>
+                                <div class="metric-number text-primary">{{ result.temp_foreign_1000m }}</div>
+                            </div>
+                            <div class="col-6">
+                                <strong>장기체류외국인 (1000m)</strong>
+                                <div class="metric-number text-primary">{{ result.long_foreign_1000m }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <strong>공공건물 (250m)</strong>
+                                <div class="metric-number text-success">{{ result.public_building_250m }}개</div>
+                            </div>
+                            <div class="col-6">
+                                <strong>학교 (250m)</strong>
+                                <div class="metric-number text-success">{{ result.school_250m }}개</div>
+                            </div>
+                        </div>
+
+                        <h6>중국인 비율</h6>
+                        <div class="mb-2">
+                            <small>단기체류 중국인 (300m): {{ result.temp_foreign_cn_300m }}%</small>
+                            <div class="score-bar">
+                                <div class="score-fill" style="width: {{ result.temp_foreign_cn_300m }}%"></div>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <small>장기체류 중국인 (1000m): {{ result.long_foreign_cn_1000m }}%</small>
+                            <div class="score-bar">
+                                <div class="score-fill" style="width: {{ result.long_foreign_cn_1000m }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 상권 분석 -->
+        <div class="card">
+            <div class="card-header bg-white">
+                <h3 class="section-title mb-0">
+                    <i class="fas fa-store me-2"></i>
+                    상권 경쟁 분석 (300m 반경)
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <h5>경쟁업체 수</h5>
+                        <div class="metric-number text-danger">{{ result.competitor_300m }}개</div>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h5>전체 요식업체</h5>
+                        <div class="metric-number text-info">{{ result.adjacent_biz_300m }}개</div>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h5>경쟁업체 비율</h5>
+                        <div class="metric-number text-warning">{{ result.competitor_ratio_300m }}%</div>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h5>업종 다양성</h5>
+                        <div class="metric-number text-success">{{ result.business_diversity_300m }}종류</div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <h6>경쟁 강도 분석</h6>
+                    <div class="progress" style="height: 25px;">
+                        {% if result.competitor_ratio_300m <= 20 %}
+                            <div class="progress-bar risk-low" style="width: {{ result.competitor_ratio_300m }}%">
+                                낮음 ({{ result.competitor_ratio_300m }}%)
+                            </div>
+                        {% elif result.competitor_ratio_300m <= 50 %}
+                            <div class="progress-bar risk-medium" style="width: {{ result.competitor_ratio_300m }}%">
+                                보통 ({{ result.competitor_ratio_300m }}%)
+                            </div>
+                        {% else %}
+                            <div class="progress-bar risk-high" style="width: {{ result.competitor_ratio_300m }}%">
+                                높음 ({{ result.competitor_ratio_300m }}%)
+                            </div>
+                        {% endif %}
+                    </div>
+                    <small class="text-muted mt-2 d-block">
+                        경쟁업체 비율이 20% 이하면 낮음, 20-50%는 보통, 50% 이상은 높음으로 분류됩니다.
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- 분석 요약 -->
+        <div class="card">
+            <div class="card-header bg-white">
+                <h3 class="section-title mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    AI 분석 요약
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="text-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            강점
+                        </h5>
+                        <ul>
+                            {% if result.life_pop_300m > 5000 %}
+                            <li>생활인구가 풍부함 ({{ result.life_pop_300m|floatformat:0 }}명)</li>
+                            {% endif %}
+                            {% if result.working_pop_300m > 3000 %}
+                            <li>직장인구가 많아 점심시간 고객 확보 유리</li>
+                            {% endif %}
+                            {% if result.competitor_ratio_300m < 30 %}
+                            <li>경쟁업체 비율이 낮아 경쟁 부담 적음</li>
+                            {% endif %}
+                            {% if result.business_diversity_300m > 10 %}
+                            <li>업종 다양성이 높아 상권이 활성화됨</li>
+                            {% endif %}
+                            {% if result.public_building_250m > 0 or result.school_250m > 0 %}
+                            <li>주변 유동인구 유발시설 존재</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="text-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            주의사항
+                        </h5>
+                        <ul>
+                            {% if result.life_pop_300m < 2000 %}
+                            <li>생활인구가 적어 고객 확보에 어려움 예상</li>
+                            {% endif %}
+                            {% if result.competitor_ratio_300m > 50 %}
+                            <li>경쟁업체 비율이 높아 치열한 경쟁 예상</li>
+                            {% endif %}
+                            {% if result.competitor_300m > 5 %}
+                            <li>동일업종 경쟁업체가 많음 ({{ result.competitor_300m }}개)</li>
+                            {% endif %}
+                            {% if result.total_land_value > 100000000 %}
+                            <li>공시지가가 높아 임대료 부담 클 수 있음</li>
+                            {% endif %}
+                            {% if result.working_pop_300m < 1000 %}
+                            <li>직장인구가 적어 평일 점심 고객 부족 우려</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 하단 버튼 -->
+        <div class="text-center mt-4">
+            <a href="{% url 'locai:index' %}" class="btn btn-primary btn-lg me-3">
+                <i class="fas fa-redo me-2"></i>
+                새로운 분석하기
+            </a>
+            <button class="btn btn-outline-light" onclick="window.print()">
+                <i class="fas fa-print me-2"></i>
+                결과 인쇄하기
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 300m 내 연령대별 차트
+        const ctx300 = document.getElementById('ageChart300').getContext('2d');
+        const ageChart300 = new Chart(ctx300, {
+            type: 'doughnut',
+            data: {
+                labels: ['20대', '30대', '40대', '50대', '60대+'],
+                datasets: [{
+                    data: [
+                        {{ result.life_pop_20_300m }},
+                        {{ result.life_pop_30_300m }},
+                        {{ result.life_pop_40_300m }},
+                        {{ result.life_pop_50_300m }},
+                        {{ result.life_pop_60_300m }}
+                    ],
+                    backgroundColor: [
+                        '#FF6384',
+                        '#36A2EB',
+                        '#FFCE56',
+                        '#4BC0C0',
+                        '#9966FF'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // 1000m 내 연령대별 차트
+        const ctx1000 = document.getElementById('ageChart1000').getContext('2d');
+        const ageChart1000 = new Chart(ctx1000, {
+            type: 'bar',
+            data: {
+                labels: ['20대', '30대', '40대', '50대', '60대+'],
+                datasets: [{
+                    label: '비율 (%)',
+                    data: [
+                        {{ result.life_pop_20_1000m }},
+                        {{ result.life_pop_30_1000m }},
+                        {{ result.life_pop_40_1000m }},
+                        {{ result.life_pop_50_1000m }},
+                        {{ result.life_pop_60_1000m }}
+                    ],
+                    backgroundColor: [
+                        '#FF6384',
+                        '#36A2EB',
+                        '#FFCE56',
+                        '#4BC0C0',
+                        '#9966FF'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html> 
