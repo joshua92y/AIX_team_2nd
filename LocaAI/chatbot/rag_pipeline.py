@@ -23,6 +23,7 @@ from .memory import DjangoConversationMemory
 from langchain.schema import BaseRetriever, Document
 from langchain.callbacks.manager import CallbackManagerForRetrieverRun
 from pydantic import Field
+from .rag_settings import RAG_SETTINGS
 
 logger = logging.getLogger(__name__)
 
@@ -133,17 +134,19 @@ async def build_final_chain(user_id=None, session_id=None):
     buffer_memory = DjangoConversationMemory(
         user_id=user_id, session_id=session_id, k=settings.RAG_SETTINGS["MEMORY_K"]
     )
+    await buffer_memory.async_load_from_db()
     summary_memory = DjangoConversationMemory(
         user_id=user_id, session_id=session_id, summary=True
     )
+    await summary_memory.async_load_from_db()
     logger.debug("🧠 메모리 객체 생성 완료")
 
     async def build_rag_chain(collection_name: str):
         logger.debug(f"🔗 build_rag_chain: {collection_name} 시작")
         try:
             client = QdrantClient(
-                url=settings.RAG_SETTINGS["QDRANT_URL"],
-                api_key=settings.RAG_SETTINGS["QDRANT_API_KEY"],
+                url=RAG_SETTINGS["QDRANT_URL"],
+                api_key=RAG_SETTINGS["QDRANT_API_KEY"],
             )
 
             retriever = CustomQdrantRetriever(
@@ -151,22 +154,26 @@ async def build_final_chain(user_id=None, session_id=None):
                 collection_name=collection_name,
                 embed_model=embedding_model,
             )
-            logger.debug(f"✅ {collection_name} custom retriever 생성 완료")
 
+            # 🔎 테스트 검색
             try:
                 test_docs = retriever.get_relevant_documents("총인구")
-                logger.debug(f"📚 Qdrant {collection_name} 문서 검색 결과 (샘플):")
                 for i, doc in enumerate(test_docs[:3]):
-                    logger.debug(f"  - [{i+1}] 메타데이터: {doc.metadata}")
-                    logger.debug(f"  - [{i+1}] 내용: {repr(doc.page_content)[:120]}...")
+                    logger.debug(f"▶️ {i+1}: {repr(doc.page_content[:80])}")
             except Exception as doc_e:
-                logger.warning(f"⚠️ {collection_name}에서 문서 미리 조회 실패: {doc_e}")
+                logger.warning(f"{collection_name} 문서 조회 실패: {doc_e}")
+
+            # ✅ 프롬프트 불러오기
+            prompt_map = RAG_SETTINGS["PROMPT_TEMPLATES"]
+            prompt = prompt_map.get(collection_name, prompt_map["default"])
+            logger.debug(f"📝 적용 프롬프트: {prompt.template[:60]}...")
 
             return ConversationalRetrievalChain.from_llm(
                 llm=llm,
                 retriever=retriever,
                 memory=buffer_memory,
                 return_source_documents=False,
+                combine_docs_chain_kwargs={"prompt": prompt},
             )
 
         except Exception as e:
