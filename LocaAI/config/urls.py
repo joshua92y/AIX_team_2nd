@@ -21,9 +21,10 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('border/', include('border.urls')),
-    path('auth/', include('custom_auth.urls', namespace='custom_auth')),
+    path("admin/", admin.site.urls),
+    path("border/", include("border.urls")),
+    path("chatbot/", include("chatbot.urls")),
+    path("auth/", include("custom_auth.urls", namespace="custom_auth")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:
