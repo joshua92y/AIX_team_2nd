@@ -33,7 +33,6 @@ class DjangoConversationMemory(BaseChatMemory):
         super().__init__(**data)
         self._buffer = []
         self._load_from_cache()
-        self._load_from_db()
 
     @property
     def memory_variables(self) -> List[str]:
@@ -45,12 +44,12 @@ class DjangoConversationMemory(BaseChatMemory):
         prefix = "summary" if self.summary else "chat"
         return f"{prefix}_memory_{self.user_id}_{self.session_id}"
 
-    def _load_from_db(self):
+    async def async_load_from_db(self):
         try:
-            session = ConversationSession.objects.get(
+            session = await sync_to_async(ConversationSession.objects.get)(
                 user_id=self.user_id, session_id=self.session_id
             )
-            messages = session.messages.order_by("timestamp")
+            messages = await sync_to_async(list)(session.messages.order_by("timestamp"))
             self._buffer = [
                 {"role": msg.role, "content": msg.content} for msg in messages
             ]
