@@ -17,8 +17,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   const userId = currentUserInfo.user_id || 'anonymous_' + generateUUID();
-  let currentSessionId = localStorage.getItem(`chat_session_id_${userId}`) || currentUserInfo.initial_session_id || generateUUID();
-  localStorage.setItem(`chat_session_id_${userId}`, currentSessionId);
+  let currentSessionId = currentUserInfo.initial_session_id || null;
 
   let websocket = null;
   let currentStreamingMessageElement = null;
@@ -69,14 +68,27 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function displayMessage(content, type) {
+    // 첫 메시지 전송 시 웰컴 메시지 숨기기
+    const welcomeMessage = chatMessagesArea.querySelector('.chat-welcome-message');
+    if (welcomeMessage) {
+      welcomeMessage.style.display = 'none';
+    }
+    
     const el = createMessageElement(content, type);
     chatMessagesArea.appendChild(el);
     scrollToBottom();
+    
     return el;
   }
 
   function appendToStreamingMessage(chunk) {
     if (!currentStreamingMessageElement) {
+      // 첫 스트리밍 메시지 시 웰컴 메시지 숨기기
+      const welcomeMessage = chatMessagesArea.querySelector('.chat-welcome-message');
+      if (welcomeMessage) {
+        welcomeMessage.style.display = 'none';
+      }
+      
       currentStreamingMessageElement = displayMessage("", "assistant");
     }
     const bubble = currentStreamingMessageElement.querySelector(".message-bubble");
@@ -87,7 +99,15 @@ document.addEventListener("DOMContentLoaded", function () {
       scrollToBottom();
     }
   }
+  
   function finalizeStreamingMessage() {
+    // 최종 스트리밍 메시지를 채팅 리스트에 반영
+    if (currentStreamingMessageElement) {
+      const bubble = currentStreamingMessageElement.querySelector(".message-bubble");
+      if (bubble && window.addChatMessage) {
+        window.addChatMessage(bubble.textContent, "assistant", currentSessionId);
+      }
+    }
     currentStreamingMessageElement = null;
     hideTyping();
   }
@@ -122,12 +142,27 @@ document.addEventListener("DOMContentLoaded", function () {
           appendToStreamingMessage(data.chunk);
         } else if (data.done) {
           finalizeStreamingMessage();
+          // 새 세션 ID가 생성되었을 때 채팅 리스트 매니저 업데이트
           if (data.session_id && currentSessionId !== data.session_id) {
             currentSessionId = data.session_id;
-            localStorage.setItem(`chat_session_id_${userId}`, currentSessionId);
+            if (window.updateCurrentChatId) {
+              window.updateCurrentChatId(data.session_id);
+            }
+          }
+          // 응답 완료 후 채팅 리스트 새로고침
+          if (window.chatListManager && window.chatListManager.refreshChatList) {
+            setTimeout(() => {
+              window.chatListManager.refreshChatList();
+            }, 500);
           }
         } else if (data.answer) {
           displayMessage(data.answer, "assistant");
+          // 일반 응답 후에도 채팅 리스트 새로고침
+          if (window.chatListManager && window.chatListManager.refreshChatList) {
+            setTimeout(() => {
+              window.chatListManager.refreshChatList();
+            }, 500);
+          }
         }
       } catch (e) {
         displayNotification("서버 응답 처리 중 오류", "error");
@@ -160,12 +195,24 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
+    // 현재 선택된 채팅 ID 가져오기
+    if (window.getCurrentChatId) {
+      currentSessionId = window.getCurrentChatId();
+    }
+
     const payload = { user_id: userId, session_id: currentSessionId || "", question: msg };
     websocket.send(JSON.stringify(payload));
     displayMessage(msg, "user");
     messageInput.value = "";
     messageInput.style.height = "auto";
     showTyping();
+    
+    // 사용자 메시지 전송 후 채팅 리스트 새로고침
+    if (window.chatListManager && window.chatListManager.refreshChatList) {
+      setTimeout(() => {
+        window.chatListManager.refreshChatList();
+      }, 500);
+    }
   }
 
   sendButton.addEventListener("click", handleSendMessage);
