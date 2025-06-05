@@ -7,13 +7,16 @@ from langchain_core.output_parsers import StrOutputParser
 from chatbot.core.memory import DjangoChatHistory
 from langchain.memory import ConversationBufferWindowMemory
 from chatbot.models import ChatSession, ChatMemory, CollectionMemory, Prompt, ChatLog
-from chatbot.utils.qdrant import get_collection_retriever, list_all_collections
+from chatbot.utils.qdrant import get_collection_retriever, list_all_collections, get_embedding_model
 from chatbot.utils.llm_config import get_llm
 from django.conf import settings
 from django.utils.timezone import now
 from asgiref.sync import sync_to_async
 from dataclasses import dataclass
 from langchain_core.retrievers import BaseRetriever
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
 
 
 import json
@@ -33,9 +36,22 @@ class CollectionChainComponent:
     retriever: BaseRetriever
     prompt: PromptTemplate
 
+def is_similar(summary, question, threshold=0.7):
+    if not summary:
+        return False
+    embedding_model = get_embedding_model()
+    summary_vec = [embedding_model.embed_query(summary)]
+    question_vec = [embedding_model.embed_query(question)]
+    sim = cosine_similarity(summary_vec, question_vec)[0][0]
+    return sim >= threshold
+
 # 1️⃣ 요약 삽입 체인
 load_summary_chain = RunnableLambda(lambda inputs: {
-    "question": f"{inputs['summary']}\n\n질문: {inputs['question']}" if inputs.get("summary") else inputs['question']
+    "question": (
+        f"이전 대화 참조: {inputs['summary']} , 질문: {inputs['question']}"
+        if is_similar(inputs.get("summary", ""), inputs['question'])
+        else inputs['question']
+    )
 })
 streaming_llm = get_llm(streaming=True)
 
