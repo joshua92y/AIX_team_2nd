@@ -2,7 +2,6 @@
 
 import json
 import logging
-import uuid
 from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async
 from django.utils.timezone import now
@@ -14,11 +13,15 @@ User = get_user_model()
 logger = logging.getLogger(__name__)
 
 
-def clean_uuid(raw_id: str) -> uuid.UUID:
+def safe_get_user_id(raw_id: str) -> str:
+    """안전하게 사용자 ID 추출"""
     try:
-        return uuid.UUID(raw_id.split("_")[-1])
-    except ValueError:
-        raise ValueError(f"Invalid UUID format: {raw_id}")
+        # UUID 형태의 문자열을 그대로 반환
+        if len(raw_id) > 32:  # UUID 길이보다 긴 경우 마지막 부분만 추출
+            return raw_id.split("_")[-1]
+        return raw_id
+    except Exception:
+        return raw_id
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -41,25 +44,35 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 return
 
             try:
-                user_id = clean_uuid(raw_user_id)
+                user_id = safe_get_user_id(raw_user_id)
                 logger.debug(f"✅ 받은 user_id: {user_id}")
                 user = await sync_to_async(User.objects.get)(id=user_id)
-            except (ValueError, User.DoesNotExist):
-                await self.send(text_data=json.dumps({"error": "유효하지 않거나 존재하지 않는 사용자입니다."}))
+            except User.DoesNotExist:
+                await self.send(text_data=json.dumps({"error": "존재하지 않는 사용자입니다."}))
+                return
+            except Exception as e:
+                await self.send(text_data=json.dumps({"error": f"사용자 확인 중 오류: {str(e)}"}))
                 return
 
-
-            # 세션이 없으면 생성
-            if not session_id:
+            # 세션 처리 - 기존 세션 조회 또는 새 세션 생성
+            session = None
+            if session_id:
+                try:
+                    session = await sync_to_async(ChatSession.objects.get)(
+                        user_id=user_id, session_id=session_id
+                    )
+                    # 세션 마지막 접근 시간 업데이트
+                    session.lastload_at = now()
+                    await sync_to_async(session.save)(update_fields=['lastload_at'])
+                    logger.info(f"📝 기존 세션 사용: {session_id}")
+                except ChatSession.DoesNotExist:
+                    logger.warning(f"⚠️  요청된 세션을 찾을 수 없음: {session_id}")
+            
+            # 세션이 없으면 새로 생성
+            if not session:
                 session = await sync_to_async(ChatSession.objects.create)(user_id=user_id)
-                session_id = f"{now().strftime('%Y%m%d')}-{session.pk}"
-                session.session_id = session_id
-                await sync_to_async(session.save)()
-                logger.info(f"🆕 세션 자동 생성: {session_id}")
-            else:
-                await sync_to_async(ChatSession.objects.get_or_create)(
-                    user_id=user_id, session_id=session_id
-                )
+                session_id = session.session_id
+                logger.info(f"🆕 새 세션 생성: {session_id}")
 
             logger.info(f"💬 질문 수신 | user_id={user_id}, session_id={session_id}")
 
@@ -67,10 +80,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
             async for chunk in run_rag_pipeline(user_id, session_id, question):
                 await self.send(text_data=json.dumps({"chunk": chunk}))
 
-            # 응답 완료 전송
+            # 응답 완료 전송 (세션 정보 포함)
             await self.send(text_data=json.dumps({
                 "done": True,
-                "session_id": session_id
+                "session_id": session_id,
+                "session_title": session.title
             }))
             logger.info("✅ 응답 스트리밍 완료")
 
