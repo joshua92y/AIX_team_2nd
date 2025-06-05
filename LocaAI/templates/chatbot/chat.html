@@ -8,46 +8,107 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mt-3 mb-3">
+<div class="container-fluid mt-3 mb-3">
   <h3 class="text-center mb-3">LocaAI 챗봇</h3>
 
-  <div class="chat-interface-container">
-    <div class="chat-messages-area" id="chatMessagesArea">
-      <!-- 메시지가 여기에 동적으로 추가됩니다 -->
-    </div>
-
-    <div id="typingIndicator" class="message-entry typing-indicator-message" style="display: none;">
-      <div class="message-bubble">
-        답변을 생성 중입니다... 
-        <span class="spinner-border spinner-border-sm ms-1" role="status" aria-hidden="true"></span>
+  <div class="chat-main-container">
+    <!-- 채팅 리스트 사이드바 -->
+    <div class="chat-list-sidebar">
+      <div class="chat-list-header">
+        <h5 class="mb-0">채팅 히스토리</h5>
+        <button id="newChatButton" class="btn btn-outline-primary btn-sm" type="button" title="새 채팅 시작">
+          <i class="fas fa-plus"></i>
+        </button>
       </div>
+      
+      <div class="chat-list-container">
+        <div class="chat-list-search">
+          <input type="text" id="chatSearchInput" class="form-control form-control-sm" placeholder="채팅 검색...">
+        </div>
+        
+        <div class="chat-list-items" id="chatListItems">
+          <!-- 채팅 리스트가 JavaScript에서 동적으로 로드됩니다 -->
+          <div class="chat-list-loading text-center py-3">
+            <div class="spinner-border spinner-border-sm text-primary" role="status">
+              <span class="visually-hidden">로딩중...</span>
+            </div>
+            <small class="d-block mt-2 text-muted">채팅 히스토리를 불러오는 중...</small>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 사이드바 토글 버튼 (모바일용) -->
+      <button id="toggleSidebar" class="btn btn-primary sidebar-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+      </button>
     </div>
 
-    <div class="chat-input-area">
-      <textarea
-        id="messageInput"
-        class="form-control"
-        placeholder="메시지를 입력하세요..."
-        rows="1"
-        aria-label="메시지 입력"
-      ></textarea>
-      <button id="sendButton" class="btn btn-primary" type="button" aria-label="메시지 전송">
-        <i class="fas fa-paper-plane"></i>
-      </button>
+    <!-- 메인 채팅 영역 -->
+    <div class="chat-interface-container">
+      <div class="chat-messages-area" id="chatMessagesArea">
+        <!-- 메시지가 여기에 동적으로 추가됩니다 -->
+        <div class="chat-welcome-message text-center py-5">
+          <div class="mb-3">
+            <i class="fas fa-robot fa-3x text-primary"></i>
+          </div>
+          <h4 class="text-primary mb-3">LocaAI 챗봇에 오신 것을 환영합니다!</h4>
+          <p class="text-muted mb-4">상권 분석과 관련된 질문을 자유롭게 해보세요.</p>
+          <div class="row justify-content-center">
+            <div class="col-md-8">
+              <div class="card border-0 bg-light">
+                <div class="card-body p-3">
+                  <h6 class="card-title text-primary mb-2">💡 예시 질문들</h6>
+                  <ul class="list-unstyled mb-0 text-start">
+                    <li class="mb-1">• "강남역 주변 상권 분석해줘"</li>
+                    <li class="mb-1">• "홍대 근처 카페 창업하려는데 어때?"</li>
+                    <li class="mb-1">• "명동 유동인구 데이터 알려줘"</li>
+                    <li>• "서울 핫플레이스 추천해줘"</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="typingIndicator" class="message-entry typing-indicator-message" style="display: none;">
+        <div class="message-bubble">
+          답변을 생성 중입니다... 
+          <span class="spinner-border spinner-border-sm ms-1" role="status" aria-hidden="true"></span>
+        </div>
+      </div>
+
+      <div class="chat-input-area">
+        <textarea
+          id="messageInput"
+          class="form-control"
+          placeholder="메시지를 입력하세요..."
+          rows="1"
+          aria-label="메시지 입력"
+        ></textarea>
+        <button id="sendButton" class="btn btn-primary" type="button" aria-label="메시지 전송">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- ✅ JSON 데이터 스크립트: JavaScript에서 JSON.parse로 안전하게 읽을 수 있음 -->
+<!-- CSRF 토큰 (API 호출용) -->
+{% csrf_token %}
+
+<!-- 사용자 정보 JSON 데이터 -->
 {{ user_info|json_script:"user-info-data" }}
 
-<!-- ✅ DEBUG 확인용 콘솔 로그 -->
+<!-- DEBUG 확인용 콘솔 로그 -->
 <script>
-  console.log("🧪 Template user_id:", "{{ request.user.id }}");
+  console.log("🧪 Template user_id:", "{{ request.user.id|safe }}");
+  console.log("🧪 User info:", JSON.parse(document.getElementById('user-info-data').textContent));
 </script>
 {% endblock %}
 
 {% block js %}
 <script src="{% static 'js/chat_main.js' %}"></script>
+<script src="{% static 'js/chat_list.js' %}"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 {% endblock %}
