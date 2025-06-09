@@ -1,4 +1,3 @@
-# LocaAI/config/settings.py
 """
 Django settings for config project.
 
@@ -20,31 +19,46 @@ from chatbot.rag_settings import RAG_SETTINGS
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
 
-# GeoDjango 설정 - 프로젝트 내 최신 GDAL 라이브러리 사용
+# GeoDjango 설정 - SpatiaLite 지원을 위한 라이브러리 설정
 GDAL_LIBS_ROOT = os.path.join(BASE_DIR, 'gdal_libs')
 
-# GDAL 라이브러리 경로 설정
+# 1차: 프로젝트 내 gdal_libs 폴더 사용 (웹 배포용)
 if os.path.exists(GDAL_LIBS_ROOT):
-    if GDAL_LIBS_ROOT not in os.environ.get('PATH', ''):
-        os.environ['PATH'] = GDAL_LIBS_ROOT + ';' + os.environ.get('PATH', '')
+    if GDAL_LIBS_ROOT not in os.environ['PATH']:
+        os.environ['PATH'] = GDAL_LIBS_ROOT + ';' + os.environ['PATH']
     
     # PROJ 데이터베이스 경로 설정
     os.environ['PROJ_LIB'] = GDAL_LIBS_ROOT
-    
-    # PROJ 설정 최적화 (오류 방지)
-    os.environ['PROJ_NETWORK'] = 'OFF'
-    os.environ['PROJ_SKIP_READ_USER_WRITABLE_DIRECTORY'] = 'YES'
-    os.environ['PROJ_CURL_ENABLED'] = 'NO'
-    os.environ['PROJ_DEBUG'] = '0'  # 디버그 메시지 비활성화
     
     # 라이브러리 경로 설정
     GDAL_LIBRARY_PATH = os.path.join(GDAL_LIBS_ROOT, 'gdal310.dll')
     GEOS_LIBRARY_PATH = os.path.join(GDAL_LIBS_ROOT, 'geos_c.dll')
     SPATIALITE_LIBRARY_PATH = os.path.join(GDAL_LIBS_ROOT, 'mod_spatialite.dll')
     
-    print(f"[OK] 프로젝트 내 GDAL 라이브러리 사용: {GDAL_LIBS_ROOT}")
+    print(f"✅ 프로젝트 내 GDAL 라이브러리 사용: {GDAL_LIBS_ROOT}")
+    
+# 2차: OSGeo4W 폴백 (로컬 개발용)
 else:
-    print(f"[ERROR] GDAL 라이브러리를 찾을 수 없습니다: {GDAL_LIBS_ROOT}")
+    OSGEO4W_ROOT = r'C:\OSGeo4W'
+    if os.path.exists(OSGEO4W_ROOT):
+        osgeo_bin = os.path.join(OSGEO4W_ROOT, 'bin')
+        osgeo_share_proj = os.path.join(OSGEO4W_ROOT, 'share', 'proj')
+        
+        if osgeo_bin not in os.environ['PATH']:
+            os.environ['PATH'] = osgeo_bin + ';' + os.environ['PATH']
+        
+        # PROJ 데이터베이스 경로 설정
+        if os.path.exists(osgeo_share_proj):
+            os.environ['PROJ_LIB'] = osgeo_share_proj
+        
+        # 라이브러리 경로 설정
+        GDAL_LIBRARY_PATH = os.path.join(osgeo_bin, 'gdal310.dll')
+        GEOS_LIBRARY_PATH = os.path.join(osgeo_bin, 'geos_c.dll')
+        SPATIALITE_LIBRARY_PATH = os.path.join(osgeo_bin, 'mod_spatialite.dll')
+        
+        print(f"⚠️ OSGeo4W 폴백 사용 (개발용): {osgeo_bin}")
+    else:
+        print(f"❌ GDAL 라이브러리를 찾을 수 없습니다")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -68,15 +82,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django.contrib.gis",  # GeoDjango 지원 추가
+    "django.contrib.gis",  # GeoDjango 추가
     "border",
     "channels",
     "custom_auth",
     "chatbot",
-    "GeoDB",  # 지오메트리 데이터베이스 관리 앱
-    "AI_Analyzer",  # AI 상권분석 앱
-    "leaflet",  # 지도 기능 (공간정보용)
-    "taggit",   # 태그 기능 (복사된 데이터용)
+    "locai",  # frontend의 locai 앱 추가
 ]
 
 MIDDLEWARE = [
@@ -111,7 +122,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
@@ -120,8 +130,8 @@ DATABASES = {
         "ENGINE": "django.contrib.gis.db.backends.spatialite",  # SpatiaLite 엔진으로 변경
         "NAME": BASE_DIR / "db.sqlite3",
         "OPTIONS": {
-            "timeout": 60,  # 대용량 공간정보 DB를 위한 타임아웃 설정
-            "init_command": "PRAGMA journal_mode=WAL;",  # 동시성 향상
+            "timeout": 60,  # 타임아웃을 60초로 설정
+            "init_command": "PRAGMA journal_mode=WAL;",  # WAL 모드로 설정하여 동시성 향상
         },
     }
 }
@@ -145,7 +155,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
@@ -156,7 +165,6 @@ TIME_ZONE = "Asia/Seoul"
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
@@ -201,16 +209,8 @@ LOGGING = {
             "formatter": "verbose",
         },
     },
-    "loggers": {
-        # Django GIS GDAL 오류 로그 레벨 조정
-        "django.contrib.gis": {
-            "handlers": ["console"],
-            "level": "WARNING",  # ERROR 대신 WARNING으로 설정하여 GDAL 오류 억제
-            "propagate": False,
-        },
-    },
     "root": {
         "handlers": ["console"],
         "level": "DEBUG",  # 개발 시엔 DEBUG, 운영 시엔 WARNING 이상 권장
     },
-}
+} 

@@ -19,12 +19,20 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.shortcuts import redirect
+
+def root_redirect(request):
+    """루트 URL에서 GeoDB 대시보드로 리다이렉트"""
+    return redirect('/geodb/')
 
 urlpatterns = [
+    path("", root_redirect, name="root"),  # 루트 URL을 GeoDB로 리다이렉트
     path("admin/", admin.site.urls),
     path("border/", include("border.urls")),
     path("chatbot/", include("chatbot.urls")),
     path("auth/", include("custom_auth.urls", namespace="custom_auth")),
+    path("geodb/", include("GeoDB.urls")),  # GeoDB 대시보드
+    # path("ai_analyzer/", include("AI_Analyzer.urls")),  # AI 상권분석 (임시 주석)
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:

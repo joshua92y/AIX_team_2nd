@@ -11,21 +11,69 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# GeoDjango 설정 - 프로젝트 내 라이브러리 우선 사용 (웹 배포용)
+GDAL_LIBS_ROOT = os.path.join(BASE_DIR, 'gdal_libs')
+
+# 1차: 프로젝트 내 gdal_libs 폴더 사용 (웹 배포용)
+if os.path.exists(GDAL_LIBS_ROOT):
+    if GDAL_LIBS_ROOT not in os.environ['PATH']:
+        os.environ['PATH'] = GDAL_LIBS_ROOT + ';' + os.environ['PATH']
+    
+    # PROJ 데이터베이스 경로 설정 (최선의 노력)
+    os.environ['PROJ_LIB'] = GDAL_LIBS_ROOT
+    
+    # 라이브러리 경로 설정
+    GDAL_LIBRARY_PATH = os.path.join(GDAL_LIBS_ROOT, 'gdal310.dll')
+    GEOS_LIBRARY_PATH = os.path.join(GDAL_LIBS_ROOT, 'geos_c.dll')
+    SPATIALITE_LIBRARY_PATH = os.path.join(GDAL_LIBS_ROOT, 'mod_spatialite.dll')
+    
+    print(f"✅ 프로젝트 내 GDAL 라이브러리 사용: {GDAL_LIBS_ROOT}")
+    
+# 2차: OSGeo4W 폴백 (로컬 개발용)
+else:
+    OSGEO4W_ROOT = r'C:\OSGeo4W'
+    if os.path.exists(OSGEO4W_ROOT):
+        osgeo_bin = os.path.join(OSGEO4W_ROOT, 'bin')
+        osgeo_share_proj = os.path.join(OSGEO4W_ROOT, 'share', 'proj')
+        
+        if osgeo_bin not in os.environ['PATH']:
+            os.environ['PATH'] = osgeo_bin + ';' + os.environ['PATH']
+        
+        # PROJ 데이터베이스 경로 설정
+        if os.path.exists(osgeo_share_proj):
+            os.environ['PROJ_LIB'] = osgeo_share_proj
+        
+        # 라이브러리 경로 설정
+        GDAL_LIBRARY_PATH = os.path.join(osgeo_bin, 'gdal310.dll')
+        GEOS_LIBRARY_PATH = os.path.join(osgeo_bin, 'geos_c.dll')
+        SPATIALITE_LIBRARY_PATH = os.path.join(osgeo_bin, 'mod_spatialite.dll')
+        
+        print(f"⚠️ OSGeo4W 폴백 사용 (개발용): {osgeo_bin}")
+    else:
+        print(f"❌ GDAL 라이브러리를 찾을 수 없습니다")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure--g80w3em)pf8x($)+*oe9!8!u%ubjexcl2#dnre5_h-m557wxj'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure--g80w3em)pf8x($)+*oe9!8!u%ubjexcl2#dnre5_h-m557wxj')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1', 'yes', 'on')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 
 # Application definition
@@ -33,12 +81,16 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'main',
     'users',
+    'locai',  # AI Analyzer 앱 추가
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.gis',  # GeoDjango 활성화
+    'leaflet',  # django-leaflet 활성화 (pip install django-leaflet 필요)
+    'taggit',  # django-taggit 추가 (pip install django-taggit 필요)
 ]
 
 MIDDLEWARE = [
@@ -63,6 +115,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'locai.context_processors.api_keys',  # 카카오 API 키 context processor 추가
             ],
         },
     },
@@ -76,8 +129,12 @@ WSGI_APPLICATION = 'aixweb.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
+        'ENGINE': 'django.contrib.gis.db.backends.spatialite',  # SpatiaLite 엔진 사용
         'NAME': BASE_DIR / 'db.sqlite3',
+        'OPTIONS': {
+            'timeout': 60,  # 타임아웃을 60초로 설정
+            'init_command': 'PRAGMA journal_mode=WAL;',  # WAL 모드로 설정하여 동시성 향상
+        },
     }
 }
 
@@ -104,9 +161,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ko-kr'  # 한국어로 변경
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Seoul'  # 한국 시간대로 변경
 
 USE_I18N = True
 
@@ -126,3 +183,21 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Leaflet 설정
+LEAFLET_CONFIG = {
+    'DEFAULT_CENTER': (37.5665, 126.9780),  # 서울 중심 좌표
+    'DEFAULT_ZOOM': 10,
+    'MIN_ZOOM': 3,
+    'MAX_ZOOM': 18,
+    'DEFAULT_PRECISION': 6,
+    'TILES': [
+        ('OpenStreetMap', 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            'attribution': '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }),
+    ],
+}
+
+# 카카오 API 설정
+KAKAO_REST_API_KEY = os.getenv('KAKAO_REST_API_KEY', '4b3a451741a307fa3db2b9273005146a')
+KAKAO_JS_API_KEY = os.getenv('KAKAO_JS_API_KEY', '0ac2a982e676a58f9a4245749206f78b')
