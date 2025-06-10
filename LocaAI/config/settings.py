@@ -18,7 +18,26 @@ from chatbot.rag_settings import RAG_SETTINGS
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
+
+# .env 파일 로딩 개선
+env_path = BASE_DIR / '.env'
+if env_path.exists():
+    load_dotenv(env_path)
+    print(f"✅ .env 파일 로딩 완료: {env_path}")
+else:
+    print(f"⚠️  .env 파일을 찾을 수 없습니다: {env_path}")
+    # 대안 경로들 시도
+    alternative_paths = [
+        Path(__file__).resolve().parent / '.env',  # config/.env
+        Path(__file__).resolve().parent.parent.parent / '.env',  # 상위 디렉토리
+    ]
+    for alt_path in alternative_paths:
+        if alt_path.exists():
+            load_dotenv(alt_path)
+            print(f"✅ 대안 .env 파일 로딩 완료: {alt_path}")
+            break
+    else:
+        print("⚠️  .env 파일을 찾을 수 없어 시스템 환경변수만 사용합니다.")
 
 # GeoDjango 설정 - 프로젝트 내장 GDAL 라이브러리 사용
 GDAL_LIBS_ROOT = os.path.join(BASE_DIR, 'gdal_libs')
@@ -225,15 +244,34 @@ LEAFLET_CONFIG = {
     ],
 }
 
-# 카카오 API 설정 - 환경변수에서만 가져오기 (보안 개선)
+# 카카오 API 설정 - .env 파일에서 가져오기
 KAKAO_REST_API_KEY = os.getenv('KAKAO_REST_API_KEY')
 KAKAO_JS_API_KEY = os.getenv('KAKAO_JS_API_KEY')
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+QDRANT_API_KEY = os.getenv('QDRANT_API_KEY')
+DATA_API_KEY = os.getenv('DATA_API_KEY')
 
-# API 키 필수 체크 (개발 환경에서만)
-if DEBUG and not KAKAO_REST_API_KEY:
-    print("⚠️  WARNING: KAKAO_REST_API_KEY가 환경변수에 설정되지 않았습니다.")
-if DEBUG and not KAKAO_JS_API_KEY:
-    print("⚠️  WARNING: KAKAO_JS_API_KEY가 환경변수에 설정되지 않았습니다.")
+# API 키 로딩 상태 확인 (개발 환경에서만)
+if DEBUG:
+    api_keys_status = {
+        'KAKAO_REST_API_KEY': bool(KAKAO_REST_API_KEY),
+        'KAKAO_JS_API_KEY': bool(KAKAO_JS_API_KEY),
+        'OPENAI_API_KEY': bool(OPENAI_API_KEY),
+        'QDRANT_API_KEY': bool(QDRANT_API_KEY),
+        'DATA_API_KEY': bool(DATA_API_KEY),
+    }
+    
+    print("🔑 API 키 로딩 상태:")
+    for key, loaded in api_keys_status.items():
+        status = "✅ 로딩됨" if loaded else "❌ 누락"
+        print(f"   {key}: {status}")
+    
+    # 누락된 키가 있으면 경고
+    missing_keys = [key for key, loaded in api_keys_status.items() if not loaded]
+    if missing_keys:
+        print(f"⚠️  누락된 API 키: {', '.join(missing_keys)}")
+        print(f"   .env 파일 위치: {BASE_DIR / '.env'}")
+        print("   API_KEYS_SETUP.md 파일을 참고하여 API 키를 설정해주세요.")
 
 LOGGING = {
     "version": 1,

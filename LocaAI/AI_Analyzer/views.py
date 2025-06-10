@@ -174,10 +174,10 @@ def get_coordinates(request):
         if not address:
             return JsonResponse({'error': '주소가 필요합니다.'}, status=400)
         
-        # 카카오맵 API로 좌표 가져오기 - 환경변수에서 API 키 가져오기
-        kakao_api_key = os.getenv('KAKAO_REST_API_KEY') or settings.KAKAO_REST_API_KEY
+        # 카카오맵 API로 좌표 가져오기 - .env 파일에서 API 키 가져오기
+        kakao_api_key = settings.KAKAO_REST_API_KEY
         if not kakao_api_key:
-            return JsonResponse({'error': 'Kakao API 키가 설정되지 않았습니다.'}, status=500)
+            return JsonResponse({'error': 'Kakao API 키가 .env 파일에 설정되지 않았습니다.'}, status=500)
             
         url = 'https://dapi.kakao.com/v2/local/search/address.json'
         headers = {'Authorization': f'KakaoAK {kakao_api_key}'}
