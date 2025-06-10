@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from locai.models import BusinessType
+from AI_Analyzer.models import BusinessType
 
 
 class Command(BaseCommand):
