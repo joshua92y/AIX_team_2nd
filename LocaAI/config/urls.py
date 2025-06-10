@@ -31,12 +31,17 @@ urlpatterns = [
     path("", include("main.urls")),  # 루트 URL을 main 앱으로 설정
     path("admin/", admin.site.urls),
     path("admin/geodb/transform-coordinates/", transform_coordinates, name='admin_transform_coordinates'),  # 좌표 변환 API
-    path("border/", include("border.urls")),
-    path("chatbot/", include("chatbot.urls")),
+    path("border/", include("border.urls", namespace="border")),
+    path("chatbot/", include("chatbot.urls", namespace="chatbot")),
     path("auth/", include("custom_auth.urls", namespace="custom_auth")),
-    path("geodb/", include("GeoDB.urls")),  # GeoDB 대시보드
-    path("ai_analyzer/", include("AI_Analyzer.urls")),  # AI 상권분석
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path("geodb/", include("GeoDB.urls", namespace="geodb")),  # GeoDB 대시보드
+    path("ai_analyzer/", include("AI_Analyzer.urls", namespace="AI_Analyzer")),  # AI 상권분석
+]
 
+# 개발 환경에서 정적 파일 및 미디어 파일 서빙
 if settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+    # 정적 파일 서빙 (개발 환경)
+    urlpatterns += staticfiles_urlpatterns()
+    # 미디어 파일 서빙
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

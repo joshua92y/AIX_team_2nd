@@ -4,153 +4,269 @@
 {% block title %}{{ post.title }} - LocaAI{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    {% if show_password_form %}
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">비밀번호 확인</h5>
-                </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            <label for="password" class="form-label">비밀번호</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
-                        </div>
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">확인</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% else %}
-    <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">{{ post.title }}</h5>
-            <div>
-                {% if post.author %}
-                    <span class="text-muted">작성자: {{ post.author.username }}</span>
-                {% else %}
-                    <span class="text-muted">작성자: {{ post.guest_name }}</span>
-                {% endif %}
-                <span class="text-muted ms-3">작성일: {{ post.created_at|date:"Y-m-d H:i" }}</span>
-                <span class="text-muted ms-3">조회수: {{ post.views }}</span>
-            </div>
-        </div>
-        <div class="card-body">
-            <p class="card-text">{{ post.description|linebreaks }}</p>
-            
-            {% if post.thumbnail %}
-            <div class="mt-3">
-                <img src="{{ post.thumbnail.url }}" alt="썸네일" class="img-fluid">
-            </div>
-            {% endif %}
-            
-            {% if post.file %}
-            <div class="mt-3">
-                <a href="{{ post.file.url }}" class="btn btn-secondary" download>첨부파일 다운로드</a>
-            </div>
-            {% endif %}
-        </div>
-        <div class="card-footer">
-            <div class="d-flex justify-content-between">
-                <div>
-                    <a href="{% if post.board_type == 'inquiry' %}{% url 'border:inquiry_list' %}{% else %}{% url 'border:notice_list' %}{% endif %}" class="btn btn-secondary">목록</a>
-                </div>
-                <div>
-                    {% if post.author == request.user or request.user.role == 'admin' or not post.author %}
-                        <a href="{% url 'border:post_update' pk=post.pk %}" class="btn btn-primary">수정</a>
-                        <a href="{% url 'border:post_delete' pk=post.pk %}" class="btn btn-danger">삭제</a>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
+<style>
+.post-hero {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 80px 0;
+    margin-top: -80px;
+    padding-top: 160px;
+}
+.post-card {
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    border: none;
+    margin-bottom: 2rem;
+}
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 10px;
+    padding: 12px 30px;
+    font-weight: 600;
+}
+.btn-secondary {
+    background: #6c757d;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 30px;
+    font-weight: 600;
+}
+.btn-danger {
+    background: #dc3545;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 30px;
+    font-weight: 600;
+}
+.comment-item {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-left: 4px solid #667eea;
+}
+.post-meta {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+}
+</style>
 
-    <!-- 댓글 목록 -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="mb-0">댓글 ({{ comments|length }})</h5>
-        </div>
-        <div class="card-body">
-            {% for comment in comments %}
-            <div class="comment mb-3">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        {% if comment.author %}
-                            <strong>{{ comment.author.username }}</strong>
-                        {% else %}
-                            <strong>{{ comment.guest_name }}</strong>
-                        {% endif %}
-                        <small class="text-muted ms-2">{{ comment.created_at|date:"Y-m-d H:i" }}</small>
-                    </div>
-                    <div>
-                        {% if comment.author == request.user or request.user.role == 'admin' or not comment.author %}
-                            <a href="{% url 'border:comment_delete' pk=comment.pk %}" class="btn btn-sm btn-danger">삭제</a>
-                        {% endif %}
-                    </div>
-                </div>
-                <p class="mt-2 mb-0">{{ comment.content|linebreaks }}</p>
+<!-- Hero Section -->
+<section class="post-hero">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 data-aos="fade-up">
+                    <i class="fas fa-file-alt me-3"></i>{{ post.title }}
+                </h1>
+                <p class="lead" data-aos="fade-up" data-aos-delay="100">
+                    {% if post.board_type == 'inquiry' %}문의 게시판{% else %}공지사항{% endif %}
+                </p>
             </div>
-            {% empty %}
-            <p class="text-muted">댓글이 없습니다.</p>
-            {% endfor %}
         </div>
     </div>
+</section>
 
-    <!-- 댓글 작성 폼 -->
-    <div class="card">
-        <div class="card-header">
-            <h5 class="mb-0">댓글 작성</h5>
-        </div>
-        <div class="card-body">
-            <form method="post">
-                {% csrf_token %}
-                {% if not request.user.is_authenticated %}
-                <div class="mb-3">
-                    <label for="{{ comment_form.guest_name.id_for_label }}" class="form-label">{{ comment_form.guest_name.label }}</label>
-                    {{ comment_form.guest_name }}
-                    {% if comment_form.guest_name.errors %}
-                    <div class="text-danger">
-                        {% for error in comment_form.guest_name.errors %}
-                            {{ error }}
-                        {% endfor %}
+<section class="py-5">
+    <div class="container">
+        {% if show_password_form %}
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="post-card card">
+                    <div class="card-header bg-transparent border-0">
+                        <h5 class="mb-0">
+                            <i class="fas fa-lock me-2"></i>비밀번호 확인
+                        </h5>
                     </div>
-                    {% endif %}
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="password" class="form-label">비밀번호</label>
+                                <input type="password" class="form-control" id="password" name="password" required style="border-radius: 10px;">
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">확인</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label for="{{ comment_form.guest_password.id_for_label }}" class="form-label">{{ comment_form.guest_password.label }}</label>
-                    {{ comment_form.guest_password }}
-                    {% if comment_form.guest_password.errors %}
-                    <div class="text-danger">
-                        {% for error in comment_form.guest_password.errors %}
-                            {{ error }}
-                        {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        
+        <!-- 게시글 내용 -->
+        <div class="post-card card">
+            <div class="card-header bg-transparent border-0">
+                <h3 class="mb-3">{{ post.title }}</h3>
+                <div class="post-meta">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <i class="fas fa-user me-2"></i>
+                            {% if post.author %}
+                                <strong>{{ post.author.username }}</strong>
+                            {% else %}
+                                <strong>{{ post.guest_name }}</strong>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-3">
+                            <i class="fas fa-calendar me-2"></i>
+                            {{ post.created_at|date:"Y-m-d H:i" }}
+                        </div>
+                        <div class="col-md-3">
+                            <i class="fas fa-eye me-2"></i>
+                            조회 {{ post.views }}
+                        </div>
                     </div>
-                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body p-4">
+                <div class="post-content">
+                    {{ post.description|linebreaks }}
+                </div>
+                
+                {% if post.thumbnail %}
+                <div class="mt-4">
+                    <img src="{{ post.thumbnail.url }}" alt="썸네일" class="img-fluid rounded">
                 </div>
                 {% endif %}
-                <div class="mb-3">
-                    <label for="{{ comment_form.content.id_for_label }}" class="form-label">{{ comment_form.content.label }}</label>
-                    {{ comment_form.content }}
-                    {% if comment_form.content.errors %}
-                    <div class="text-danger">
-                        {% for error in comment_form.content.errors %}
-                            {{ error }}
-                        {% endfor %}
+                
+                {% if post.file %}
+                <div class="mt-4">
+                    <a href="{{ post.file.url }}" class="btn btn-secondary" download>
+                        <i class="fas fa-download me-2"></i>첨부파일 다운로드
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <a href="{% if post.board_type == 'inquiry' %}{% url 'border:inquiry_list' %}{% else %}{% url 'border:notice_list' %}{% endif %}" class="btn btn-secondary">
+                            <i class="fas fa-list me-2"></i>목록
+                        </a>
+                    </div>
+                    <div>
+                        {% if post.author == request.user or request.user.role == 'admin' or not post.author %}
+                            <a href="{% url 'border:post_update' pk=post.pk %}" class="btn btn-primary">
+                                <i class="fas fa-edit me-2"></i>수정
+                            </a>
+                            <a href="{% url 'border:post_delete' pk=post.pk %}" class="btn btn-danger">
+                                <i class="fas fa-trash me-2"></i>삭제
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 댓글 목록 -->
+        <div class="post-card card">
+            <div class="card-header bg-transparent border-0">
+                <h5 class="mb-0">
+                    <i class="fas fa-comments me-2"></i>댓글 ({{ comments|length }})
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                {% for comment in comments %}
+                <div class="comment-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <strong>
+                                {% if comment.author %}
+                                    <i class="fas fa-user me-1"></i>{{ comment.author.username }}
+                                {% else %}
+                                    <i class="fas fa-user-circle me-1"></i>{{ comment.guest_name }}
+                                {% endif %}
+                            </strong>
+                            <small class="text-muted ms-2">
+                                <i class="fas fa-clock me-1"></i>{{ comment.created_at|date:"Y-m-d H:i" }}
+                            </small>
+                        </div>
+                        <div>
+                            {% if comment.author == request.user or request.user.role == 'admin' or not comment.author %}
+                                <a href="{% url 'border:comment_delete' pk=comment.pk %}" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <p class="mt-2 mb-0">{{ comment.content|linebreaks }}</p>
+                </div>
+                {% empty %}
+                <div class="text-center py-4">
+                    <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">첫 번째 댓글을 작성해보세요!</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- 댓글 작성 폼 -->
+        <div class="post-card card">
+            <div class="card-header bg-transparent border-0">
+                <h5 class="mb-0">
+                    <i class="fas fa-pencil-alt me-2"></i>댓글 작성
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    {% if not request.user.is_authenticated %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ comment_form.guest_name.id_for_label }}" class="form-label">
+                                <i class="fas fa-user me-1"></i>{{ comment_form.guest_name.label }}
+                            </label>
+                            {{ comment_form.guest_name }}
+                            {% if comment_form.guest_name.errors %}
+                            <div class="text-danger">
+                                {% for error in comment_form.guest_name.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ comment_form.guest_password.id_for_label }}" class="form-label">
+                                <i class="fas fa-lock me-1"></i>{{ comment_form.guest_password.label }}
+                            </label>
+                            {{ comment_form.guest_password }}
+                            {% if comment_form.guest_password.errors %}
+                            <div class="text-danger">
+                                {% for error in comment_form.guest_password.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
                     {% endif %}
-                </div>
-                <button type="submit" class="btn btn-primary">댓글 작성</button>
-            </form>
+                    <div class="mb-3">
+                        <label for="{{ comment_form.content.id_for_label }}" class="form-label">
+                            <i class="fas fa-comment me-1"></i>{{ comment_form.content.label }}
+                        </label>
+                        {{ comment_form.content }}
+                        {% if comment_form.content.errors %}
+                        <div class="text-danger">
+                            {% for error in comment_form.content.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-2"></i>댓글 작성
+                    </button>
+                </form>
+            </div>
         </div>
+        {% endif %}
     </div>
-    {% endif %}
-</div>
+</section>
 {% endblock %}
 
 {% block js %}

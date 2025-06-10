@@ -5,99 +5,161 @@
     {% if board_type == 'inquiry' %}문의 게시판{% else %}공지사항{% endif %} - LocaAI
 {% endblock %}
 
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/board.css' %}">
-{% endblock %}
-
 {% block content %}
-<div class="container mt-4">
-    <div class="board-header d-flex justify-content-between align-items-center mb-4">
-        <h2>{% if board_type == 'inquiry' %}문의 게시판{% else %}공지사항{% endif %}</h2>
-        {% if board_type == 'inquiry' or user.is_staff %}
-        <a href="{% url 'border:post_create' board_type %}" class="btn btn-primary">
-            <i class="fas fa-pen"></i> 글쓰기
-        </a>
-        {% endif %}
-    </div>
+<style>
+.board-hero {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 80px 0;
+    margin-top: -80px;
+    padding-top: 160px;
+}
+.board-card {
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    border: none;
+}
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 10px;
+    padding: 12px 30px;
+    font-weight: 600;
+}
+.table th {
+    background: #f8f9fa;
+    border: none;
+    font-weight: 600;
+    color: #495057;
+}
+.table td {
+    border: none;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+}
+.table tbody tr:hover {
+    background: #f8f9fa;
+}
+</style>
 
-    <!-- 검색 폼 -->
-    <form method="get" class="mb-4">
-        <div class="input-group">
-            <input type="text" name="search" class="form-control" placeholder="검색어를 입력하세요" value="{{ request.GET.search }}">
-            <button type="submit" class="btn btn-outline-secondary">
-                <i class="fas fa-search"></i> 검색
-            </button>
+<!-- Hero Section -->
+<section class="board-hero">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 data-aos="fade-up">
+                    <i class="fas fa-comments me-3"></i>
+                    {% if board_type == 'inquiry' %}문의 게시판{% else %}공지사항{% endif %}
+                </h1>
+                <p class="lead" data-aos="fade-up" data-aos-delay="100">
+                    {% if board_type == 'inquiry' %}
+                    궁금한 점이나 문의사항을 남겨주세요
+                    {% else %}
+                    중요한 공지사항을 확인하세요
+                    {% endif %}
+                </p>
+            </div>
         </div>
-    </form>
-
-    <!-- 게시글 목록 -->
-    <div class="table-responsive">
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th style="width: 10%">번호</th>
-                    <th style="width: 50%">제목</th>
-                    <th style="width: 15%">작성자</th>
-                    <th style="width: 15%">작성일</th>
-                    <th style="width: 10%">조회</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for post in posts %}
-                <tr>
-                    <td>{{ post.id }}</td>
-                    <td>
-                        <a href="{% url 'border:post_detail' post.id %}" class="text-decoration-none">
-                            {{ post.title }}
-                            {% if post.is_private %}
-                            <i class="fas fa-lock text-muted"></i>
-                            {% endif %}
-                        </a>
-                    </td>
-                    <td>{{ post.display_name }}</td>
-                    <td>{{ post.created_at|date:"Y-m-d" }}</td>
-                    <td>{{ post.views }}</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5" class="text-center py-4">
-                        <p class="text-muted mb-0">게시글이 없습니다.</p>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
     </div>
+</section>
 
-    <!-- 페이지네이션 -->
-    {% if posts.has_other_pages %}
-    <nav aria-label="Page navigation" class="mt-4">
-        <ul class="pagination justify-content-center">
-            {% if posts.has_previous %}
-            <li class="page-item">
-                <a class="page-link" href="?page={{ posts.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" aria-label="Previous">
-                    <span aria-hidden="true">&laquo;</span>
-                </a>
-            </li>
-            {% endif %}
+<section class="py-5">
+    <div class="container">
+        <div class="board-card card">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="mb-0">
+                        {% if board_type == 'inquiry' %}문의 게시판{% else %}공지사항{% endif %}
+                    </h3>
+                    {% if board_type == 'inquiry' or user.is_staff %}
+                    <a href="{% url 'border:post_create' board_type %}" class="btn btn-primary">
+                        <i class="fas fa-pen me-2"></i> 글쓰기
+                    </a>
+                    {% endif %}
+                </div>
 
-            {% for num in posts.paginator.page_range %}
-            <li class="page-item {% if posts.number == num %}active{% endif %}">
-                <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ num }}</a>
-            </li>
-            {% endfor %}
+                <!-- 검색 폼 -->
+                <form method="get" class="mb-4">
+                    <div class="input-group">
+                        <input type="text" name="search" class="form-control" placeholder="검색어를 입력하세요" value="{{ request.GET.search }}" style="border-radius: 10px 0 0 10px;">
+                        <button type="submit" class="btn btn-outline-primary" style="border-radius: 0 10px 10px 0;">
+                            <i class="fas fa-search me-1"></i> 검색
+                        </button>
+                    </div>
+                </form>
 
-            {% if posts.has_next %}
-            <li class="page-item">
-                <a class="page-link" href="?page={{ posts.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" aria-label="Next">
-                    <span aria-hidden="true">&raquo;</span>
-                </a>
-            </li>
-            {% endif %}
-        </ul>
-    </nav>
-    {% endif %}
-</div>
+                <!-- 게시글 목록 -->
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th style="width: 10%">번호</th>
+                                <th style="width: 50%">제목</th>
+                                <th style="width: 15%">작성자</th>
+                                <th style="width: 15%">작성일</th>
+                                <th style="width: 10%">조회</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for post in posts %}
+                            <tr>
+                                <td>{{ post.id }}</td>
+                                <td>
+                                    <a href="{% url 'border:post_detail' post.id %}" class="text-decoration-none text-dark">
+                                        {{ post.title }}
+                                        {% if post.is_private %}
+                                        <i class="fas fa-lock text-muted ms-1"></i>
+                                        {% endif %}
+                                    </a>
+                                </td>
+                                <td>{{ post.display_name }}</td>
+                                <td>{{ post.created_at|date:"Y-m-d" }}</td>
+                                <td><span class="badge bg-light text-dark">{{ post.views }}</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5">
+                                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted mb-0">게시글이 없습니다.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 페이지네이션 -->
+                {% if posts.has_other_pages %}
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if posts.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ posts.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        {% for num in posts.paginator.page_range %}
+                        <li class="page-item {% if posts.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ num }}</a>
+                        </li>
+                        {% endfor %}
+
+                        {% if posts.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ posts.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}
 
 {% block js %}

@@ -4,6 +4,105 @@
 
 {% block content %}
 
+<style>
+    .hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        margin-top: -80px;
+        padding-top: 160px;
+    }
+    
+    .hero h1 {
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+    }
+    
+    .hero p {
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .btn-get-started {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        padding: 12px 30px;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-get-started:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .btn-watch-video {
+        color: white;
+        text-decoration: none;
+        font-weight: 600;
+    }
+    
+    .btn-watch-video:hover {
+        color: white;
+    }
+    
+    .card {
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        border: none;
+        transition: transform 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .btn-read-more {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 12px 30px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-read-more:hover {
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .section-title h2 {
+        color: #2d3748;
+        font-weight: 700;
+    }
+    
+    .feature-box {
+        background: rgba(102, 126, 234, 0.1);
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .feature-box i {
+        color: #667eea;
+        font-size: 1.2rem;
+        margin-right: 10px;
+    }
+    
+    .stats-item {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+</style>
+
     <!-- Hero Section -->
     <section id="hero" class="hero section">
 
@@ -13,8 +112,8 @@
             <h1 data-aos="fade-up">빅데이터 기반 상권분석과 <br> 생존률 예측, 단 한 번의 클릭으로!</h1>
             <p data-aos="fade-up" data-aos-delay="100">소상공인을 위한 맞춤 AI 비즈니스 솔루션</p>
             <div class="d-flex flex-column flex-md-row" data-aos="fade-up" data-aos-delay="200">
-              <a href="#about" class="btn-get-started">Get Started <i class="bi bi-arrow-right"></i></a>
-              <a href="https://www.youtube.com/watch?v=Y7f98aduVJ8" class="glightbox btn-watch-video d-flex align-items-center justify-content-center ms-0 ms-md-4 mt-4 mt-md-0"><i class="bi bi-play-circle"></i><span>Watch Video</span></a>
+              <a href="#about" class="btn-get-started">Get Started <i class="bi bi-arrow-right ms-2"></i></a>
+              <a href="https://www.youtube.com/watch?v=Y7f98aduVJ8" class="glightbox btn-watch-video d-flex align-items-center justify-content-center ms-0 ms-md-4 mt-4 mt-md-0"><i class="bi bi-play-circle me-2"></i><span>Watch Video</span></a>
             </div>
           </div>
           <div class="col-lg-6 order-1 order-lg-2 hero-img" data-aos="zoom-out">
@@ -33,22 +132,22 @@
 
           <div class="col-lg-6 d-flex flex-column justify-content-center" data-aos="fade-up" data-aos-delay="200">
             <div class="content">
-              <h3>Who We Are</h3>
+              <h3 style="color: #667eea; font-weight: 600;">Who We Are</h3>
               <h2>감에 의존한 창업, 이제는 그만.</h2>
               <p>
                 우리는 창업자에게 빅데이터를 통해 말하는 상권 분석 레포트를 제공합니다. <br> 경쟁률, 유사 업종 분포, 생존률 예측까지, 창업자와 함께 고민해주는 동반자가 우리의 목표입니다.
               </p>
               <div class="text-center text-lg-start">
-                <a href="#" class="btn-read-more d-inline-flex align-items-center justify-content-center align-self-center">
-                  <span>Read More</span>
-                  <i class="bi bi-arrow-right"></i>
+                <a href="{% url 'AI_Analyzer:index' %}" class="btn-read-more d-inline-flex align-items-center justify-content-center align-self-center">
+                  <span>AI 분석 시작하기</span>
+                  <i class="bi bi-arrow-right ms-2"></i>
                 </a>
               </div>
             </div>
           </div>
 
           <div class="col-lg-6 d-flex align-items-center" data-aos="zoom-out" data-aos-delay="200">
-            <img src="{% static 'assets/img/about.jpg' %}" class="img-fluid" alt="">
+            <img src="{% static 'assets/img/about.jpg' %}" class="img-fluid" style="border-radius: 15px;" alt="">
           </div>
 
         </div>
@@ -89,7 +188,7 @@
             <div class="card">
               <img src="{% static 'assets/img/values-3.png' %}" class="img-fluid" alt="">
               <h3>설명 가능한 AI</h3>
-              <p>단순 숫자 예측이 아니라 “왜 그런지”까지 설명</p>
+              <p>단순 숫자 예측이 아니라 "왜 그런지"까지 설명</p>
             </div>
           </div><!-- End Card Item -->
 
@@ -340,7 +439,7 @@
                   <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
                 </div>
                 <p>
-                  “단순한 리포트가 아니라, 제 창업 아이디어를 점검해주는 파트너 같았어요.”
+                  "단순한 리포트가 아니라, 제 창업 아이디어를 점검해주는 파트너 같았어요."
                 </p>
                 <div class="profile mt-auto">
                   <img src="{% static 'assets/img/testimonials/testimonials-1.png' %}" class="testimonial-img" alt="">
@@ -356,7 +455,7 @@
                   <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
                 </div>
                 <p>
-                  “동네를 바꿔가며 업종을 추천받을 수 있어서 매우 현실적이에요.”
+                  "동네를 바꿔가며 업종을 추천받을 수 있어서 매우 현실적이에요."
                 </p>
                 <div class="profile mt-auto">
                   <img src="{% static 'assets/img/testimonials/testimonials-2.png' %}" class="testimonial-img" alt="">
@@ -372,7 +471,7 @@
                   <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
                 </div>
                 <p>
-                  “단순한 리포트가 아니라, 제 창업 아이디어를 점검해주는 파트너 같았어요.”
+                  "단순한 리포트가 아니라, 제 창업 아이디어를 점검해주는 파트너 같았어요."
                 </p>
                 <div class="profile mt-auto">
                   <img src="{% static 'assets/img/testimonials/testimonials-1.png' %}" class="testimonial-img" alt="">
@@ -388,7 +487,7 @@
                   <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
                 </div>
                 <p>
-                  “동네를 바꿔가며 업종을 추천받을 수 있어서 매우 현실적이에요.”
+                  "동네를 바꿔가며 업종을 추천받을 수 있어서 매우 현실적이에요."
                 </p>
                 <div class="profile mt-auto">
                   <img src="{% static 'assets/img/testimonials/testimonials-2.png' %}" class="testimonial-img" alt="">
