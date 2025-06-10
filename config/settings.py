@@ -19,46 +19,22 @@ from chatbot.rag_settings import RAG_SETTINGS
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
 
-# GeoDjango 설정 - SpatiaLite 지원을 위한 라이브러리 설정
+# GeoDjango 설정 - 프로젝트 내장 GDAL 라이브러리 사용
 GDAL_LIBS_ROOT = os.path.join(BASE_DIR, 'gdal_libs')
 
-# 1차: 프로젝트 내 gdal_libs 폴더 사용 (웹 배포용)
-if os.path.exists(GDAL_LIBS_ROOT):
-    if GDAL_LIBS_ROOT not in os.environ['PATH']:
-        os.environ['PATH'] = GDAL_LIBS_ROOT + ';' + os.environ['PATH']
-    
-    # PROJ 데이터베이스 경로 설정
-    os.environ['PROJ_LIB'] = GDAL_LIBS_ROOT
-    
-    # 라이브러리 경로 설정
-    GDAL_LIBRARY_PATH = os.path.join(GDAL_LIBS_ROOT, 'gdal310.dll')
-    GEOS_LIBRARY_PATH = os.path.join(GDAL_LIBS_ROOT, 'geos_c.dll')
-    SPATIALITE_LIBRARY_PATH = os.path.join(GDAL_LIBS_ROOT, 'mod_spatialite.dll')
-    
-    print(f"✅ 프로젝트 내 GDAL 라이브러리 사용: {GDAL_LIBS_ROOT}")
-    
-# 2차: OSGeo4W 폴백 (로컬 개발용)
-else:
-    OSGEO4W_ROOT = r'C:\OSGeo4W'
-    if os.path.exists(OSGEO4W_ROOT):
-        osgeo_bin = os.path.join(OSGEO4W_ROOT, 'bin')
-        osgeo_share_proj = os.path.join(OSGEO4W_ROOT, 'share', 'proj')
-        
-        if osgeo_bin not in os.environ['PATH']:
-            os.environ['PATH'] = osgeo_bin + ';' + os.environ['PATH']
-        
-        # PROJ 데이터베이스 경로 설정
-        if os.path.exists(osgeo_share_proj):
-            os.environ['PROJ_LIB'] = osgeo_share_proj
-        
-        # 라이브러리 경로 설정
-        GDAL_LIBRARY_PATH = os.path.join(osgeo_bin, 'gdal310.dll')
-        GEOS_LIBRARY_PATH = os.path.join(osgeo_bin, 'geos_c.dll')
-        SPATIALITE_LIBRARY_PATH = os.path.join(osgeo_bin, 'mod_spatialite.dll')
-        
-        print(f"⚠️ OSGeo4W 폴백 사용 (개발용): {osgeo_bin}")
-    else:
-        print(f"❌ GDAL 라이브러리를 찾을 수 없습니다")
+# GDAL 라이브러리 경로 설정
+if GDAL_LIBS_ROOT not in os.environ['PATH']:
+    os.environ['PATH'] = GDAL_LIBS_ROOT + ';' + os.environ['PATH']
+
+# PROJ 데이터베이스 경로 설정
+os.environ['PROJ_LIB'] = GDAL_LIBS_ROOT
+
+# 라이브러리 경로 설정
+GDAL_LIBRARY_PATH = os.path.join(GDAL_LIBS_ROOT, 'gdal310.dll')
+GEOS_LIBRARY_PATH = os.path.join(GDAL_LIBS_ROOT, 'geos_c.dll')
+SPATIALITE_LIBRARY_PATH = os.path.join(GDAL_LIBS_ROOT, 'mod_spatialite.dll')
+
+print(f"✅ 프로젝트 내장 GDAL 라이브러리 사용: {GDAL_LIBS_ROOT}")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -87,7 +63,6 @@ INSTALLED_APPS = [
     "channels",
     "custom_auth",
     "chatbot",
-    "locai",  # frontend의 locai 앱 추가
 ]
 
 MIDDLEWARE = [

@@ -20,51 +20,28 @@ from chatbot.rag_settings import RAG_SETTINGS
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
 
-# GeoDjango 설정 - 프로젝트 내 최신 GDAL 라이브러리 사용
+# GeoDjango 설정 - 프로젝트 내장 GDAL 라이브러리 사용
 GDAL_LIBS_ROOT = os.path.join(BASE_DIR, 'gdal_libs')
 
-# GDAL 라이브러리 경로 설정 (개선된 버전 - OSGeo4W 폴백 포함)
-if os.path.exists(GDAL_LIBS_ROOT):
-    if GDAL_LIBS_ROOT not in os.environ.get('PATH', ''):
-        os.environ['PATH'] = GDAL_LIBS_ROOT + ';' + os.environ.get('PATH', '')
-    
-    # PROJ 데이터베이스 경로 설정
-    os.environ['PROJ_LIB'] = GDAL_LIBS_ROOT
-    
-    # PROJ 설정 최적화 (오류 방지)
-    os.environ['PROJ_NETWORK'] = 'OFF'
-    os.environ['PROJ_SKIP_READ_USER_WRITABLE_DIRECTORY'] = 'YES'
-    os.environ['PROJ_CURL_ENABLED'] = 'NO'
-    os.environ['PROJ_DEBUG'] = '0'  # 디버그 메시지 비활성화
-    
-    # 라이브러리 경로 설정
-    GDAL_LIBRARY_PATH = os.path.join(GDAL_LIBS_ROOT, 'gdal310.dll')
-    GEOS_LIBRARY_PATH = os.path.join(GDAL_LIBS_ROOT, 'geos_c.dll')
-    SPATIALITE_LIBRARY_PATH = os.path.join(GDAL_LIBS_ROOT, 'mod_spatialite.dll')
-    
-    print(f"[OK] 프로젝트 내 GDAL 라이브러리 사용: {GDAL_LIBS_ROOT}")
-else:
-    # OSGeo4W 폴백 (로컬 개발용)
-    OSGEO4W_ROOT = r'C:\OSGeo4W'
-    if os.path.exists(OSGEO4W_ROOT):
-        osgeo_bin = os.path.join(OSGEO4W_ROOT, 'bin')
-        osgeo_share_proj = os.path.join(OSGEO4W_ROOT, 'share', 'proj')
-        
-        if osgeo_bin not in os.environ.get('PATH', ''):
-            os.environ['PATH'] = osgeo_bin + ';' + os.environ.get('PATH', '')
-        
-        # PROJ 데이터베이스 경로 설정
-        if os.path.exists(osgeo_share_proj):
-            os.environ['PROJ_LIB'] = osgeo_share_proj
-        
-        # 라이브러리 경로 설정
-        GDAL_LIBRARY_PATH = os.path.join(osgeo_bin, 'gdal310.dll')
-        GEOS_LIBRARY_PATH = os.path.join(osgeo_bin, 'geos_c.dll')
-        SPATIALITE_LIBRARY_PATH = os.path.join(osgeo_bin, 'mod_spatialite.dll')
-        
-        print(f"[WARNING] OSGeo4W 폴백 사용 (개발용): {osgeo_bin}")
-    else:
-        print(f"[ERROR] GDAL 라이브러리를 찾을 수 없습니다: {GDAL_LIBS_ROOT}")
+# GDAL 라이브러리 경로 설정
+if GDAL_LIBS_ROOT not in os.environ.get('PATH', ''):
+    os.environ['PATH'] = GDAL_LIBS_ROOT + ';' + os.environ.get('PATH', '')
+
+# PROJ 데이터베이스 경로 설정
+os.environ['PROJ_LIB'] = GDAL_LIBS_ROOT
+
+# PROJ 설정 최적화 (오류 방지)
+os.environ['PROJ_NETWORK'] = 'OFF'
+os.environ['PROJ_SKIP_READ_USER_WRITABLE_DIRECTORY'] = 'YES'
+os.environ['PROJ_CURL_ENABLED'] = 'NO'
+os.environ['PROJ_DEBUG'] = '0'  # 디버그 메시지 비활성화
+
+# 라이브러리 경로 설정
+GDAL_LIBRARY_PATH = os.path.join(GDAL_LIBS_ROOT, 'gdal310.dll')
+GEOS_LIBRARY_PATH = os.path.join(GDAL_LIBS_ROOT, 'geos_c.dll')
+SPATIALITE_LIBRARY_PATH = os.path.join(GDAL_LIBS_ROOT, 'mod_spatialite.dll')
+
+print(f"[OK] 프로젝트 내장 GDAL 라이브러리 사용: {GDAL_LIBS_ROOT}")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
