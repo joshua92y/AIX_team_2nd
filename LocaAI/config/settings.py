@@ -23,70 +23,50 @@ load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
 # GeoDjango 설정 - 프로젝트 내장 GDAL 라이브러리 사용
 GDAL_LIBS_ROOT = os.path.join(BASE_DIR, 'gdal_libs')
 
-# 🔧 개선된 GDAL 라이브러리 설정 (팀원 환경 호환성 강화)
-def setup_gdal_environment():
-    """GDAL 환경을 안전하게 설정하는 함수"""
-    try:
-        if os.path.exists(GDAL_LIBS_ROOT):
-            # PATH 환경변수에 추가 (Windows 경로 구분자 사용)
-            current_path = os.environ.get('PATH', '')
-            if GDAL_LIBS_ROOT not in current_path:
-                os.environ['PATH'] = GDAL_LIBS_ROOT + ';' + current_path
-            
-            # PROJ 설정 (필수)
-            os.environ['PROJ_LIB'] = GDAL_LIBS_ROOT
-            os.environ['PROJ_NETWORK'] = 'OFF'
-            os.environ['PROJ_SKIP_READ_USER_WRITABLE_DIRECTORY'] = 'YES'
-            os.environ['PROJ_CURL_ENABLED'] = 'NO'
-            os.environ['PROJ_DEBUG'] = '0'
-            
-            # GDAL 추가 설정 (안정성 향상)
-            os.environ['GDAL_DATA'] = GDAL_LIBS_ROOT
-            os.environ['GDAL_DRIVER_PATH'] = GDAL_LIBS_ROOT
-            
-            # 라이브러리 경로 탐지 (여러 버전 지원)
-            gdal_patterns = ['gdal*.dll', 'libgdal*.dll']
-            geos_patterns = ['geos_c.dll', 'libgeos_c*.dll']
-            spatialite_patterns = ['mod_spatialite.dll', 'libspatialite*.dll']
-            
-            def find_dll(patterns):
-                for pattern in patterns:
-                    import glob
-                    matches = glob.glob(os.path.join(GDAL_LIBS_ROOT, pattern))
-                    if matches:
-                        return matches[0]
-                return None
-            
-            # DLL 경로 설정
-            gdal_dll = find_dll(gdal_patterns)
-            geos_dll = find_dll(geos_patterns)
-            spatialite_dll = find_dll(spatialite_patterns)
-            
-            if gdal_dll and os.path.exists(gdal_dll):
-                globals()['GDAL_LIBRARY_PATH'] = gdal_dll
-            if geos_dll and os.path.exists(geos_dll):
-                globals()['GEOS_LIBRARY_PATH'] = geos_dll
-            if spatialite_dll and os.path.exists(spatialite_dll):
-                globals()['SPATIALITE_LIBRARY_PATH'] = spatialite_dll
-            
-            print(f"[OK] 프로젝트 내장 GDAL 라이브러리 사용: {GDAL_LIBS_ROOT}")
-            return True
-        else:
-            print(f"[WARNING] GDAL 라이브러리 폴더가 존재하지 않습니다: {GDAL_LIBS_ROOT}")
-            return False
-    except Exception as e:
-        print(f"[ERROR] GDAL 설정 중 오류 발생: {e}")
+# 🚀 완전 독립적인 GDAL 설정 (환경변수 의존성 제거)
+def setup_gdal_libraries():
+    """프로젝트 내부 GDAL 라이브러리만 사용하도록 강제 설정"""
+    
+    if not os.path.exists(GDAL_LIBS_ROOT):
+        print(f"[ERROR] GDAL 라이브러리 폴더가 없습니다: {GDAL_LIBS_ROOT}")
         return False
+    
+    # 라이브러리 파일 직접 경로 설정 (환경변수 조작 없음)
+    gdal_dll = os.path.join(GDAL_LIBS_ROOT, 'gdal310.dll')
+    geos_dll = os.path.join(GDAL_LIBS_ROOT, 'geos_c.dll') 
+    spatialite_dll = os.path.join(GDAL_LIBS_ROOT, 'mod_spatialite.dll')
+    
+    # 파일 존재 확인
+    missing_files = []
+    if not os.path.exists(gdal_dll):
+        missing_files.append('gdal310.dll')
+    if not os.path.exists(geos_dll):
+        missing_files.append('geos_c.dll')
+    if not os.path.exists(spatialite_dll):
+        missing_files.append('mod_spatialite.dll')
+    
+    if missing_files:
+        print(f"[ERROR] 필수 DLL 파일이 없습니다: {missing_files}")
+        return False
+    
+    # Django에서 사용할 라이브러리 경로 직접 설정
+    globals()['GDAL_LIBRARY_PATH'] = gdal_dll
+    globals()['GEOS_LIBRARY_PATH'] = geos_dll  
+    globals()['SPATIALITE_LIBRARY_PATH'] = spatialite_dll
+    
+    print(f"[OK] 독립 GDAL 라이브러리 설정 완료: {GDAL_LIBS_ROOT}")
+    print(f"     └─ GDAL: {os.path.basename(gdal_dll)}")
+    print(f"     └─ GEOS: {os.path.basename(geos_dll)}")
+    print(f"     └─ SpatiaLite: {os.path.basename(spatialite_dll)}")
+    
+    return True
 
-# GDAL 환경 설정 실행
-gdal_setup_success = setup_gdal_environment()
-
-if not gdal_setup_success:
-    print("[INFO] 시스템에 설치된 GDAL을 사용합니다.")
-    print("[HINT] 팀원분의 경우 다음을 시도해보세요:")
-    print("       1. pip install GDAL")
-    print("       2. conda install gdal (Anaconda 사용 시)")
-    print("       3. 또는 프로젝트의 gdal_libs 폴더 확인")
+# 독립적인 GDAL 라이브러리 설정 실행
+if not setup_gdal_libraries():
+    print("[FATAL] GDAL 라이브러리 설정에 실패했습니다.")
+    print("        프로젝트의 gdal_libs 폴더와 DLL 파일들을 확인해주세요.")
+    import sys
+    sys.exit(1)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
