@@ -22,19 +22,31 @@ load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
 # GeoDjango 설정 - 프로젝트 내장 GDAL 라이브러리 사용
 GDAL_LIBS_ROOT = os.path.join(BASE_DIR, 'gdal_libs')
 
-# GDAL 라이브러리 경로 설정
-if GDAL_LIBS_ROOT not in os.environ['PATH']:
-    os.environ['PATH'] = GDAL_LIBS_ROOT + ';' + os.environ['PATH']
-
-# PROJ 데이터베이스 경로 설정
-os.environ['PROJ_LIB'] = GDAL_LIBS_ROOT
-
-# 라이브러리 경로 설정
-GDAL_LIBRARY_PATH = os.path.join(GDAL_LIBS_ROOT, 'gdal310.dll')
-GEOS_LIBRARY_PATH = os.path.join(GDAL_LIBS_ROOT, 'geos_c.dll')
-SPATIALITE_LIBRARY_PATH = os.path.join(GDAL_LIBS_ROOT, 'mod_spatialite.dll')
-
-print(f"✅ 프로젝트 내장 GDAL 라이브러리 사용: {GDAL_LIBS_ROOT}")
+# GDAL 라이브러리 존재 확인 및 경로 설정
+if os.path.exists(GDAL_LIBS_ROOT):
+    # PATH 환경변수에 추가 (Windows 경로 구분자 사용)
+    if GDAL_LIBS_ROOT not in os.environ['PATH']:
+        os.environ['PATH'] = GDAL_LIBS_ROOT + ';' + os.environ['PATH']
+    
+    # PROJ 데이터베이스 경로 설정
+    os.environ['PROJ_LIB'] = GDAL_LIBS_ROOT
+    
+    # 라이브러리 경로 명시적 설정 (존재 확인 후)
+    gdal_dll_path = os.path.join(GDAL_LIBS_ROOT, 'gdal310.dll')
+    geos_dll_path = os.path.join(GDAL_LIBS_ROOT, 'geos_c.dll')
+    spatialite_dll_path = os.path.join(GDAL_LIBS_ROOT, 'mod_spatialite.dll')
+    
+    if os.path.exists(gdal_dll_path):
+        GDAL_LIBRARY_PATH = gdal_dll_path
+    if os.path.exists(geos_dll_path):
+        GEOS_LIBRARY_PATH = geos_dll_path
+    if os.path.exists(spatialite_dll_path):
+        SPATIALITE_LIBRARY_PATH = spatialite_dll_path
+    
+    print(f"✅ 프로젝트 내장 GDAL 라이브러리 사용: {GDAL_LIBS_ROOT}")
+else:
+    print(f"⚠️ GDAL 라이브러리 폴더가 존재하지 않습니다: {GDAL_LIBS_ROOT}")
+    print("ℹ️ 시스템에 설치된 GDAL을 사용합니다.")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
