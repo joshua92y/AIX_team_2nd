@@ -5,7 +5,7 @@ app_name = 'AI_Analyzer'
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('analyze/', views.analyze_page, name='analyze_page'),
+    path('analyze/', views.analyze_page, name='analze_page'),
     path('get-coordinates/', views.get_coordinates, name='get_coordinates'),
     path('analyze-business/', views.analyze_location, name='analyze_location'),
     path('api/result/<int:request_id>/', views.get_analysis_result_api, name='get_analysis_result_api'),
