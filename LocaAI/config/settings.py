@@ -23,7 +23,7 @@ load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
 # GeoDjango 설정 - 프로젝트 내 최신 GDAL 라이브러리 사용
 GDAL_LIBS_ROOT = os.path.join(BASE_DIR, 'gdal_libs')
 
-# GDAL 라이브러리 경로 설정
+# GDAL 라이브러리 경로 설정 (개선된 버전 - OSGeo4W 폴백 포함)
 if os.path.exists(GDAL_LIBS_ROOT):
     if GDAL_LIBS_ROOT not in os.environ.get('PATH', ''):
         os.environ['PATH'] = GDAL_LIBS_ROOT + ';' + os.environ.get('PATH', '')
@@ -44,18 +44,39 @@ if os.path.exists(GDAL_LIBS_ROOT):
     
     print(f"[OK] 프로젝트 내 GDAL 라이브러리 사용: {GDAL_LIBS_ROOT}")
 else:
-    print(f"[ERROR] GDAL 라이브러리를 찾을 수 없습니다: {GDAL_LIBS_ROOT}")
+    # OSGeo4W 폴백 (로컬 개발용)
+    OSGEO4W_ROOT = r'C:\OSGeo4W'
+    if os.path.exists(OSGEO4W_ROOT):
+        osgeo_bin = os.path.join(OSGEO4W_ROOT, 'bin')
+        osgeo_share_proj = os.path.join(OSGEO4W_ROOT, 'share', 'proj')
+        
+        if osgeo_bin not in os.environ.get('PATH', ''):
+            os.environ['PATH'] = osgeo_bin + ';' + os.environ.get('PATH', '')
+        
+        # PROJ 데이터베이스 경로 설정
+        if os.path.exists(osgeo_share_proj):
+            os.environ['PROJ_LIB'] = osgeo_share_proj
+        
+        # 라이브러리 경로 설정
+        GDAL_LIBRARY_PATH = os.path.join(osgeo_bin, 'gdal310.dll')
+        GEOS_LIBRARY_PATH = os.path.join(osgeo_bin, 'geos_c.dll')
+        SPATIALITE_LIBRARY_PATH = os.path.join(osgeo_bin, 'mod_spatialite.dll')
+        
+        print(f"[WARNING] OSGeo4W 폴백 사용 (개발용): {osgeo_bin}")
+    else:
+        print(f"[ERROR] GDAL 라이브러리를 찾을 수 없습니다: {GDAL_LIBS_ROOT}")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-your-secret-key"
+# 환경변수 기반 보안 설정 (개선됨)
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-your-secret-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1', 'yes', 'on')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 ASGI_APPLICATION = "config.asgi.application"
 
 # Application definition
@@ -69,6 +90,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.gis",  # GeoDjango 지원 추가
+    "main",  # 메인 웹 디자인 앱
     "border",
     "channels",
     "custom_auth",
@@ -104,6 +126,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "AI_Analyzer.context_processors.api_keys",  # 카카오 API 키 context processor 추가
             ],
         },
     },
@@ -185,6 +208,24 @@ LOGOUT_REDIRECT_URL = "border:inquiry_list"
 RAG_SETTINGS = RAG_SETTINGS
 # Channels 설정
 CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
+
+# Leaflet 지도 설정 (AI_Analyzer에서 통합)
+LEAFLET_CONFIG = {
+    'DEFAULT_CENTER': (37.5665, 126.9780),  # 서울 중심 좌표
+    'DEFAULT_ZOOM': 10,
+    'MIN_ZOOM': 3,
+    'MAX_ZOOM': 18,
+    'DEFAULT_PRECISION': 6,
+    'TILES': [
+        ('OpenStreetMap', 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            'attribution': '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }),
+    ],
+}
+
+# 카카오 API 설정 (AI_Analyzer에서 통합)
+KAKAO_REST_API_KEY = os.getenv('KAKAO_REST_API_KEY', '4b3a451741a307fa3db2b9273005146a')
+KAKAO_JS_API_KEY = os.getenv('KAKAO_JS_API_KEY', '0ac2a982e676a58f9a4245749206f78b')
 
 LOGGING = {
     "version": 1,
