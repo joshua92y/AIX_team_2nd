@@ -15,6 +15,7 @@ import time
 import pickle
 import numpy as np
 import os
+from django.conf import settings
 
 # PDF 생성은 클라이언트 사이드에서 jsPDF로 처리
 
@@ -165,7 +166,7 @@ def analyze_page(request):
 @csrf_exempt
 @require_http_methods(["POST"])
 def get_coordinates(request):
-    """카카오 API를 통해 주소를 좌표로 변환"""
+    """주소를 좌표로 변환"""
     try:
         data = json.loads(request.body)
         address = data.get('address')
@@ -173,8 +174,11 @@ def get_coordinates(request):
         if not address:
             return JsonResponse({'error': '주소가 필요합니다.'}, status=400)
         
-        # 카카오맵 API로 좌표 가져오기
-        kakao_api_key = '4b3a451741a307fa3db2b9273005146a'
+        # 카카오맵 API로 좌표 가져오기 - 환경변수에서 API 키 가져오기
+        kakao_api_key = os.getenv('KAKAO_REST_API_KEY') or settings.KAKAO_REST_API_KEY
+        if not kakao_api_key:
+            return JsonResponse({'error': 'Kakao API 키가 설정되지 않았습니다.'}, status=500)
+            
         url = 'https://dapi.kakao.com/v2/local/search/address.json'
         headers = {'Authorization': f'KakaoAK {kakao_api_key}'}
         params = {'query': address}

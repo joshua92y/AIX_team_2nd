@@ -225,9 +225,15 @@ LEAFLET_CONFIG = {
     ],
 }
 
-# 카카오 API 설정 (AI_Analyzer에서 통합)
-KAKAO_REST_API_KEY = os.getenv('KAKAO_REST_API_KEY', '4b3a451741a307fa3db2b9273005146a')
-KAKAO_JS_API_KEY = os.getenv('KAKAO_JS_API_KEY', '0ac2a982e676a58f9a4245749206f78b')
+# 카카오 API 설정 - 환경변수에서만 가져오기 (보안 개선)
+KAKAO_REST_API_KEY = os.getenv('KAKAO_REST_API_KEY')
+KAKAO_JS_API_KEY = os.getenv('KAKAO_JS_API_KEY')
+
+# API 키 필수 체크 (개발 환경에서만)
+if DEBUG and not KAKAO_REST_API_KEY:
+    print("⚠️  WARNING: KAKAO_REST_API_KEY가 환경변수에 설정되지 않았습니다.")
+if DEBUG and not KAKAO_JS_API_KEY:
+    print("⚠️  WARNING: KAKAO_JS_API_KEY가 환경변수에 설정되지 않았습니다.")
 
 LOGGING = {
     "version": 1,
