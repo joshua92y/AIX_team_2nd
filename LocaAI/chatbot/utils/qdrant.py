@@ -56,9 +56,13 @@ def get_embedding_model() -> HuggingFaceEmbeddings:
 
 def list_all_collections() -> List[str]:
     """Qdrant 서버에 존재하는 모든 컬렉션 이름을 반환"""
-    client = get_qdrant_client()
-    collections_info = client.get_collections()
-    return [c.name for c in collections_info.collections]
+    try:
+        client = get_qdrant_client()
+        collections_info = client.get_collections()
+        return [c.name for c in collections_info.collections]
+    except Exception as e:
+        print(f"⚠️ Qdrant 접속 실패 (API 키 확인 필요): {e}")
+        return []  # 빈 리스트 반환으로 서버 계속 실행
 
 
 def get_collection_retriever(collection_name: str, top_k: int = None) -> BaseRetriever:
