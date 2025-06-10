@@ -34,7 +34,7 @@ class CustomQdrantRetriever(BaseRetriever):
             docs.append(Document(page_content=content, metadata=metadata))
         return docs
 
-
+@lru_cache
 def get_qdrant_client() -> QdrantClient:
     """QdrantClient 인스턴스 생성"""
     return QdrantClient(
@@ -53,7 +53,7 @@ def get_embedding_model() -> HuggingFaceEmbeddings:
         }
     )
 
-
+@lru_cache
 def list_all_collections() -> List[str]:
     """Qdrant 서버에 존재하는 모든 컬렉션 이름을 반환"""
     client = get_qdrant_client()
