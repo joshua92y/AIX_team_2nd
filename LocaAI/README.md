@@ -11,4 +11,4 @@ pip install -r requirements.txt #pip 설치
 git merge #머지는 신중히
 
 2.django
-uvicorn config.asgi:application --host 0.0.0.0 --port 8000
+uvicorn config.asgi:application --host 0.0.0.0 --port 8000 # 챗봇로컬서버 run

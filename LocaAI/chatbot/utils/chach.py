@@ -34,7 +34,7 @@ def get_all_adstrd_names(client, collection_name: str) -> List[str]:
 
 def initialize_adstrd_name_cache(client, collection_name: str):
     """
-    Qdrant에서 ADSTRD_NM 전체 목록을 읽어와 캐시 저장 (사용자가 해당 컬렉션을 조회할 때 1회 호출)
+    Qdrant에서 ADSTRD_NM 전체 목록을 읽어와 캐시 저장
     """
     print(f"initialize_adstrd_name_cache 호출: {collection_name}")
     if collection_name not in _ADSTRD_NAME_CACHE:
