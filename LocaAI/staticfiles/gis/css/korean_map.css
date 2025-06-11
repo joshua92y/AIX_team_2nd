@@ -1,0 +1,82 @@
+/* Korean GIS Map 터치 이벤트 최적화 */
+
+/* OpenLayers 지도 터치 이벤트 최적화 */
+.ol-viewport {
+    touch-action: pan-x pan-y !important;
+    -ms-touch-action: pan-x pan-y !important;
+    -webkit-touch-action: pan-x pan-y !important;
+}
+
+/* 지도 컨테이너 최적화 */
+.gis-admin .ol-viewport {
+    will-change: transform;
+    transform: translateZ(0); /* GPU 가속 활성화 */
+}
+
+/* 터치 디바이스에서 버튼 크기 조정 */
+.ol-touch .ol-control button {
+    font-size: 1.2em;
+    min-width: 44px;
+    min-height: 44px;
+}
+
+/* 지도 로딩 중 표시 */
+.gis-admin .ol-viewport.loading {
+    cursor: wait;
+}
+
+/* 한국 지역 최적화를 위한 지도 스타일 */
+.gis-admin .ol-zoom {
+    top: 10px;
+    left: 10px;
+}
+
+.gis-admin .ol-attribution {
+    bottom: 5px;
+    right: 5px;
+    font-size: 11px;
+}
+
+/* 성능 향상을 위한 하드웨어 가속 */
+.gis-admin [id$="_map"] {
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    -moz-transform: translateZ(0);
+    -ms-transform: translateZ(0);
+    -o-transform: translateZ(0);
+}
+
+/* 모바일 디바이스 최적화 */
+@media (max-width: 768px) {
+    .gis-admin [id$="_map"] {
+        width: 100% !important;
+        max-width: 600px;
+        height: 400px !important;
+    }
+    
+    .ol-touch .ol-control {
+        font-size: 16px;
+    }
+}
+
+/* 터치 피드백 제거 (성능 향상) */
+.ol-control button:active,
+.ol-control button:focus {
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* 드래그 중 텍스트 선택 방지 */
+.gis-admin .ol-viewport * {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* 스크롤 성능 최적화 */
+.gis-admin .ol-overviewmap,
+.gis-admin .ol-zoom {
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+} 
