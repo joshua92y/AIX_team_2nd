@@ -356,6 +356,9 @@ class LongForeignAdmin(BaseGISAdmin):
 
 class StorePointAdmin(BaseGISAdmin):
     """상점 포인트 관리"""
+    @admin.display(description='XY 좌표 (EPSG:5186)')
+    def get_xy_coordinates(self, obj):
+        return super().get_xy_coordinates(obj)
     form = StorePointForm  # 카카오맵 위젯 사용
     list_display = ('ogc_fid', 'uptaenm', 'service', 'area', 'get_xy_coordinates', 'get_coord_info')
     list_filter = ('uptaenm', 'service')

@@ -123,10 +123,10 @@ TEMPLATES = [
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.contrib.gis.db.backends.spatialite",  # SpatiaLite (GeoDjango)
+        "ENGINE": "django.contrib.gis.db.backends.spatialite",  # SpatiaLite 엔진으로 변경
         "NAME": BASE_DIR / "db.sqlite3",
         "OPTIONS": {
-            "timeout": 60,  # 대용량 공간정보 DB 처리를 위한 타임아웃
+            "timeout": 60,  # 대용량 공간정보 DB를 위한 타임아웃 설정
             "init_command": "PRAGMA journal_mode=WAL;",  # 동시성 향상
         },
     }
