@@ -22,7 +22,16 @@ import os
 XGBOOST_MODEL = None
 
 def load_xgboost_model():
-    """XGBoost 모델을 로드하는 함수"""
+    """
+    XGBoost 모델을 로드하는 함수
+    
+    Returns:
+        object: 로드된 XGBoost 모델 객체, 실패 시 None
+        
+    Note:
+        - 모델은 전역 변수로 캐시되어 중복 로드를 방지
+        - 모델 파일 경로: model/best_xgb_model.pkl
+    """
     global XGBOOST_MODEL
     if XGBOOST_MODEL is None:
         # 상대경로로 변경
@@ -31,6 +40,9 @@ def load_xgboost_model():
             with open(model_path, 'rb') as f:
                 XGBOOST_MODEL = pickle.load(f)
             print(f"✅ XGBoost 모델 로드 완료: {model_path}")
+        except FileNotFoundError:
+            print(f"❌ XGBoost 모델 파일을 찾을 수 없습니다: {model_path}")
+            XGBOOST_MODEL = None
         except Exception as e:
             print(f"❌ XGBoost 모델 로드 실패: {e}")
             XGBOOST_MODEL = None
@@ -39,11 +51,21 @@ def load_xgboost_model():
 def predict_survival_probability(features_dict):
     """
     장기 생존 확률을 예측하는 함수
-    features_dict: 분석 결과에서 추출한 피쳐 딕셔너리
+    
+    Args:
+        features_dict (dict): 분석 결과에서 추출한 피쳐 딕셔너리
+        
+    Returns:
+        float: 생존 확률 (0.0 ~ 1.0), 예측 실패 시 0.0
+        
+    Note:
+        - 28개 피쳐(업종 ID 포함) 우선 시도, 실패시 27개 피쳐로 재시도
+        - 피쳐 순서는 모델 학습 시와 동일해야 함
     """
     try:
         model = load_xgboost_model()
         if model is None:
+            print("❌ AI 모델이 로드되지 않아 예측을 수행할 수 없습니다.")
             return 0.0
         
         # 먼저 28개 피쳐로 시도 (업종 ID 포함)
@@ -146,11 +168,22 @@ def predict_survival_probability(features_dict):
             return float(survival_probability)
         
     except Exception as e:
-        print(f"❌ AI 모델 예측 오류: {e}")
+        print(f"❌ AI 모델 예측 중 오류가 발생했습니다: {e}")
         return 0.0
 
 def index(request):
-    """메인 페이지"""
+    """
+    메인 페이지 뷰
+    
+    Args:
+        request: HTTP 요청 객체
+        
+    Returns:
+        HttpResponse: 분석 페이지 렌더링 결과
+        
+    Note:
+        - 업종 목록을 조회하여 템플릿에 전달
+    """
     business_types = BusinessType.objects.all().order_by('id')
     return render(request, 'AI_Analyzer/analyze.html', {
         'business_types': business_types
@@ -158,14 +191,35 @@ def index(request):
 
 
 def analyze_page(request):
-    """새로운 상권 분석 페이지"""
+    """
+    상권 분석 페이지 뷰
+    
+    Args:
+        request: HTTP 요청 객체
+        
+    Returns:
+        HttpResponse: 분석 페이지 렌더링 결과
+    """
     return render(request, 'AI_Analyzer/analyze.html')
 
 
 @csrf_exempt
 @require_http_methods(["POST"])
 def get_coordinates(request):
-    """카카오 API를 통해 주소를 좌표로 변환"""
+    """
+    카카오 API를 통해 주소를 좌표로 변환
+    
+    Args:
+        request: HTTP 요청 객체 (JSON body에 address 포함)
+        
+    Returns:
+        JsonResponse: 성공 시 좌표 정보, 실패 시 에러 메시지
+        
+    Raises:
+        400: 주소가 제공되지 않은 경우
+        404: 주소를 찾을 수 없는 경우  
+        500: API 호출 실패 또는 기타 오류
+    """
     try:
         data = json.loads(request.body)
         address = data.get('address')
@@ -202,16 +256,40 @@ def get_coordinates(request):
             else:
                 return JsonResponse({'error': '주소를 찾을 수 없습니다.'}, status=404)
         else:
-            return JsonResponse({'error': 'API 호출 실패'}, status=500)
+            return JsonResponse({'error': f'카카오 API 호출 실패 (Status: {response.status_code})'}, status=500)
             
+    except json.JSONDecodeError:
+        return JsonResponse({'error': '잘못된 JSON 형식입니다.'}, status=400)
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        print(f"❌ 좌표 변환 중 오류 발생: {e}")
+        return JsonResponse({'error': f'좌표 변환 중 오류가 발생했습니다: {str(e)}'}, status=500)
 
 
 @csrf_exempt
 @require_http_methods(["POST"])
 def analyze_location(request):
-    """위치 분석 수행"""
+    """
+    위치 분석 수행
+    
+    Args:
+        request: HTTP 요청 객체 (JSON body에 분석 데이터 포함)
+        
+    Returns:
+        JsonResponse: 성공 시 분석 결과, 실패 시 에러 메시지
+        
+    Required JSON fields:
+        - address: 분석할 주소
+        - area: 면적(㎡)
+        - business_type_id: 업종 ID
+        - service_type: 서비스 유형
+        - longitude, latitude: WGS84 좌표
+        - x_coord, y_coord: EPSG:5186 좌표
+        
+    Raises:
+        400: 필수 필드 누락 또는 잘못된 JSON
+        404: 업종을 찾을 수 없는 경우
+        500: 분석 중 오류 발생
+    """
     try:
         # 원본 AI_Analyzer와 같이 JSON 데이터로 받기
         data = json.loads(request.body)
@@ -250,7 +328,11 @@ def analyze_location(request):
         print(f"   latitude: {latitude}")
         
         # 분석 요청 저장 - 원본 AI_Analyzer와 동일
-        business_type = BusinessType.objects.get(id=business_type_id)
+        try:
+            business_type = BusinessType.objects.get(id=business_type_id)
+        except BusinessType.DoesNotExist:
+            print(f"❌ [ERROR] 업종을 찾을 수 없습니다: ID {business_type_id}")
+            return JsonResponse({'error': f'업종 ID {business_type_id}를 찾을 수 없습니다.'}, status=404)
         
         analysis_request = AnalysisRequest.objects.create(
             address=address,
@@ -272,16 +354,38 @@ def analyze_location(request):
             'result': result
         })
         
+    except json.JSONDecodeError:
+        print("❌ [ERROR] 잘못된 JSON 형식")
+        return JsonResponse({'error': '잘못된 JSON 형식입니다.'}, status=400)
+    except ValueError as e:
+        print(f"❌ [ERROR] 데이터 타입 변환 오류: {e}")
+        return JsonResponse({'error': f'데이터 형식이 잘못되었습니다: {str(e)}'}, status=400)
     except Exception as e:
-        print(f"❌ [ERROR] 분석 요청 오류: {e}")
+        print(f"❌ [ERROR] 분석 요청 중 예상치 못한 오류 발생: {e}")
         import traceback
         print(f"❌ [ERROR] 스택 트레이스: {traceback.format_exc()}")
-        return JsonResponse({'error': str(e)}, status=500)
+        return JsonResponse({'error': f'분석 요청 중 오류가 발생했습니다: {str(e)}'}, status=500)
 
 
 @transaction.atomic
 def perform_spatial_analysis(analysis_request):
-    """실제 공간 분석 수행"""
+    """
+    실제 공간 분석 수행
+    
+    Args:
+        analysis_request (AnalysisRequest): 분석 요청 객체
+        
+    Returns:
+        dict: 분석 결과 데이터
+        
+    Note:
+        - 생활인구, 직장인구, 외국인, 시설, 경쟁업체, 공시지가 등을 종합 분석
+        - 데이터베이스 락 발생 시 최대 3회 재시도
+        - AI 모델을 통한 생존 확률 예측 포함
+        
+    Raises:
+        Exception: 데이터베이스 접속 실패 또는 분석 오류
+    """
     import time
     
     # 전체 분석 시작 시간
@@ -337,7 +441,7 @@ def perform_spatial_analysis(analysis_request):
                     })
                     print(f"   ✅ 300m 생활인구: {int(total_pop_300m):,}명")
                 except Exception as e:
-                    print(f"   ❌ 생활인구 300m 분석 오류: {e}")
+                    print(f"   ❌ 생활인구 300m 분석 중 데이터베이스 오류: {e}")
                     results.update({
                         'life_pop_300m': 0,
                         'life_pop_20_300m': 0, 'life_pop_30_300m': 0, 'life_pop_40_300m': 0,
@@ -373,7 +477,7 @@ def perform_spatial_analysis(analysis_request):
                     })
                     print(f"   ✅ 1000m 생활인구: {int(total_pop_1000m):,}명")
                 except Exception as e:
-                    print(f"   ❌ 생활인구 1000m 분석 오류: {e}")
+                    print(f"   ❌ 생활인구 1000m 분석 중 데이터베이스 오류: {e}")
                     results.update({
                         'life_pop_20_1000m': 0, 'life_pop_30_1000m': 0, 'life_pop_40_1000m': 0,
                         'life_pop_50_1000m': 0, 'life_pop_60_1000m': 0,
@@ -398,7 +502,7 @@ def perform_spatial_analysis(analysis_request):
                     results['working_pop_300m'] = working_pop
                     print(f"   ✅ 300m 직장인구: {working_pop:,}명")
                 except Exception as e:
-                    print(f"   ❌ 직장인구 분석 오류: {e}")
+                    print(f"   ❌ 직장인구 분석 중 데이터베이스 오류: {e}")
                     results['working_pop_300m'] = 0
                 
                 time.sleep(0.1)
@@ -863,19 +967,34 @@ def perform_spatial_analysis(analysis_request):
             error_msg = str(e).lower()
             if "database is locked" in error_msg and retry_count < max_retries - 1:
                 retry_count += 1
-                print(f"데이터베이스 락 오류 발생, 재시도 {retry_count}/{max_retries}")
+                print(f"⚠️ 데이터베이스 락 오류 발생, 재시도 {retry_count}/{max_retries}")
                 time.sleep(2 ** retry_count)  # 지수 백오프
                 continue
+            elif "no such table" in error_msg:
+                print(f"❌ 데이터베이스 테이블을 찾을 수 없습니다: {e}")
+                raise Exception("필요한 공간 데이터 테이블을 찾을 수 없습니다. 관리자에게 문의하세요.")
+            elif "syntax error" in error_msg:
+                print(f"❌ SQL 구문 오류: {e}")
+                raise Exception("데이터베이스 쿼리 오류가 발생했습니다. 관리자에게 문의하세요.")
             else:
-                print(f"공간 분석 오류: {e}")
-                raise e
+                print(f"❌ 공간 분석 중 예상치 못한 오류 발생: {e}")
+                raise Exception(f"공간 분석 중 오류가 발생했습니다: {str(e)}")
     
     # 모든 재시도가 실패한 경우
     raise Exception("데이터베이스 락으로 인해 분석을 완료할 수 없습니다. 잠시 후 다시 시도해 주세요.")
 
 
 def result_detail(request, request_id):
-    """분석 결과 상세 페이지"""
+    """
+    분석 결과 상세 페이지 뷰
+    
+    Args:
+        request: HTTP 요청 객체
+        request_id (int): 분석 요청 ID
+        
+    Returns:
+        HttpResponse: 결과 페이지 또는 에러 페이지 렌더링
+    """
     try:
         analysis_request = AnalysisRequest.objects.get(id=request_id)
         analysis_result = AnalysisResult.objects.get(request=analysis_request)
@@ -885,6 +1004,7 @@ def result_detail(request, request_id):
             'result': analysis_result
         })
     except (AnalysisRequest.DoesNotExist, AnalysisResult.DoesNotExist):
+        print(f"❌ 분석 결과를 찾을 수 없습니다: ID {request_id}")
         return render(request, 'AI_Analyzer/error.html', {
             'error': '분석 결과를 찾을 수 없습니다.'
         })
@@ -892,7 +1012,20 @@ def result_detail(request, request_id):
 
 @csrf_exempt
 def get_analysis_result_api(request, request_id):
-    """분석 결과를 JSON으로 반환하는 API"""
+    """
+    분석 결과를 JSON으로 반환하는 API
+    
+    Args:
+        request: HTTP 요청 객체
+        request_id (int): 분석 요청 ID
+        
+    Returns:
+        JsonResponse: 분석 결과 데이터 또는 에러 메시지
+        
+    Raises:
+        404: 분석 결과를 찾을 수 없는 경우
+        500: 데이터 조회 중 오류 발생
+    """
     try:
         analysis_request = AnalysisRequest.objects.get(id=request_id)
         analysis_result = AnalysisResult.objects.get(request=analysis_request)
@@ -927,10 +1060,12 @@ def get_analysis_result_api(request, request_id):
         return JsonResponse(result_data)
         
     except (AnalysisRequest.DoesNotExist, AnalysisResult.DoesNotExist):
+        print(f"❌ API: 분석 결과를 찾을 수 없습니다: ID {request_id}")
         return JsonResponse({
             'error': '분석 결과를 찾을 수 없습니다.'
         }, status=404)
     except Exception as e:
+        print(f"❌ API: 결과 조회 중 오류 발생: {e}")
         return JsonResponse({
             'error': f'결과 조회 중 오류가 발생했습니다: {str(e)}'
         }, status=500)
@@ -938,7 +1073,19 @@ def get_analysis_result_api(request, request_id):
 
 @staff_member_required
 def database_info(request):
-    """SpatiaLite 데이터베이스 정보 보기 (관리자 전용)"""
+    """
+    SpatiaLite 데이터베이스 정보 보기 (관리자 전용)
+    
+    Args:
+        request: HTTP 요청 객체
+        
+    Returns:
+        HttpResponse: 데이터베이스 정보 페이지 렌더링
+        
+    Note:
+        - 테이블 목록, 공간 참조 시스템, 지오메트리 컬럼 정보 등 제공
+        - 관리자 권한 필요
+    """
     with connection.cursor() as cursor:
         # 테이블 정보
         cursor.execute("""
@@ -1027,7 +1174,24 @@ def database_info(request):
 
 @csrf_exempt
 def get_pdf_data(request, request_id):
-    """PDF 생성을 위한 분석 결과 데이터 제공 (jsPDF용)"""
+    """
+    PDF 생성을 위한 분석 결과 데이터 제공 (jsPDF용)
+    
+    Args:
+        request: HTTP 요청 객체
+        request_id (int): 분석 요청 ID
+        
+    Returns:
+        JsonResponse: PDF 생성용 데이터 또는 에러 메시지
+        
+    Note:
+        - 클라이언트 사이드 jsPDF 라이브러리용 데이터 포맷
+        - 생존 확률에 따른 분석 텍스트 자동 생성
+        
+    Raises:
+        404: 분석 결과를 찾을 수 없는 경우
+        500: 데이터 조회 중 오류 발생
+    """
     try:
         # 분석 결과 조회
         analysis_request = AnalysisRequest.objects.get(id=request_id)
@@ -1094,18 +1258,32 @@ def get_pdf_data(request, request_id):
         return JsonResponse(pdf_data)
         
     except (AnalysisRequest.DoesNotExist, AnalysisResult.DoesNotExist):
+        print(f"❌ PDF: 분석 결과를 찾을 수 없습니다: ID {request_id}")
         return JsonResponse({
             'error': '분석 결과를 찾을 수 없습니다.'
         }, status=404)
     except Exception as e:
-        print(f"PDF 데이터 조회 오류: {e}")
+        print(f"❌ PDF: 데이터 조회 중 오류 발생: {e}")
         return JsonResponse({
             'error': f'데이터 조회 중 오류가 발생했습니다: {str(e)}'
         }, status=500)
 
 
 def format_currency(value):
-    """통화 포맷팅 함수"""
+    """
+    통화 포맷팅 함수
+    
+    Args:
+        value (float): 포맷팅할 금액 (원 단위)
+        
+    Returns:
+        str: 포맷팅된 통화 문자열
+        
+    Example:
+        format_currency(150000000) -> "₩1.5억"
+        format_currency(50000) -> "₩5만"
+        format_currency(1000) -> "₩1,000"
+    """
     if value >= 100000000:  # 1억 이상
         return f"₩{value/100000000:.1f}억"
     elif value >= 10000:  # 1만 이상
