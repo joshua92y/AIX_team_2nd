@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>상권분석 보고서</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Nanum Gothic', Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #333;
+            background: white;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 3px solid #1e3a8a;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 800;
+            color: #1e3a8a;
+            margin-bottom: 5px;
+        }
+        
+        .header .subtitle {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .location-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #1e3a8a;
+        }
+        
+        .location-info h3 {
+            color: #1e3a8a;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .info-item {
+            font-size: 12px;
+        }
+        
+        .info-item strong {
+            color: #333;
+        }
+        
+        .section {
+            margin-bottom: 25px;
+            page-break-inside: avoid;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e3a8a;
+            border-bottom: 2px solid #1e3a8a;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .metric-card {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 5px;
+        }
+        
+        .metric-label {
+            font-size: 10px;
+            color: #666;
+        }
+        
+        .survival-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .survival-percentage {
+            font-size: 36px;
+            font-weight: 800;
+            color: #1e3a8a;
+            margin-bottom: 10px;
+        }
+        
+        .survival-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #dc3545 0%, #ffc107 50%, #28a745 100%);
+            border-radius: 10px;
+        }
+        
+        .competition-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .competition-item {
+            text-align: center;
+        }
+        
+        .competition-value {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .competition-label {
+            font-size: 10px;
+            color: #666;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        
+        .summary-section h4 {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .strengths h4 {
+            color: #28a745;
+        }
+        
+        .cautions h4 {
+            color: #ffc107;
+        }
+        
+        .summary-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .summary-list li {
+            padding: 5px 0;
+            font-size: 11px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .summary-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+            text-align: center;
+            font-size: 10px;
+            color: #666;
+        }
+        
+        .color-success { color: #28a745; }
+        .color-danger { color: #dc3545; }
+        .color-warning { color: #ffc107; }
+        .color-info { color: #17a2b8; }
+        
+        @media print {
+            body { print-color-adjust: exact; }
+            .section { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>AI 상권분석 보고서</h1>
+        <div class="subtitle">인공지능 기반 상업지구 분석 결과</div>
+    </div>
+
+    <div class="location-info">
+        <h3>📍 분석 대상 정보</h3>
+        <div class="info-grid">
+            <div class="info-item"><strong>주소:</strong> {{ result.address }}</div>
+            <div class="info-item"><strong>업종:</strong> {{ result.business_type }}</div>
+            <div class="info-item"><strong>면적:</strong> {{ result.area }}㎡</div>
+            <div class="info-item"><strong>분석일시:</strong> {{ result.created_at|date:"Y-m-d H:i" }}</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">📊 핵심 지표</div>
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-value">{{ result.life_pop_300|floatformat:0 }}명</div>
+                <div class="metric-label">300m 내 생활인구</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">{{ result.working_pop_300|floatformat:0 }}명</div>
+                <div class="metric-label">300m 내 직장인구</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">{{ result.competitor_count_300 }}개</div>
+                <div class="metric-label">동일업종 경쟁업체</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">{{ result.total_land_value|floatformat:0 }}원</div>
+                <div class="metric-label">총 공시지가</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">🤖 AI 예측 분석</div>
+        <div class="survival-section">
+            <div class="survival-percentage">{{ result.survival_probability|floatformat:1 }}%</div>
+            <div class="survival-title">장기 생존 확률</div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ result.survival_probability }}%;"></div>
+            </div>
+            <small>AI 모델이 28개 지표를 종합 분석한 결과입니다.</small>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">🏪 상권 경쟁 분석 (300m 반경)</div>
+        <div class="competition-grid">
+            <div class="competition-item">
+                <div class="competition-value color-danger">{{ result.competitor_count_300 }}</div>
+                <div class="competition-label">경쟁업체 수</div>
+            </div>
+            <div class="competition-item">
+                <div class="competition-value color-info">{{ result.adjacent_biz_300 }}</div>
+                <div class="competition-label">전체 요식업체</div>
+            </div>
+            <div class="competition-item">
+                <div class="competition-value color-warning">{{ result.competitor_ratio_300|floatformat:1 }}%</div>
+                <div class="competition-label">경쟁업체 비율</div>
+            </div>
+            <div class="competition-item">
+                <div class="competition-value color-success">{{ result.business_diversity_300 }}</div>
+                <div class="competition-label">업종 다양성</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">📋 상세 분석 결과</div>
+        <div class="info-grid">
+            <div class="info-item"><strong>생활인구 (1000m):</strong> {{ result.life_pop_1000|floatformat:0 }}명</div>
+            <div class="info-item"><strong>직장인구 (300m):</strong> {{ result.working_pop_300|floatformat:0 }}명</div>
+            <div class="info-item"><strong>단기체류외국인 (1000m):</strong> {{ result.temp_foreign_1000|floatformat:0 }}명</div>
+            <div class="info-item"><strong>장기체류외국인 (300m):</strong> {{ result.long_foreign_300|floatformat:0 }}명</div>
+            <div class="info-item"><strong>중국인 (단기, 1000m):</strong> {{ result.temp_chinese_1000|floatformat:0 }}명</div>
+            <div class="info-item"><strong>중국인 (장기, 1000m):</strong> {{ result.long_chinese_1000|floatformat:0 }}명</div>
+            <div class="info-item"><strong>학교 (250m):</strong> {{ result.school_250 }}개</div>
+            <div class="info-item"><strong>공공건물 (250m):</strong> {{ result.public_building_250 }}개</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">💡 AI 분석 요약</div>
+        <div class="summary-grid">
+            <div class="summary-section strengths">
+                <h4>✅ 강점</h4>
+                <ul class="summary-list">
+                    {% if result.life_pop_300 > 10000 %}
+                    <li>높은 생활인구 밀도 (300m 내 {{ result.life_pop_300|floatformat:0 }}명)</li>
+                    {% endif %}
+                    {% if result.working_pop_300 > 15000 %}
+                    <li>풍부한 직장인구 (300m 내 {{ result.working_pop_300|floatformat:0 }}명)</li>
+                    {% endif %}
+                    {% if result.competitor_ratio_300 < 20 %}
+                    <li>낮은 경쟁강도 (동일업종 비율 {{ result.competitor_ratio_300|floatformat:1 }}%)</li>
+                    {% endif %}
+                    {% if result.temp_foreign_1000 > 2000 %}
+                    <li>외국인 고객층 확보 가능</li>
+                    {% endif %}
+                </ul>
+            </div>
+            <div class="summary-section cautions">
+                <h4>⚠️ 주의사항</h4>
+                <ul class="summary-list">
+                    {% if result.competitor_ratio_300 > 50 %}
+                    <li>높은 경쟁강도 (동일업종 비율 {{ result.competitor_ratio_300|floatformat:1 }}%)</li>
+                    {% endif %}
+                    {% if result.life_pop_300 < 5000 %}
+                    <li>상대적으로 낮은 유동인구</li>
+                    {% endif %}
+                    {% if result.survival_probability < 50 %}
+                    <li>AI 예측 생존확률이 평균 이하</li>
+                    {% endif %}
+                    {% if result.school_250 == 0 and result.public_building_250 == 0 %}
+                    <li>주변 유동인구 유발시설 부족</li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div>본 보고서는 AI 기반 상권분석 시스템에 의해 생성되었습니다.</div>
+        <div>분석 기준일: {{ result.created_at|date:"Y년 m월 d일" }}</div>
+    </div>
+</body>
+</html> 

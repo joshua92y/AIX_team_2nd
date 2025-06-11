@@ -1,0 +1,267 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>카카오맵 - {{ name }}</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        #{{ id }}_map {
+            width: {{ map_width }}px;
+            height: {{ map_height }}px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+        }
+        
+        .kakao-map-controls {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .kakao-map-info {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        .kakao-map-coords {
+            font-size: 11px;
+            color: #28a745;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .kakao-map-help {
+            font-size: 11px;
+            color: #6c757d;
+            margin-top: 5px;
+            padding: 5px 10px;
+            background-color: #e9ecef;
+            border-radius: 3px;
+            border-left: 3px solid #28a745;
+        }
+        
+        .error-message {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 5px;
+            padding: 10px;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div id="{{ id }}_map"></div>
+    
+    <div class="kakao-map-controls">
+        <div class="kakao-map-info">
+            🗺️ 카카오맵 (한국 지역 최적화)
+        </div>
+        <div id="{{ id }}_coords" class="kakao-map-coords"></div>
+        <div class="kakao-map-help">
+            💡 지도를 클릭하여 위치를 설정하세요. 설정된 좌표는 EPSG:5186 형식으로 저장됩니다.
+        </div>
+    </div>
+    
+    <!-- 카카오맵 API 로드 -->
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey={{ kakao_api_key }}&autoload=false&libraries=services"></script>
+    
+    <script>
+        (function() {
+            // 카카오맵 API 로드 확인
+            if (typeof kakao === 'undefined') {
+                document.getElementById('{{ id }}_map').innerHTML = 
+                    '<div class="error-message">카카오맵 API 로드에 실패했습니다. API 키를 확인해주세요.</div>';
+                return;
+            }
+            
+            // 카카오맵 초기화
+            kakao.maps.load(function() {
+                initKakaoMap();
+            });
+            
+            function initKakaoMap() {
+                // 지도 컨테이너와 옵션 설정
+                const container = document.getElementById('{{ id }}_map');
+                const options = {
+                    center: new kakao.maps.LatLng({{ default_lat }}, {{ default_lon }}), // 서울 중심
+                    level: {{ default_zoom }}, // 지도 확대 레벨
+                    draggable: true,
+                    scrollwheel: true,
+                    disableDoubleClick: false,
+                    disableDoubleClickZoom: false,
+                    keyboardShortcuts: true
+                };
+                
+                // 지도 생성
+                const map = new kakao.maps.Map(container, options);
+                
+                // 지도 컨트롤 추가
+                const zoomControl = new kakao.maps.ZoomControl();
+                map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+                
+                const mapTypeControl = new kakao.maps.MapTypeControl();
+                map.addControl(mapTypeControl, kakao.maps.ControlPosition.TOPRIGHT);
+                
+                // 마커 변수
+                let currentMarker = null;
+                
+                // 기존 지오메트리 데이터 로드
+                const existingGeometry = '{{ geometry_wkt|safe }}';
+                if (existingGeometry && existingGeometry.includes('POINT')) {
+                    loadExistingGeometry(existingGeometry);
+                }
+                
+                // 기존 지오메트리 로드 함수
+                function loadExistingGeometry(wkt) {
+                    try {
+                        // WKT에서 좌표 추출
+                        const coords = wkt.match(/POINT\s*\(\s*([\d.-]+)\s+([\d.-]+)\s*\)/);
+                        if (coords && coords.length >= 3) {
+                            const x = parseFloat(coords[1]);
+                            const y = parseFloat(coords[2]);
+                            
+                            // EPSG:5186 → WGS84 변환 (서버에서 변환된 좌표 사용)
+                            {% if initial_lat and initial_lng %}
+                                const lat = {{ initial_lat }};
+                                const lng = {{ initial_lng }};
+                                const position = new kakao.maps.LatLng(lat, lng);
+                                
+                                // 마커 생성
+                                currentMarker = new kakao.maps.Marker({
+                                    position: position,
+                                    map: map,
+                                    draggable: true
+                                });
+                                
+                                // 지도 중심을 마커 위치로 이동
+                                map.setCenter(position);
+                                
+                                // 마커 드래그 이벤트
+                                kakao.maps.event.addListener(currentMarker, 'dragend', function() {
+                                    const position = currentMarker.getPosition();
+                                    updateCoordinates(position.getLat(), position.getLng());
+                                });
+                                
+                                // 좌표 정보 표시
+                                updateCoordinatesDisplay(lat, lng);
+                            {% endif %}
+                        }
+                    } catch (e) {
+                        console.warn('기존 지오메트리 로드 실패:', e);
+                    }
+                }
+                
+                // 지도 클릭 이벤트
+                kakao.maps.event.addListener(map, 'click', function(mouseEvent) {
+                    const latLng = mouseEvent.latLng;
+                    const lat = latLng.getLat();
+                    const lng = latLng.getLng();
+                    
+                    // 기존 마커 제거
+                    if (currentMarker) {
+                        currentMarker.setMap(null);
+                    }
+                    
+                    // 새 마커 생성
+                    currentMarker = new kakao.maps.Marker({
+                        position: latLng,
+                        map: map,
+                        draggable: true
+                    });
+                    
+                    // 마커 드래그 이벤트
+                    kakao.maps.event.addListener(currentMarker, 'dragend', function() {
+                        const position = currentMarker.getPosition();
+                        updateCoordinates(position.getLat(), position.getLng());
+                    });
+                    
+                    // 좌표 업데이트
+                    updateCoordinates(lat, lng);
+                });
+                
+                // 좌표 업데이트 함수
+                function updateCoordinates(lat, lng) {
+                    // 좌표 변환 API 호출
+                    fetch('/admin/geodb/transform-coordinates/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCSRFToken()
+                        },
+                        body: JSON.stringify({
+                            'lng': lng,
+                            'lat': lat,
+                            'from_srid': 4326,
+                            'to_srid': 5186
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // EPSG:5186 좌표로 WKT 생성
+                            const wkt = `POINT(${data.x} ${data.y})`;
+                            
+                            // Django 폼 필드에 값 설정
+                            const inputElement = document.getElementById('id_{{ name }}');
+                            if (inputElement) {
+                                inputElement.value = wkt;
+                                
+                                // 변경 이벤트 발생
+                                const event = new Event('change', { bubbles: true });
+                                inputElement.dispatchEvent(event);
+                            }
+                            
+                            // 좌표 정보 표시
+                            updateCoordinatesDisplay(lat, lng, data.x, data.y);
+                        } else {
+                            console.error('좌표 변환 실패:', data.error);
+                            // 변환 실패 시 WGS84 좌표로 저장
+                            const wkt = `POINT(${lng} ${lat})`;
+                            const inputElement = document.getElementById('id_{{ name }}');
+                            if (inputElement) {
+                                inputElement.value = wkt;
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('좌표 변환 요청 실패:', error);
+                    });
+                }
+                
+                // 좌표 정보 표시 함수
+                function updateCoordinatesDisplay(lat, lng, x5186, y5186) {
+                    const coordsDiv = document.getElementById('{{ id }}_coords');
+                    if (coordsDiv) {
+                        let html = `WGS84: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                        if (x5186 && y5186) {
+                            html += ` | EPSG:5186: ${x5186.toFixed(2)}, ${y5186.toFixed(2)}`;
+                        }
+                        coordsDiv.innerHTML = html;
+                    }
+                }
+                
+                // CSRF 토큰 가져오기
+                function getCSRFToken() {
+                    const tokenElement = document.querySelector('[name=csrfmiddlewaretoken]');
+                    return tokenElement ? tokenElement.value : '';
+                }
+                
+                console.log('카카오맵이 성공적으로 초기화되었습니다.');
+            }
+        })();
+    </script>
+</body>
+</html> 
