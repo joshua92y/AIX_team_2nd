@@ -1,0 +1,177 @@
+{% extends 'admin/base_site.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+
+{% block extrastyle %}
+<link rel="stylesheet" type="text/css" href="{% static 'admin/css/dashboard.css' %}">
+<style>
+.dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+}
+.stat-card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.stat-number {
+    font-size: 2.5em;
+    font-weight: bold;
+    color: #0066cc;
+    margin: 10px 0;
+}
+.stat-label {
+    color: #666;
+    font-size: 0.9em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.recent-items {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin: 20px 0;
+    overflow: hidden;
+}
+.recent-items h3 {
+    background: #f8f9fa;
+    padding: 15px 20px;
+    margin: 0;
+    border-bottom: 1px solid #ddd;
+}
+.recent-items ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.recent-items li {
+    padding: 10px 20px;
+    border-bottom: 1px solid #eee;
+}
+.recent-items li:last-child {
+    border-bottom: none;
+}
+.geodb-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.action-buttons {
+    display: flex;
+    gap: 10px;
+}
+.btn {
+    padding: 8px 16px;
+    text-decoration: none;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    background: white;
+    color: #333;
+    font-size: 0.9em;
+}
+.btn:hover {
+    background: #f8f9fa;
+}
+.btn-primary {
+    background: #0066cc;
+    color: white;
+    border-color: #0066cc;
+}
+.btn-primary:hover {
+    background: #0056b3;
+}
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">홈</a>
+    &rsaquo; GeoDB 대시보드
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="geodb-header">
+    <h1>{{ title }}</h1>
+    <div class="action-buttons">
+        <a href="{% url 'geodb:stats' %}" class="btn">상세 통계</a>
+        <a href="{% url 'admin:index' %}" class="btn btn-primary">관리자 메인</a>
+    </div>
+</div>
+
+<div class="dashboard-stats">
+    {% for key, stat in spatial_stats.items %}
+        {% if key != 'error' and key != 'total' %}
+        <div class="stat-card">
+            <div class="stat-label">{{ stat.name }}</div>
+            <div class="stat-number">{{ stat.formatted_count }}</div>
+            <div style="font-size: 0.8em; color: #888;">{{ stat.model_name }}</div>
+        </div>
+        {% endif %}
+    {% endfor %}
+    
+    {% if spatial_stats.total %}
+    <div class="stat-card" style="border-color: #0066cc; background: linear-gradient(135deg, #f8f9ff 0%, #e6f3ff 100%);">
+        <div class="stat-label">{{ spatial_stats.total.name }}</div>
+        <div class="stat-number" style="color: #0066cc;">{{ spatial_stats.total.formatted_count }}</div>
+        <div style="font-size: 0.8em; color: #0066cc; font-weight: bold;">총합</div>
+    </div>
+    {% endif %}
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+    <div class="recent-items">
+        <h3>최근 편집된 상점</h3>
+        <ul>
+            {% for store in recent_editable_stores %}
+            <li>
+                <strong>{{ store.storename }}</strong> ({{ store.uptaenm }})
+                <br><small style="color: #666;">{{ store.address }}</small>
+            </li>
+            {% empty %}
+            <li style="color: #888; font-style: italic;">편집된 상점이 없습니다.</li>
+            {% endfor %}
+        </ul>
+    </div>
+    
+    <div class="recent-items">
+        <h3>최근 편집된 공공건물</h3>
+        <ul>
+            {% for building in recent_editable_buildings %}
+            <li>
+                <strong>{{ building.building_name }}</strong> ({{ building.building_type }})
+                <br><small style="color: #666;">{{ building.address }}</small>
+            </li>
+            {% empty %}
+            <li style="color: #888; font-style: italic;">편집된 공공건물이 없습니다.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+{% if spatial_stats.error %}
+<div style="background: #ffebee; border: 1px solid #f44336; color: #c62828; padding: 15px; border-radius: 4px; margin: 20px 0;">
+    <strong>오류:</strong> {{ spatial_stats.error }}
+</div>
+{% endif %}
+
+<div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+    <h3>빠른 액세스</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
+        <a href="{% url 'admin:GeoDB_lifepopgrid_changelist' %}" class="btn">생활인구 관리</a>
+        <a href="{% url 'admin:GeoDB_workgrid_changelist' %}" class="btn">직장인구 관리</a>
+        <a href="{% url 'admin:GeoDB_storepoint_changelist' %}" class="btn">상점 관리</a>
+        <a href="{% url 'admin:GeoDB_school_changelist' %}" class="btn">학교 관리</a>
+        <a href="{% url 'admin:GeoDB_publicbuilding_changelist' %}" class="btn">공공건물 관리</a>
+        <a href="{% url 'admin:GeoDB_landvalue_changelist' %}" class="btn">공시지가 관리</a>
+        <a href="{% url 'admin:GeoDB_editablestorepoint_changelist' %}" class="btn">편집가능한 상점</a>
+        <a href="{% url 'admin:GeoDB_editablepublicbuilding_changelist' %}" class="btn">편집가능한 공공건물</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,254 @@
+{% extends 'admin/base_site.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+
+{% block extrastyle %}
+<link rel="stylesheet" type="text/css" href="{% static 'admin/css/dashboard.css' %}">
+<style>
+.stats-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin: 20px 0;
+}
+.stats-section {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.stats-header {
+    background: #f8f9fa;
+    padding: 15px 20px;
+    margin: 0;
+    border-bottom: 1px solid #ddd;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+.stats-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.stats-table th, .stats-table td {
+    padding: 12px 20px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+.stats-table th {
+    background: #f8f9fa;
+    font-weight: bold;
+    color: #333;
+}
+.stats-table tr:hover {
+    background: #f8f9fa;
+}
+.count-cell {
+    text-align: right;
+    font-weight: bold;
+    color: #0066cc;
+}
+.chart-container {
+    padding: 20px;
+}
+.bar-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.bar-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.bar-label {
+    flex: 0 0 150px;
+    font-size: 0.9em;
+    color: #666;
+}
+.bar-visual {
+    flex: 1;
+    background: #f0f0f0;
+    height: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+.bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #0066cc, #4d94ff);
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+.bar-count {
+    flex: 0 0 80px;
+    text-align: right;
+    font-weight: bold;
+    color: #0066cc;
+    font-size: 0.9em;
+}
+.header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.btn {
+    padding: 8px 16px;
+    text-decoration: none;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    background: white;
+    color: #333;
+    font-size: 0.9em;
+}
+.btn:hover {
+    background: #f8f9fa;
+}
+.btn-primary {
+    background: #0066cc;
+    color: white;
+    border-color: #0066cc;
+}
+.btn-primary:hover {
+    background: #0056b3;
+}
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">홈</a>
+    &rsaquo; <a href="{% url 'geodb:dashboard' %}">GeoDB 대시보드</a>
+    &rsaquo; 상세 통계
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="header-actions">
+    <h1>{{ title }}</h1>
+    <div>
+        <a href="{% url 'geodb:dashboard' %}" class="btn">대시보드로</a>
+        <a href="{% url 'admin:index' %}" class="btn btn-primary">관리자 메인</a>
+    </div>
+</div>
+
+<div class="stats-section" style="grid-column: 1 / -1; margin-bottom: 30px;">
+    <h2 class="stats-header">전체 공간 데이터 현황</h2>
+    <table class="stats-table">
+        <thead>
+            <tr>
+                <th>데이터 유형</th>
+                <th>모델명</th>
+                <th style="text-align: right;">레코드 수</th>
+                <th style="text-align: center;">상태</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for key, stat in stats.items %}
+                {% if key != 'error' and key != 'total' and key != 'detailed' and key != 'detailed_error' %}
+                <tr>
+                    <td>{{ stat.name }}</td>
+                    <td style="color: #666; font-size: 0.9em;">{{ stat.model_name }}</td>
+                    <td class="count-cell">{{ stat.formatted_count }}</td>
+                    <td style="text-align: center;">
+                        {% if stat.count > 0 %}
+                            <span style="color: #28a745; font-weight: bold;">✓ 활성</span>
+                        {% else %}
+                            <span style="color: #dc3545; font-weight: bold;">× 비활성</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endif %}
+            {% endfor %}
+            {% if stats.total %}
+            <tr style="background: #e6f3ff; font-weight: bold;">
+                <td><strong>{{ stats.total.name }}</strong></td>
+                <td><strong>{{ stats.total.model_name }}</strong></td>
+                <td class="count-cell" style="color: #0066cc; font-size: 1.1em;">{{ stats.total.formatted_count }}</td>
+                <td style="text-align: center; color: #0066cc;">
+                    <strong>총합</strong>
+                </td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+{% if stats.detailed %}
+<div class="stats-container">
+    <div class="stats-section">
+        <h2 class="stats-header">상위 상점 업종 (Top 10)</h2>
+        <div class="chart-container">
+            <div class="bar-chart">
+                {% for item in stats.detailed.store_types %}
+                <div class="bar-item">
+                    <div class="bar-label">{{ item.uptaenm|truncatechars:20 }}</div>
+                    <div class="bar-visual">
+                        <div class="bar-fill" style="width: {% widthratio item.count stats.detailed.store_types.0.count 100 %}%;"></div>
+                    </div>
+                    <div class="bar-count">{{ item.count|floatformat:0 }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-section">
+        <h2 class="stats-header">학교 유형별 분포</h2>
+        <div class="chart-container">
+            <div class="bar-chart">
+                {% for item in stats.detailed.school_types %}
+                <div class="bar-item">
+                    <div class="bar-label">{{ item.school_type|truncatechars:20 }}</div>
+                    <div class="bar-visual">
+                        <div class="bar-fill" style="width: {% widthratio item.count stats.detailed.school_types.0.count 100 %}%;"></div>
+                    </div>
+                    <div class="bar-count">{{ item.count|floatformat:0 }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-section" style="grid-column: 1 / -1;">
+        <h2 class="stats-header">상위 공공건물 분류 (Top 10)</h2>
+        <div class="chart-container">
+            <div class="bar-chart">
+                {% for item in stats.detailed.building_types %}
+                <div class="bar-item">
+                    <div class="bar-label">{{ item.lclas_cl|truncatechars:20 }}</div>
+                    <div class="bar-visual">
+                        <div class="bar-fill" style="width: {% widthratio item.count stats.detailed.building_types.0.count 100 %}%;"></div>
+                    </div>
+                    <div class="bar-count">{{ item.count|floatformat:0 }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if stats.error %}
+<div style="background: #ffebee; border: 1px solid #f44336; color: #c62828; padding: 15px; border-radius: 4px; margin: 20px 0;">
+    <strong>오류:</strong> {{ stats.error }}
+</div>
+{% endif %}
+
+{% if stats.detailed_error %}
+<div style="background: #fff3cd; border: 1px solid #ffc107; color: #856404; padding: 15px; border-radius: 4px; margin: 20px 0;">
+    <strong>상세 통계 오류:</strong> {{ stats.detailed_error }}
+</div>
+{% endif %}
+
+<div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+    <h3>API 엔드포인트</h3>
+    <p style="color: #666; margin-bottom: 15px;">다음 API를 통해 공간 데이터에 접근할 수 있습니다:</p>
+    <div style="font-family: monospace; background: white; padding: 15px; border-radius: 4px; border: 1px solid #ddd;">
+        <div><strong>상점 데이터:</strong> <code>/geodb/api/spatial-data/?type=stores&limit=100</code></div>
+        <div><strong>학교 데이터:</strong> <code>/geodb/api/spatial-data/?type=schools&limit=100</code></div>
+        <div><strong>생활인구 데이터:</strong> <code>/geodb/api/spatial-data/?type=life_population&limit=100</code></div>
+    </div>
+</div>
+{% endblock %}

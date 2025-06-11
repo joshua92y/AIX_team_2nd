@@ -98,3 +98,4 @@ watchfiles==1.0.5
 websockets==15.0.1
 yarl==1.20.0
 zstandard==0.23.0
+gdal @ https://github.com/cgohlke/geospatial-wheels/releases/download/v2025.3.30/gdal-3.10.2-cp313-cp313-win_amd64.whl

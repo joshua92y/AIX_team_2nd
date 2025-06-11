@@ -8,6 +8,10 @@ from rest_framework.decorators import api_view
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.utils.crypto import get_random_string
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+import json
 
 
 @login_required
