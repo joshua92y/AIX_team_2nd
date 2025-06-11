@@ -122,7 +122,8 @@ class SpatialDatabaseInfo:
                 """)
                 return cursor.fetchall()
             except Exception as e:
-                return [('오류', 'error', str(e))]
+                print(f"❌ 데이터베이스 테이블 정보 조회 오류: {e}")
+                return [('데이터베이스 오류', 'error', f'테이블 정보를 조회할 수 없습니다: {str(e)}')]
     
     @staticmethod
     def get_spatial_ref_info():
