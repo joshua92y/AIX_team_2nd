@@ -19,7 +19,7 @@ djangorestframework==3.16.0
 filelock==3.18.0
 frozenlist==1.7.0
 fsspec==2025.5.1
-GDAL @ https://github.com/cgohlke/geospatial-wheels/releases/download/v2025.3.30/gdal-3.10.2-cp313-cp313-win_amd64.whl#sha256=d6aae781b9847065f831f3457c6c01d0b9272818656031d723dc88c160a8ec26
+GDAL @ https://github.com/cgohlke/geospatial-wheels/releases/download/v2025.3.30/gdal-3.10.2-cp313-cp313-win_amd64.whl
 greenlet==3.2.3
 grpcio==1.73.0
 h11==0.16.0
