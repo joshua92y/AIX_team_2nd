@@ -117,18 +117,17 @@ class BaseGISAdmin(admin.GISModelAdmin):
         return "지오메트리 없음"
     get_geometry_info.short_description = '위치 정보'
     
+    @admin.display(description='XY 좌표 (EPSG:5186)')
     def get_xy_coordinates(self, obj):
-        """XY 좌표를 표시 (EPSG:5186)"""
-        if hasattr(obj, 'geom') and obj.geom:
-            if hasattr(obj.geom, 'centroid'):
-                centroid = obj.geom.centroid
-                return f"X: {centroid.x:.2f}, Y: {centroid.y:.2f}"
-            elif hasattr(obj.geom, 'x') and hasattr(obj.geom, 'y'):
-                return f"X: {obj.geom.x:.2f}, Y: {obj.geom.y:.2f}"
-        # 별도 X, Y 필드가 있는 경우 체크
-        if hasattr(obj, 'x') and hasattr(obj, 'y') and obj.x and obj.y:
-            return f"X: {obj.x:.2f}, Y: {obj.y:.2f}"
-        return "-"
+        try:
+            if hasattr(obj, 'geom') and obj.geom and len(obj.geom) > 0:
+                first_point = obj.geom[0]
+                return f"({first_point.x:.6f}, {first_point.y:.6f})"
+            elif obj.x and obj.y:
+                return f"({obj.x}, {obj.y})"
+            return "좌표 없음"
+        except Exception as e:
+            return f"좌표 오류: {str(e)}"
     get_xy_coordinates.short_description = 'XY 좌표 (EPSG:5186)'
     
     def get_coordinate_detail(self, obj):
@@ -360,8 +359,9 @@ class StorePointAdmin(BaseGISAdmin):
     @admin.display(description='XY 좌표 (EPSG:5186)')
     def get_xy_coordinates(self, obj):
         try:
-            if hasattr(obj, 'geom') and obj.geom:
-                return f"({obj.geom.x:.6f}, {obj.geom.y:.6f})"
+            if hasattr(obj, 'geom') and obj.geom and len(obj.geom) > 0:
+                first_point = obj.geom[0]
+                return f"({first_point.x:.6f}, {first_point.y:.6f})"
             elif obj.x and obj.y:
                 return f"({obj.x}, {obj.y})"
             return "좌표 없음"
