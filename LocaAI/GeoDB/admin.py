@@ -1,3 +1,4 @@
+#loca/GeoDB/admin.py
 from django.contrib.gis import admin
 from django.contrib import admin as django_admin
 from django.db import connection
@@ -358,7 +359,15 @@ class StorePointAdmin(BaseGISAdmin):
     """상점 포인트 관리"""
     @admin.display(description='XY 좌표 (EPSG:5186)')
     def get_xy_coordinates(self, obj):
-        return super().get_xy_coordinates(obj)
+        try:
+            if hasattr(obj, 'geom') and obj.geom:
+                return f"({obj.geom.x:.6f}, {obj.geom.y:.6f})"
+            elif obj.x and obj.y:
+                return f"({obj.x}, {obj.y})"
+            return "좌표 없음"
+        except Exception as e:
+            return f"좌표 오류: {str(e)}"
+    
     form = StorePointForm  # 카카오맵 위젯 사용
     list_display = ('ogc_fid', 'uptaenm', 'service', 'area', 'get_xy_coordinates', 'get_coord_info')
     list_filter = ('uptaenm', 'service')
@@ -381,11 +390,14 @@ class StorePointAdmin(BaseGISAdmin):
     )
     
     def get_coord_info(self, obj):
-        if obj.x and obj.y:
-            return f"({obj.x}, {obj.y})"
-        elif obj.geom:
-            return f"({obj.geom.x:.6f}, {obj.geom.y:.6f})"
-        return "좌표 없음"
+        try:
+            if obj.x and obj.y:
+                return f"({obj.x}, {obj.y})"
+            elif obj.geom:
+                return f"({obj.geom.x:.6f}, {obj.geom.y:.6f})"
+            return "좌표 없음"
+        except Exception as e:
+            return f"좌표 오류: {str(e)}"
     get_coord_info.short_description = '좌표'
 
 
