@@ -1,14 +1,45 @@
-# Python 3.10 기반 이미지
-FROM python:3.11-slim
+FROM python:3.13.3
 
-# 작업 디렉토리 설정
 WORKDIR /app
 
-# 필요시 requirements.txt 복사
-COPY requirements.txt ./
-COPY . .
-# 패키지 설치
-RUN pip install --no-cache-dir -r requirements.txt
+# 시스템 패키지 설치 및 GDAL 설정
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    gnupg \
+    curl \
+    ca-certificates \
+    lsb-release \
+    software-properties-common \
+    libgdal-dev \
+    gdal-bin \
+    build-essential \
+    python3-dev && \
+    rm -rf /var/lib/apt/lists/*
 
-# 쉘 기본 실행
-CMD ["python", "app.py"]
+# GDAL 환경변수 설정
+ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
+ENV C_INCLUDE_PATH=/usr/include/gdal
+ENV GDAL_DATA=/usr/share/gdal
+
+# Python 패키지 설치를 위한 준비
+COPY requirements.txt .
+
+# Windows 전용 패키지 제거 및 requirements.txt 정리
+RUN sed -i '/gdal-.*win.*\.whl/d' requirements.txt && \
+    sed -i '/^pywin32==/d' requirements.txt && \
+    sed -i '/^GDAL @/d' requirements.txt
+
+# pip 업그레이드 및 패키지 설치
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir GDAL==$(gdal-config --version) && \
+    pip install --no-cache-dir -r requirements.txt
+
+# 프로젝트 파일 복사
+COPY . .
+# ✅ 정적 파일 수집
+RUN python manage.py collectstatic --noinput
+# 포트 설정
+EXPOSE 8000
+
+# 실행 명령
+CMD ["uvicorn", "config.asgi:application", "--host", "0.0.0.0", "--port", "8000"]

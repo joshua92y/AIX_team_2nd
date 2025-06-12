@@ -10,6 +10,7 @@ from django.conf import settings
 from functools import lru_cache
 from pydantic import Field
 
+
 class CustomQdrantRetriever(BaseRetriever):
     client: Any = Field()
     collection_name: str = Field()
@@ -35,12 +36,10 @@ class CustomQdrantRetriever(BaseRetriever):
         return docs
 
 
+@lru_cache
 def get_qdrant_client() -> QdrantClient:
     """QdrantClient 인스턴스 생성"""
-    return QdrantClient(
-        url=settings.RAG_SETTINGS["QDRANT_URL"],
-        api_key=settings.RAG_SETTINGS.get("QDRANT_API_KEY")
-    )
+    return QdrantClient(url=settings.QDRANT_URL, api_key=settings.QDRANT_API_KEY)
 
 
 @lru_cache
@@ -50,7 +49,7 @@ def get_embedding_model() -> HuggingFaceEmbeddings:
         model_name=settings.RAG_SETTINGS["EMBEDDING_MODEL"],
         model_kwargs={
             "device": "cuda" if getattr(settings, "USE_CUDA", False) else "cpu"
-        }
+        },
     )
 
 
@@ -72,8 +71,5 @@ def get_collection_retriever(collection_name: str, top_k: int = None) -> BaseRet
     k = top_k or settings.RAG_SETTINGS.get("RETRIEVER_K", 3)
 
     return CustomQdrantRetriever(
-        client=client,
-        collection_name=collection_name,
-        embed_model=embedding,
-        top_k=k
+        client=client, collection_name=collection_name, embed_model=embedding, top_k=k
     )

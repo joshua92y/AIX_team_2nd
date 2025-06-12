@@ -17,6 +17,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 from chatbot.rag_settings import RAG_SETTINGS
+import platform
 
 # ============================================================================
 # 기본 Django 설정
@@ -26,20 +27,20 @@ from chatbot.rag_settings import RAG_SETTINGS
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # 환경변수 로드
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
+load_dotenv(dotenv_path=BASE_DIR / ".env")
 
 # ============================================================================
 # 보안 설정
 # ============================================================================
 
 # 비밀 키 (환경변수에서 로드, 프로덕션에서는 반드시 설정)
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-your-secret-key')
+SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-your-secret-key")
 
 # 디버그 모드 (프로덕션에서는 반드시 False)
-DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1', 'yes', 'on')
+DEBUG = os.getenv("DEBUG", "True").lower() in ("true", "1", "yes", "on")
 
 # 허용된 호스트 (프로덕션에서는 실제 도메인 설정)
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
 # ============================================================================
 # 애플리케이션 및 미들웨어 설정
@@ -48,7 +49,7 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 # Django 기본 앱들
 DJANGO_APPS = [
     "django.contrib.admin",
-    "django.contrib.auth", 
+    "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
@@ -59,19 +60,19 @@ DJANGO_APPS = [
 # 서드파티 앱들
 THIRD_PARTY_APPS = [
     "rest_framework",  # Django REST Framework
-    "channels",        # WebSocket 지원
-    "leaflet",         # 지도 기능
-    "taggit",          # 태그 기능
+    "channels",  # WebSocket 지원
+    "leaflet",  # 지도 기능
+    "taggit",  # 태그 기능
 ]
 
 # 프로젝트 로컬 앱들
-LOCAL_APPS = [     # 메인 웹사이트
+LOCAL_APPS = [  # 메인 웹사이트
     "custom_auth",
-    "main",    # 커스텀 사용자 인증
-    "border",         # 게시판 기능
-    "chatbot",        # AI 챗봇
-    "GeoDB",          # 지오메트리 데이터베이스 관리
-    "AI_Analyzer",    # AI 상권분석 시스템
+    "main",  # 커스텀 사용자 인증
+    "border",  # 게시판 기능
+    "chatbot",  # AI 챗봇
+    "GeoDB",  # 지오메트리 데이터베이스 관리
+    "AI_Analyzer",  # AI 상권분석 시스템
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -79,7 +80,7 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 # 미들웨어 설정
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware", 
+    "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -125,12 +126,12 @@ DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",  # SpatiaLite 엔진으로 변경
         "NAME": "aidata",
-        'USER': 'postgres',
-        'PASSWORD': 'aix25bestgmail',
-        'HOST': 'aix25team.c3ky46o8wi2s.ap-northeast-3.rds.amazonaws.com',
-        'PORT': '5432',
+        "USER": "postgres",
+        "PASSWORD": "aix25bestgmail",
+        "HOST": "aix25team.c3ky46o8wi2s.ap-northeast-3.rds.amazonaws.com",
+        "PORT": "5432",
         "OPTIONS": {
-            'sslmode': 'require',
+            "sslmode": "require",
             "connect_timeout": 60,  # 대용량 공간정보 DB를 위한 타임아웃 설정
         },
     }
@@ -160,43 +161,53 @@ AUTH_PASSWORD_VALIDATORS = [
 # ============================================================================
 
 # 프로젝트 내장 GDAL 라이브러리 설정
-GDAL_LIBS_ROOT = BASE_DIR / 'gdal_libs'
+GDAL_LIBS_ROOT = BASE_DIR / "gdal_libs"
 
 # GDAL 라이브러리 자동 감지 및 설정
 if GDAL_LIBS_ROOT.exists():
     # PATH 환경변수에 추가
-    if str(GDAL_LIBS_ROOT) not in os.environ.get('PATH', ''):
-        os.environ['PATH'] = f"{GDAL_LIBS_ROOT};{os.environ.get('PATH', '')}"
-    
+    if str(GDAL_LIBS_ROOT) not in os.environ.get("PATH", ""):
+        os.environ["PATH"] = f"{GDAL_LIBS_ROOT};{os.environ.get('PATH', '')}"
+
     # PROJ 설정 (오류 방지 최적화)
-    os.environ.update({
-        'PROJ_LIB': str(GDAL_LIBS_ROOT),
-        'PROJ_NETWORK': 'OFF',
-        'PROJ_SKIP_READ_USER_WRITABLE_DIRECTORY': 'YES',
-        'PROJ_CURL_ENABLED': 'NO',
-        'PROJ_DEBUG': '0',
-    })
-    
+    os.environ.update(
+        {
+            "PROJ_LIB": str(GDAL_LIBS_ROOT),
+            "PROJ_NETWORK": "OFF",
+            "PROJ_SKIP_READ_USER_WRITABLE_DIRECTORY": "YES",
+            "PROJ_CURL_ENABLED": "NO",
+            "PROJ_DEBUG": "0",
+        }
+    )
+
     print(f"[OK] 프로젝트 내장 GDAL 라이브러리 사용: {GDAL_LIBS_ROOT}")
 else:
     print(f"[WARNING] GDAL 라이브러리 폴더 없음: {GDAL_LIBS_ROOT}")
     print("[INFO] 시스템 설치 GDAL 사용")
 
 # GDAL 라이브러리 경로 (시스템 설치 버전)
-GEOS_LIBRARY_PATH = r"C:\Users\Admin\AppData\Local\Programs\Python\Python313\Lib\site-packages\osgeo\geos_c.dll"
-GDAL_LIBRARY_PATH = r"C:\Users\Admin\AppData\Local\Programs\Python\Python313\Lib\site-packages\osgeo\gdal.dll"
-
+if platform.system() == "Windows":
+    GEOS_LIBRARY_PATH = os.path.join(
+        BASE_DIR, "venv", "Lib", "site-packages", "osgeo", "geos_c.dll"
+    )
+    GDAL_LIBRARY_PATH = os.path.join(
+        BASE_DIR, "venv", "Lib", "site-packages", "osgeo", "gdal.dll"
+    )
 # Leaflet 지도 설정
 LEAFLET_CONFIG = {
-    'DEFAULT_CENTER': (37.5665, 126.9780),  # 서울 중심좌표
-    'DEFAULT_ZOOM': 10,
-    'MIN_ZOOM': 3, 
-    'MAX_ZOOM': 18,
-    'DEFAULT_PRECISION': 6,
-    'TILES': [
-        ('OpenStreetMap', 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            'attribution': '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        }),
+    "DEFAULT_CENTER": (37.5665, 126.9780),  # 서울 중심좌표
+    "DEFAULT_ZOOM": 10,
+    "MIN_ZOOM": 3,
+    "MAX_ZOOM": 18,
+    "DEFAULT_PRECISION": 6,
+    "TILES": [
+        (
+            "OpenStreetMap",
+            "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            {
+                "attribution": '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            },
+        ),
     ],
 }
 
@@ -237,22 +248,19 @@ LOGOUT_REDIRECT_URL = "border:inquiry_list"
 # ============================================================================
 
 # 카카오 API 설정 (환경변수 우선, 기본값 제공)
-KAKAO_REST_API_KEY = os.getenv('KAKAO_REST_API_KEY', '4b3a451741a307fa3db2b9273005146a')
-KAKAO_JS_API_KEY = os.getenv('KAKAO_JS_API_KEY', '0ac2a982e676a58f9a4245749206f78b')
+KAKAO_REST_API_KEY = os.getenv("KAKAO_REST_API_KEY")
+KAKAO_JS_API_KEY = os.getenv("KAKAO_JS_API_KEY")
 
 # ============================================================================
 # 챗봇 및 RAG 시스템 설정
 # ============================================================================
-
-# RAG (Retrieval-Augmented Generation) 설정
-# chatbot/rag_settings.py에서 import됨
+# RAG 모델설정: LocaAI/chatbot/rag_settings.py
+# Qdrant 설정
+QDRANT_URL = os.getenv("QDRANT_URL")
+QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
 
 # Channels (WebSocket) 설정
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
-    }
-}
+CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
 
 # ============================================================================
 # 로깅 설정
@@ -276,13 +284,17 @@ LOGGING = {
             "class": "logging.StreamHandler",
             "formatter": "verbose" if DEBUG else "simple",
         },
-        "file": {
-            "class": "logging.FileHandler",
-            "filename": BASE_DIR / "logs" / "django.log",
-            "formatter": "verbose",
-        } if not DEBUG else {
-            "class": "logging.NullHandler",
-        },
+        "file": (
+            {
+                "class": "logging.FileHandler",
+                "filename": BASE_DIR / "logs" / "django.log",
+                "formatter": "verbose",
+            }
+            if not DEBUG
+            else {
+                "class": "logging.NullHandler",
+            }
+        ),
     },
     "loggers": {
         # Django GIS GDAL 오류 로그 레벨 조정
@@ -298,7 +310,7 @@ LOGGING = {
             "propagate": False,
         },
         "chatbot": {
-            "handlers": ["console", "file"] if not DEBUG else ["console"], 
+            "handlers": ["console", "file"] if not DEBUG else ["console"],
             "level": "INFO",
             "propagate": False,
         },
@@ -323,14 +335,14 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 if DEBUG:
     # 개발 환경 설정
     print("[DEBUG] 개발 모드로 실행 중")
-    
+
     # 개발용 추가 미들웨어 (필요시)
     # MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']
-    
+
 else:
     # 프로덕션 환경 설정
     print("[PROD] 프로덕션 모드로 실행 중")
-    
+
     # 보안 강화 설정
     SECURE_SSL_REDIRECT = True
     SECURE_HSTS_SECONDS = 31536000
@@ -338,7 +350,7 @@ else:
     SECURE_HSTS_PRELOAD = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_BROWSER_XSS_FILTER = True
-    
+
     # 세션 보안
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True

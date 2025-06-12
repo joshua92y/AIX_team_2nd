@@ -2,74 +2,75 @@ from django import forms
 from django.contrib.gis import forms as gis_forms
 from django.conf import settings
 from django.utils.safestring import mark_safe
-from django.template.loader import render_to_string
 import json
 
 
 class KakaoMapWidget(gis_forms.BaseGeometryWidget):
     """카카오맵 API를 사용하는 커스텀 GIS 위젯"""
-    
-    template_name = 'gis/admin/kakao_map.html'
-    
+
+    template_name = "gis/admin/kakao_map.html"
+
     def __init__(self, attrs=None):
         self.map_width = 800
         self.map_height = 600
         self.map_srid = 4326  # 카카오맵은 WGS84 좌표계 사용
-        self.geom_type = 'POINT'
+        self.geom_type = "POINT"
         super().__init__(attrs)
-    
+
     def render(self, name, value, attrs=None, renderer=None):
         if attrs is None:
             attrs = {}
-        
+
         # 카카오맵 API 키 가져오기
-        kakao_api_key = getattr(settings, 'KAKAO_JS_API_KEY', '')
-        
+        kakao_api_key = getattr(settings, "KAKAO_JS_API_KEY", "")
+
         # 기본 템플릿 컨텍스트
         context = {
-            'id': f'kakao_map_{name}',
-            'name': name,
-            'map_width': self.map_width,
-            'map_height': self.map_height,
-            'kakao_api_key': kakao_api_key,
-            'default_lat': 37.5665,  # 서울 중심 위도
-            'default_lon': 126.9780,  # 서울 중심 경도
-            'default_zoom': 3,
-            'geometry_wkt': '',
-            'initial_lat': None,
-            'initial_lng': None,
+            "id": f"kakao_map_{name}",
+            "name": name,
+            "map_width": self.map_width,
+            "map_height": self.map_height,
+            "kakao_api_key": kakao_api_key,
+            "default_lat": 37.5665,  # 서울 중심 위도
+            "default_lon": 126.9780,  # 서울 중심 경도
+            "default_zoom": 3,
+            "geometry_wkt": "",
+            "initial_lat": None,
+            "initial_lng": None,
         }
-        
+
         # 기존 지오메트리 값 처리
         if value:
             try:
                 import pyproj
                 from django.contrib.gis.geos import GEOSGeometry
-                
+
                 geom = GEOSGeometry(value)
-                context['geometry_wkt'] = str(value)
-                
+                context["geometry_wkt"] = str(value)
+
                 # EPSG:5186 → EPSG:4326 좌표 변환
-                if geom.geom_type == 'Point':
+                if geom.geom_type == "Point":
                     if geom.srid == 5186 or (geom.srid is None and geom.x > 100000):
                         # pyproj로 좌표 변환
-                        crs_5186 = pyproj.CRS('EPSG:5186')
-                        crs_4326 = pyproj.CRS('EPSG:4326')
-                        transformer = pyproj.Transformer.from_crs(crs_5186, crs_4326, always_xy=True)
-                        
+                        crs_5186 = pyproj.CRS("EPSG:5186")
+                        crs_4326 = pyproj.CRS("EPSG:4326")
+                        transformer = pyproj.Transformer.from_crs(
+                            crs_5186, crs_4326, always_xy=True
+                        )
+
                         lon, lat = transformer.transform(geom.x, geom.y)
-                        context['initial_lat'] = lat
-                        context['initial_lng'] = lon
+                        context["initial_lat"] = lat
+                        context["initial_lng"] = lon
                     elif geom.srid == 4326:
                         # 이미 WGS84인 경우
-                        context['initial_lat'] = geom.y
-                        context['initial_lng'] = geom.x
-                        
+                        context["initial_lat"] = geom.y
+                        context["initial_lng"] = geom.x
+
             except Exception as e:
                 print(f"카카오맵 위젯 좌표 변환 오류: {e}")
-        
+
         # 카카오맵 HTML 생성 (공식 문서 참고)
-        html = f'''
+        html = f"""
         <div id="kakao_map_{name}" style="width:{self.map_width}px;height:{self.map_height}px;border:1px solid #ddd;border-radius:4px;background-color:#f8f9fa;"></div>
         <input type="hidden" id="id_{name}" name="{name}" value="{value or ''}" />
         <div style="margin-top:10px;padding:10px;background-color:#f8f9fa;border:1px solid #ddd;border-radius:4px;">
@@ -229,20 +230,22 @@ class KakaoMapWidget(gis_forms.BaseGeometryWidget):
             }});
         }})();
         </script>
-        '''
-        
+        """
+
         return mark_safe(html)
 
 
 class KakaoPointWidget(KakaoMapWidget):
     """카카오맵을 사용하는 포인트 위젯"""
-    geom_type = 'POINT'
+
+    geom_type = "POINT"
     map_width = 800
     map_height = 600
 
 
 class KakaoPolygonWidget(KakaoMapWidget):
     """카카오맵을 사용하는 폴리곤 위젯"""
-    geom_type = 'POLYGON'
+
+    geom_type = "POLYGON"
     map_width = 800
-    map_height = 600 
+    map_height = 600
