@@ -1,0 +1,28 @@
+# 🐍 가상환경 (절대 포함하면 안 됨)
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 🧪 테스트/로컬 데이터
+db.sqlite3
+*.sqlite3
+*.log
+*.bak
+
+# 🖼️ 미디어, 정적 캐시
+staticfiles/
+static/
+
+# 🗂️ IDE 설정 및 메타 파일
+.vscode/
+.idea/
+*.DS_Store
+*.swp
+
+# 📦 Git & Lint 관련
+.git/
+.gitattributes
+.gitignore
+.prettierignore
