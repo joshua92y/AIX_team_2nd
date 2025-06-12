@@ -6,8 +6,8 @@ class User(AbstractUser):
     class Role(models.TextChoices):
         ADMIN = 'ADMIN', 'Admin'
         USER = 'USER', 'User'
-    
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.AutoField(primary_key=True) 
+    uuid_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, verbose_name="UUID",null=True ,blank=True)
     role = models.CharField(max_length=10, choices=Role.choices, default=Role.USER)
     session_token = models.UUIDField(null=True, blank=True)
     last_login_ip = models.GenericIPAddressField(null=True, blank=True)

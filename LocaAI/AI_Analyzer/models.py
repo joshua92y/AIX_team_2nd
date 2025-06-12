@@ -44,7 +44,7 @@ class AnalysisRequest(django_models.Model):
         - 공간 분석을 위해 WGS84와 EPSG:5186 좌표를 모두 저장
         - AnalysisResult와 1:1 관계
     """
-    user = django_models.ForeignKey('custom_auth.User', on_delete=django_models.CASCADE, verbose_name="사용자")
+    user = django_models.ForeignKey('custom_auth.User', on_delete=django_models.CASCADE, verbose_name="사용자", null=True, blank=True)
     address = django_models.CharField(max_length=200, verbose_name="주소")
     area = django_models.FloatField(verbose_name="면적(㎡)")
     business_type = django_models.ForeignKey(BusinessType, on_delete=django_models.CASCADE, verbose_name="업종")
@@ -112,7 +112,7 @@ class AnalysisResult(django_models.Model):
         - PDF 생성 및 결과 조회에 활용
     """
     request = django_models.OneToOneField(AnalysisRequest, on_delete=django_models.CASCADE, verbose_name="분석 요청")
-    user = django_models.ForeignKey('custom_auth.User', on_delete=django_models.CASCADE, verbose_name="사용자")
+    user = django_models.ForeignKey('custom_auth.User', on_delete=django_models.CASCADE, verbose_name="사용자", null=True, blank=True)
     
     # 생활인구 관련
     life_pop_300m = django_models.IntegerField(verbose_name="300m내 총생활인구", default=0)

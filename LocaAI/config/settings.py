@@ -65,9 +65,9 @@ THIRD_PARTY_APPS = [
 ]
 
 # 프로젝트 로컬 앱들
-LOCAL_APPS = [
-    "main",           # 메인 웹사이트
-    "custom_auth",    # 커스텀 사용자 인증
+LOCAL_APPS = [     # 메인 웹사이트
+    "custom_auth",
+    "main",    # 커스텀 사용자 인증
     "border",         # 게시판 기능
     "chatbot",        # AI 챗봇
     "GeoDB",          # 지오메트리 데이터베이스 관리
