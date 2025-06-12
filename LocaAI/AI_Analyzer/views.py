@@ -526,12 +526,16 @@ def perform_spatial_analysis(analysis_request):
                     # 사용 가능한 테이블 확인
                     for table_name in foreign_tables:
                         try:
-                            # 테이블 존재 여부 확인
-                            cursor.execute(f"""
-                                SELECT name FROM sqlite_master 
-                                WHERE type='table' AND name='{table_name}'
-                            """)
-                            if not cursor.fetchone():
+                            # 테이블 존재 여부 확인 (PostgreSQL 문법)
+                            cursor.execute("""
+                                SELECT EXISTS (
+                                    SELECT FROM pg_catalog.pg_tables 
+                                    WHERE schemaname = 'public' 
+                                    AND tablename = %s
+                                )
+                            """, [table_name])
+                            
+                            if not cursor.fetchone()[0]:
                                 print(f"테이블 {table_name}: 존재하지 않음")
                                 continue
                                 
@@ -611,12 +615,16 @@ def perform_spatial_analysis(analysis_request):
                     # 사용 가능한 테이블 확인 및 300m 쿼리
                     for table_name in long_tables:
                         try:
-                            # 테이블 존재 여부 확인
-                            cursor.execute(f"""
-                                SELECT name FROM sqlite_master 
-                                WHERE type='table' AND name='{table_name}'
-                            """)
-                            if not cursor.fetchone():
+                            # 테이블 존재 여부 확인 (PostgreSQL 문법)
+                            cursor.execute("""
+                                SELECT EXISTS (
+                                    SELECT FROM pg_catalog.pg_tables 
+                                    WHERE schemaname = 'public' 
+                                    AND tablename = %s
+                                )
+                            """, [table_name])
+                            
+                            if not cursor.fetchone()[0]:
                                 print(f"테이블 {table_name}: 존재하지 않음")
                                 continue
                                 
@@ -789,7 +797,7 @@ def perform_spatial_analysis(analysis_request):
                 # 9. 공시지가 분석
                 try:
                     cursor.execute(f"""
-                        SELECT COALESCE("A9", 0) as land_price
+                        SELECT COALESCE(a9, 0) as land_price
                         FROM ltv_5186 
                         WHERE ST_Contains(geom, ST_GeomFromText('POINT({x_coord} {y_coord})', 5186))
                         LIMIT 1
@@ -1089,13 +1097,13 @@ def database_info(request):
     with connection.cursor() as cursor:
         # 테이블 정보
         cursor.execute("""
-            SELECT name, type, sql 
-            FROM sqlite_master 
-            WHERE type IN ('table', 'view') 
-            AND name NOT LIKE 'sqlite_%'
-            AND name NOT LIKE 'idx_%'
-            AND name NOT LIKE 'cache_%'
-            ORDER BY name
+            SELECT table_name, table_type, table_schema
+            FROM information_schema.tables 
+            WHERE table_schema = 'public'
+            AND table_type IN ('BASE TABLE', 'VIEW')
+            AND table_name NOT LIKE 'pg_%'
+            AND table_name NOT LIKE 'sql_%'
+            ORDER BY table_name
         """)
         tables = cursor.fetchall()
         

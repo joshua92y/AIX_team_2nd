@@ -1,3 +1,4 @@
+#LocaAI\GeoDB\models.py
 from django.contrib.gis.db import models
 from django.db import models as django_models
 
@@ -12,7 +13,7 @@ class LifePopGrid(models.Model):
     age_40 = django_models.FloatField(null=True, blank=True, verbose_name="40대", db_column="40대")
     age_50 = django_models.FloatField(null=True, blank=True, verbose_name="50대", db_column="50대")
     age_60 = django_models.FloatField(null=True, blank=True, verbose_name="60대", db_column="60대")
-    geom = models.PointField(srid=5186, verbose_name="지오메트리")
+    geom = models.MultiPolygonField(srid=5186, verbose_name="지오메트리")
     
     class Meta:
         db_table = 'life_pop_grid_10m_5186'
@@ -30,7 +31,7 @@ class WorkGrid(models.Model):
     총_직장_인구_수 = django_models.IntegerField(null=True, blank=True, verbose_name="총직장인구수", db_column="총_직장_인구_수")
     남성_직장_인구_수 = django_models.IntegerField(null=True, blank=True, verbose_name="남성직장인구수", db_column="남성_직장_인구_수")
     여성_직장_인구_수 = django_models.IntegerField(null=True, blank=True, verbose_name="여성직장인구수", db_column="여성_직장_인구_수")
-    geom = models.GeometryField(srid=5186, verbose_name="지오메트리")
+    geom = models.MultiPointField(srid=5186, verbose_name="지오메트리")
     
     class Meta:
         db_table = 'workgrid_10m_5186'
@@ -47,7 +48,7 @@ class TempForeign(models.Model):
     ogc_fid = django_models.AutoField(primary_key=True)
     총생활인구수 = django_models.IntegerField(null=True, blank=True, verbose_name="총생활인구수")
     중국인체류인구수 = django_models.IntegerField(null=True, blank=True, verbose_name="중국인체류인구수")
-    geom = models.GeometryField(srid=5186, verbose_name="지오메트리")
+    geom = models.MultiPointField(srid=5186, verbose_name="지오메트리")
     
     class Meta:
         db_table = 'temp_foreign_25m_5186'
@@ -64,7 +65,7 @@ class LongForeign(models.Model):
     ogc_fid = django_models.AutoField(primary_key=True)
     총생활인구수 = django_models.IntegerField(null=True, blank=True, verbose_name="총생활인구수")
     중국인체류인구수 = django_models.IntegerField(null=True, blank=True, verbose_name="중국인체류인구수")
-    geom = models.GeometryField(srid=5186, verbose_name="지오메트리")
+    geom = models.MultiPointField(srid=5186, verbose_name="지오메트리")
     
     class Meta:
         db_table = 'long_foreign_25m_5186'
@@ -84,7 +85,7 @@ class StorePoint(models.Model):
     area = django_models.CharField(max_length=255, null=True, blank=True, verbose_name="면적")
     x = django_models.CharField(max_length=255, null=True, blank=True, verbose_name="X좌표")
     y = django_models.CharField(max_length=255, null=True, blank=True, verbose_name="Y좌표")
-    geom = models.PointField(srid=5186, verbose_name="지오메트리")
+    geom = models.MultiPointField(srid=5186, verbose_name="지오메트리")
     
     class Meta:
         db_table = 'store_point_5186'
@@ -113,7 +114,7 @@ class School(models.Model):
     fax_number = django_models.CharField(max_length=255, verbose_name="팩스번호", db_column="_팩스번호_", null=True, blank=True)
     x = django_models.CharField(max_length=255, verbose_name="X좌표", null=True, blank=True)
     y = django_models.CharField(max_length=255, verbose_name="Y좌표", null=True, blank=True)
-    geom = models.PointField(srid=5186, verbose_name="위치", null=True, blank=True)
+    geom = models.MultiPointField(srid=5186, verbose_name="위치", null=True, blank=True)
     
     class Meta:
         db_table = 'school_5186'
@@ -132,7 +133,7 @@ class PublicBuilding(models.Model):
     lclas_cl = django_models.CharField(max_length=255, null=True, blank=True, verbose_name="대분류")
     mlsfc_cl = django_models.CharField(max_length=255, null=True, blank=True, verbose_name="중분류")
     dgm_ar = django_models.FloatField(null=True, blank=True, verbose_name="면적")
-    geom = models.GeometryField(srid=5186, verbose_name="지오메트리")
+    geom = models.MultiPolygonField(srid=5186, verbose_name="지오메트리")
     
     class Meta:
         db_table = 'public_5186'
@@ -152,7 +153,7 @@ class LandValue(models.Model):
     a3 = django_models.CharField(max_length=255, null=True, blank=True, verbose_name="A3")
     a6 = django_models.CharField(max_length=255, null=True, blank=True, verbose_name="A6")
     a9 = django_models.FloatField(null=True, blank=True, verbose_name="공시지가")
-    geom = models.GeometryField(srid=5186, verbose_name="지오메트리")
+    geom = models.MultiPolygonField(srid=5186, verbose_name="지오메트리")
     
     class Meta:
         db_table = 'ltv_5186'

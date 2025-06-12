@@ -123,11 +123,15 @@ TEMPLATES = [
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.contrib.gis.db.backends.spatialite",  # SpatiaLite 엔진으로 변경
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.contrib.gis.db.backends.postgis",  # SpatiaLite 엔진으로 변경
+        "NAME": "aidata",
+        'USER': 'postgres',
+        'PASSWORD': 'aix25bestgmail',
+        'HOST': 'aix25team.c3ky46o8wi2s.ap-northeast-3.rds.amazonaws.com',
+        'PORT': '5432',
         "OPTIONS": {
-            "timeout": 60,  # 대용량 공간정보 DB를 위한 타임아웃 설정
-            "init_command": "PRAGMA journal_mode=WAL;",  # 동시성 향상
+            'sslmode': 'require',
+            "connect_timeout": 60,  # 대용량 공간정보 DB를 위한 타임아웃 설정
         },
     }
 }
