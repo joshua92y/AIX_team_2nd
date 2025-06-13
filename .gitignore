@@ -167,3 +167,9 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# ==============================
+# 💀 Not used anymore (custom)
+# ==============================
+AI_Analyzer/
+frontend/

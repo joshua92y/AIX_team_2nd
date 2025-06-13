@@ -8,7 +8,6 @@ urlpatterns = [
     # 로그인/로그아웃
     path('login/', auth_views.LoginView.as_view(
         template_name='custom_auth/login.html',
-        next_page='border:inquiry_list'  # 로그인 성공 후 리다이렉트할 URL
     ), name='login'),
     path('logout/', views.logout_view, name='logout'),
     

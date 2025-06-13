@@ -237,7 +237,11 @@ else:
 path('pdf-data/<int:request_id>/', views.get_pdf_data, name='get_pdf_data'),
 ```
 
+<<<<<<< HEAD
 **전체 URL**: `/ai_analyzer/pdf-data/{request_id}/`
+=======
+**전체 URL**: `/AI_Analyzer/pdf-data/{request_id}/`
+>>>>>>> mkchoi
 
 **HTTP 메서드**: GET  
 **데코레이터**: `@csrf_exempt`
@@ -352,7 +356,11 @@ function downloadPDF() {
     document.getElementById('retryPdfBtn').style.display = 'none';
     
     // 서버에서 PDF 데이터 가져오기
+<<<<<<< HEAD
     fetch(`/ai_analyzer/pdf-data/${currentRequestId}/`, {
+=======
+    fetch(`/AI_Analyzer/pdf-data/${currentRequestId}/`, {
+>>>>>>> mkchoi
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -384,7 +392,11 @@ function downloadPDF() {
 ```
 
 **API 호출**:
+<<<<<<< HEAD
 - **URL**: `/ai_analyzer/pdf-data/${currentRequestId}/`
+=======
+- **URL**: `/AI_Analyzer/pdf-data/${currentRequestId}/`
+>>>>>>> mkchoi
 - **메서드**: GET
 - **응답**: JSON 형태의 PDF 데이터
 
@@ -734,7 +746,11 @@ updatePdfPreview() 호출 (미리보기 업데이트)
 ```
 downloadPDF() 함수 호출
    ↓
+<<<<<<< HEAD
 fetch('/ai_analyzer/pdf-data/{request_id}/')
+=======
+fetch('/AI_Analyzer/pdf-data/{request_id}/')
+>>>>>>> mkchoi
    ↓
 서버: get_pdf_data() 함수 실행
    ↓
@@ -889,7 +905,11 @@ except Exception as e:
 
 #### 네트워크 에러 처리
 ```javascript
+<<<<<<< HEAD
 fetch(`/ai_analyzer/pdf-data/${currentRequestId}/`)
+=======
+fetch(`/AI_Analyzer/pdf-data/${currentRequestId}/`)
+>>>>>>> mkchoi
 .then(response => {
     if (!response.ok) {
         throw new Error('PDF 데이터를 가져올 수 없습니다.');
