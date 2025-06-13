@@ -1,0 +1,658 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}상권 분석{% endblock %}
+
+{% block content %}
+{% include 'includes/header.html' %}
+
+  <style>
+    /* 기본 primary 버튼 disabled 시 커스텀 스타일 */
+    .btn-primary.custom {
+      color: #fff;
+      background-color: #0d6efd; /* 원래 primary 색 */
+      opacity: 0.65;  /* 투명도 조절로 흐릿하게 표시 */
+    }
+  </style>
+
+  <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=7c59e20b66722b3db31164cd5f88d3a5&libraries=services,coord"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.7.5/proj4.js"></script>
+
+  <script>
+    $(window).on('load', function() {
+      _eventBind();
+    });
+
+    // 페이지 내 이벤트 바인딩
+    function _eventBind() {
+      console.log("이벤트 바인딩 시작");
+
+      // 모달 검색 버튼 클릭 이벤트
+      document.getElementById("convertBtn").addEventListener("click", convertAddress);
+
+      document.getElementById("modalCloseBtn").addEventListener("click", closeAddressModal);
+      document.getElementById("modalCloseIcon").addEventListener("click", closeAddressModal);
+
+      // $('#modalCloseBtn, #modalCloseIcon').on('click', closeAddressModal);
+    }
+
+    // 주소 변환
+    function convertAddress() {
+      console.log("주소 검색 시작");
+
+      // 기존 검색 결과 초기화
+      document.getElementById("modalResult").innerHTML = "";
+      
+      const address = document.getElementById("modalAddressInput").value;
+      if (!address) {
+        alert("주소를 입력하세요");
+        return;
+      }
+      
+      const geocoder = new kakao.maps.services.Geocoder();
+      geocoder.addressSearch(address, converAddrToCoord);
+    }
+    
+    // 좌표 변환 결과 parsing
+    function converAddrToCoord(result, status) {
+      console.log("주소 -> 좌표 변환 함수 시작");
+      console.log("주소 검색 결과:", result, "상태:", status);
+
+      const resultList = document.getElementById("modalResult");
+
+      if (status === kakao.maps.services.Status.OK) {
+        console.log("인자로 받은 주소값이 정상인지 체크");
+        const invalid = validateCoordResult(result);
+
+        if (invalid) {
+          alert("정확한 도로명 주소를 입력해주세요. 예: 서울 강남구 테헤란로 231");
+          return;
+        }
+
+        result.forEach((item) => {
+          const roadAddr = item.road_address;
+          const jibunAddr = item.address;
+          const zipCode = roadAddr?.zone_no || jibunAddr?.zone_no || "";
+          const buildingName = roadAddr?.building_name || jibunAddr?.building_name || "";
+          const fullAddr = item.road_address?.address_name + " " + buildingName || item.address.address_name + " " + buildingName;
+
+          // 위도 경도 (WGS84)
+          const lat = parseFloat(item.y);
+          const lng = parseFloat(item.x);
+
+          let tmX = null;
+          let tmY = null;
+          
+          // proj4 정의 (5186 좌표계 정의, 공식 문서나 EPSG 코드로 확인)
+          proj4.defs("EPSG:5186", "+proj=tmerc +lat_0=38 +lon_0=127 +k=1 +x_0=1000000 +y_0=2000000 +ellps=GRS80 +units=m +no_defs");
+          
+          if (!isFinite(lat) || !isFinite(lng)) {
+            console.error("유효하지 않은 좌표값:", lat, lng);
+          } else {
+            // 변환 실행 (proj4에서 [경도, 위도] 순서임)
+            const [x, y] = proj4("EPSG:4326", "EPSG:5186", [lng, lat]);
+            tmX = x;
+            tmY = y;
+            console.log("변환된 좌표:", x, y);
+          }
+
+          const div = document.createElement("div");
+          div.textContent = "(" + zipCode + ") " + fullAddr;
+          div.classList.add("search-result-item");
+          div.style.cursor = "pointer";
+          div.style.border = "1px solid #ccc";
+          div.style.borderRadius = "5px";
+          div.style.padding = "8px";
+          div.style.marginBottom = "5px";
+
+          div.addEventListener("click", () => {
+            // 주소 값들 입력창에 넣기
+            document.getElementById("latitude").value = lat;
+            document.getElementById("longitude").value = lng;
+            document.getElementById("tm_x").value = tmX.toFixed(2);  // 소수점 2자리까지
+            document.getElementById("tm_y").value = tmY.toFixed(2);
+            document.getElementById("address").value = fullAddr;
+
+            // 모달 닫기
+            closeAddressModal();
+          });
+
+          resultList.appendChild(div);
+        });
+
+      } else {
+        resultList.innerHTML = '<div class="text-danger">주소 검색에 실패했습니다.</div>';
+      }
+    }
+
+    // 주소 검색 결과 유효성 검사
+    function validateCoordResult(list) {
+      console.log("주소 검색 결과 유효성 검사");
+
+      // 도로명 주소가 없거나, main_building_no가 없거나 "0"이면 무효
+      return list.some((item) => {
+        const roadAddr = item.road_address;
+        return !roadAddr || !roadAddr.main_building_no || roadAddr.main_building_no === "0";
+      });
+    }
+
+    function closeAddressModal() {
+      console.log("주소 모달 닫기");
+
+      // 모달 컨텐츠 초기화
+      document.getElementById("modalResult").innerHTML = "";
+      document.getElementById("modalAddressInput").value = "";
+
+      // 모달 닫기
+      const modalEl = document.getElementById("addressModal");
+      const modal = bootstrap.Modal.getInstance(modalEl);
+      modal.hide();
+    }
+
+    // 입력정보 전송
+    function getFormData() {
+      const industry = $('#industry').val();
+      const address = $('#address').val();
+      const area = $('#area').val();
+      const service = $('#service').val();
+      const tmX = $('#tm_x').val();
+      const tmY = $('#tm_y').val(); 
+
+      if (!industry || !address || !area || !service) {
+        alert("모든 필드를 입력해주세요.");
+        return;
+      }
+
+      // console.log("업종:", industry, "주소:", address, "면적:", area, "주류 판매 여부:", service);
+      const paramData = {
+        industry: industry,
+        address: address,
+        area: area,
+        service: service,
+        tm_x: tmX,
+        tm_y: tmY
+      };
+
+      $.ajax(createPostAjaxOption('analyze', paramData));
+    }
+
+    function createPostAjaxOption(requestType, paramData) {
+      
+      const csrfToken = '{{ csrf_token }}';
+      let url;
+
+      if ( 'analyze' === requestType ) {
+        url = '/api/';
+      } else if ( 'pdf' === 'pdf' ) {
+        url = '/api/pdf/';
+      }
+      
+      paramData.csrfmiddlewaretoken = csrfToken;
+            
+      return {
+        url: url,
+        type: 'POST',
+        data: paramData,
+        success: function(response) {
+          alert('분석 요청 성공:'+response.message);
+        },
+        error: function(xhr, status, error) {
+          console.error("분석 요청 실패:", error);
+          alert("상권 분석 요청에 실패했습니다.");
+        }
+      }
+    }
+
+    function fillExampleQuestion(text) {
+      document.getElementById('chatInput').value = text;
+    }
+  </script>
+
+  <!-- Page Title -->
+  <div class="container my-6" style="margin-top: 20px; margin-bottom: 100px; ">
+    
+    <!-- 상권 분석 정보 입력 -->
+    <div class="row">
+      <div class="col-lg-12 mb-4">
+        <div class="card p-4 shadow-sm">
+          <h3 class="mb-3">상권 정보입력</h3>
+
+          <form>
+            <div class="row g-3">
+              <!-- 업종 선택 -->
+              <div class="col-md-3">
+                <label for="industry" class="form-label">업종</label>
+                <select class="form-select" id="industry" name="industry" required>
+                  <option selected disabled>업종을 선택해주세요</option>
+                  <option value="0">감성주점</option>
+                  <option value="1">경양식</option>
+                  <option value="2">관광호텔</option>
+                  <option value="3">극장</option>
+                  <option value="4">기타</option>
+                  <option value="5">기타 휴게음식점</option>
+                  <option value="6">김밥(도시락)</option>
+                  <option value="7">까페</option>
+                  <option value="8">냉면집</option>
+                  <option value="9">다방</option>
+                  <option value="10">떡카페</option>
+                  <option value="11">라이브카페</option>
+                  <option value="12">백화점</option>
+                  <option value="13">복어취급</option>
+                  <option value="14">분식</option>
+                  <option value="15">뷔페식</option>
+                  <option value="16">식육(숯불구이)</option>
+                  <option value="17">아이스크림</option>
+                  <option value="18">외국음식전문점(인도, 태국 등)</option>
+                  <option value="19">유원지</option>
+                  <option value="20">일반조리판매</option>
+                  <option value="21">일식</option>
+                  <option value="22">전통찻집</option>
+                  <option value="23">정종/대포집/소주방</option>
+                  <option value="24">중국식</option>
+                  <option value="25">철도역구내</option>
+                  <option value="26">출장조리</option>
+                  <option value="27">커피숍</option>
+                  <option value="28">키즈카페</option>
+                  <option value="29">탕류(보신용)</option>
+                  <option value="30">통닭(치킨)</option>
+                  <option value="31">패밀리레스토랑</option>
+                  <option value="32">패스트푸드</option>
+                  <option value="33">편의점</option>
+                  <option value="34">푸드트럭</option>
+                  <option value="35">한식</option>
+                  <option value="36">호프/통닭</option>
+                  <option value="37">횟집</option>
+                </select>
+              </div>
+
+              <!-- 주소 입력 -->
+              <div class="col-md-3">
+                <input type="hidden" id="latitude" name="latitude">
+                <input type="hidden" id="longitude" name="longitude">
+                <input type="hidden" id="tm_x" name="tm_x">
+                <input type="hidden" id="tm_y" name="tm_y">
+                <label for="address" class="form-label">주소</label>
+                <div class="input-group">
+                  <input type="text" class="form-control" id="address" name="address" placeholder="주소를 입력해주세요" readonly>
+                  <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#addressModal">검색</button>
+                </div>
+                <ul id="addressResultList"></ul>
+              </div>
+
+              <!-- 주소 입력 모달 -->
+              <div class="modal fade" id="addressModal" tabindex="-1" aria-labelledby="addressModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="addressModalLabel">주소 검색</h5>
+                      <button type="button" class="btn-close" id="modalCloseIcon" data-bs-dismiss="modal" aria-label="닫기"></button>
+                    </div>
+                    <div class="modal-body">
+                      <input type="text" id="modalAddressInput" class="form-control mb-2" placeholder="예: 서울특별시 강남구 테헤란로 231" />
+                      <button type="button" id="convertBtn" class="btn btn-primary custom w-100 mb-3">검색</button>
+                      <div id="modalResult" class="text-muted small"></div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" id="modalCloseBtn" data-bs-dismiss="modal">닫기</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 점포 면적 입력 -->
+              <div class="col-md-3">
+                <label for="area" class="form-label">점포 면적 (㎡)</label>
+                <input type="number" class="form-control" id="area" name="area" placeholder="예: 33.2" required>
+              </div>
+
+              <!-- 주류 판매 여부 선택 -->
+              <div class="col-md-3">
+                <label for="service" class="form-label">주류 판매 여부</label>
+                <select class="form-select" id="service" name="service" required>
+                  <option selected disabled>선택</option>
+                  <option value="1">판매함</option>
+                  <option value="0">판매 안함</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- 버튼 -->
+            <div class="text-center mt-4">
+              <button type="button" class="btn btn-primary custom px-5" onclick="getFormData();">상권 분석하기</button>
+            </div>
+          </form>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- 본문: 분석 결과 + 챗봇 -->
+    <div class="row">
+      <!-- 왼쪽: 분석 리포트 -->
+      <div class="col-lg-8 mb-4">
+        <div class="card p-4 shadow-sm">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h4 class="mb-0">상권 분석 결과</h4>
+            <!-- 모달 버튼 -->
+            <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#explanationModal">
+              상권 분석 도움말
+            </button>
+            
+            <!-- Bootstrap 모달 -->
+            <div class="modal fade" id="explanationModal" tabindex="-1" aria-labelledby="explanationModalLabel" aria-hidden="true">
+              <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="explanationModalLabel">상권 분석이란 무엇인가?</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+                  </div>
+                  <div class="modal-body">
+                    상권분석은 특정 지역 내 점포나 사업장의 경제적 환경과 소비자 특성을 체계적으로 조사하여<br>
+                    사업 성공 가능성을 높이기 위한 중요한 과정입니다.<br><br>
+            
+                    <strong>왜 상권분석이 필요한가요?</strong><br>
+                    - 상권의 소비 패턴과 유동 인구를 파악하여 효율적인 마케팅 전략을 세울 수 있습니다.<br>
+                    - 경쟁 업체 현황과 고객 수요를 분석해 적절한 입지와 서비스를 결정할 수 있습니다.<br>
+                    - 투자 위험을 최소화하고 안정적인 매출을 기대할 수 있습니다.<br><br>
+            
+                    <strong>AI 기반 상권분석은 다음을 제공합니다:</strong><br>
+                    - 점포의 생존 확률 예측<br>
+                    - SHAP 요인 분석<br><br>
+            
+                    성공적인 창업과 운영을 위해<br>
+                    정확한 정보를 바탕으로 전략을 세워보세요!
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<<<<<<< HEAD
+          <p class="text-muted">* 분석 결과는 이곳에 표시됩니다.</p>
+          <button class="btn btn-primary custom mt-3">PDF로 저장</button>
+=======
+          <div id="report-section" class="mt-8"></div>
+          <button class="btn btn-primary custom mt-3" onclick="prepareAndSavePDF()">PDF로 저장</button>
+>>>>>>> mkchoi
+        </div>
+      </div>
+
+      <!-- 오른쪽: 챗봇 -->
+      <div class="col-lg-4">
+        <div class="card p-4 shadow-sm">
+          <h5>분석 결과 챗봇</h5>
+
+          <!-- 예시 질문 버튼 -->
+          <div style="margin-bottom: 10px;">
+            <span class="text-muted">추천 질문</span><br>
+            <button class="btn btn-sm btn-outline-secondary me-1 mt-1" onclick="fillExampleQuestion('이 상권의 유동 인구 특징은 어떤가요?')">유동 인구</button>
+            <button class="btn btn-sm btn-outline-secondary me-1 mt-1" onclick="fillExampleQuestion('이 지역의 경쟁 업체 수는 얼마나 되나요?')">경쟁 업체</button>
+            <button class="btn btn-sm btn-outline-secondary me-1 mt-1" onclick="fillExampleQuestion('이 지역은 창업 위험이 높은 편인가요?')">창업 위험</button>
+            <button class="btn btn-sm btn-outline-secondary me-1 mt-1" onclick="fillExampleQuestion('주변 상권 중 가장 활발한 업종은 무엇인가요?')">인기 업종</button>
+          </div>
+
+          <!-- 질문 출력 영역 -->
+          <div class="border rounded p-2 mb-2" style="height: 250px; overflow-y: auto;">
+            <p class="text-muted">여기에 질문/응답이 출력됩니다.</p>
+          </div>
+
+          <!-- 질문 입력 및 전송 -->
+          <input type="text" class="form-control mb-2" id="chatInput" placeholder="질문을 입력하세요">
+          <button type="button" class="btn btn-outline-primary w-100">보내기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+<<<<<<< HEAD
+  
+=======
+<<<<<<< HEAD
+
+  <script>
+    function fillExampleQuestion(text) {
+      document.getElementById('chatInput').value = text;
+    }
+  </script>
+
+  <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=7c59e20b66722b3db31164cd5f88d3a5&libraries=services,coord"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.7.5/proj4.js"></script>
+
+    
+
+    {% comment %} // 카카오맵 init {% endcomment %}
+    <script>
+      // 카카오 지도 API 로드 및 주소 검색 기능 구현
+      kakao.maps.load(function () {
+        const geocoder = new kakao.maps.services.Geocoder();
+
+        function convertAddress() {
+          const address = document.getElementById("modalAddressInput").value;
+          const resultList = document.getElementById("modalResult");
+          resultList.innerHTML = "";
+
+          if (!address) {
+            alert("주소를 입력하세요");
+            return;
+          }
+
+          geocoder.addressSearch(address, function (result, status) {
+            if (status === kakao.maps.services.Status.OK) {
+              resultList.innerHTML = "";
+
+            const invalid = result.some((item) => {
+              const roadAddr = item.road_address;
+              // 도로명 주소가 없거나, main_building_no가 없거나 "0"이면 무효
+              return !roadAddr || !roadAddr.main_building_no || roadAddr.main_building_no === "0";
+            });
+
+            if (invalid) {
+              alert("정확한 도로명 주소를 입력해주세요. 예: 서울 강남구 테헤란로 231");
+              return;
+            }
+
+              result.forEach((item) => {
+                const roadAddr = item.road_address;
+                const jibunAddr = item.address;
+                const fullAddr = item.road_address?.address_name || item.address.address_name;
+                // 위도 경도 (WGS84)
+                const lat = parseFloat(item.y);
+                const lng = parseFloat(item.x);
+
+                let tmX = null;
+                let tmY = null;
+                
+                // proj4 정의 (5186 좌표계 정의, 공식 문서나 EPSG 코드로 확인)
+                proj4.defs("EPSG:5186", "+proj=tmerc +lat_0=38 +lon_0=127 +k=1 +x_0=1000000 +y_0=2000000 +ellps=GRS80 +units=m +no_defs");
+                
+                
+                if (!isFinite(lat) || !isFinite(lng)) {
+                  console.error("유효하지 않은 좌표값:", lat, lng);
+                } else {
+                  // 변환 실행 (proj4에서 [경도, 위도] 순서임)
+                  const [x, y] = proj4("EPSG:4326", "EPSG:5186", [lng, lat]);
+                  tmX = x;
+                  tmY = y;
+                  console.log("변환된 좌표:", x, y);
+                }
+
+                const div = document.createElement("div");
+                div.textContent = fullAddr;
+                div.classList.add("search-result-item");
+                div.style.cursor = "pointer";
+                div.style.border = "1px solid #ccc";
+                div.style.borderRadius = "5px";
+                div.style.padding = "8px";
+                div.style.marginBottom = "5px";
+
+                div.addEventListener("click", () => {
+                  // 주소 값들 입력창에 넣기
+                  document.getElementById("latitude").value = lat;
+                  document.getElementById("longitude").value = lng;
+                  document.getElementById("tm_x").value = tmX.toFixed(2);  // 소수점 2자리까지
+                  document.getElementById("tm_y").value = tmY.toFixed(2);
+                  document.getElementById("address").value = fullAddr;
+
+                  // 모달 컨텐츠 초기화
+                  document.getElementById("modalAddressInput").value = '';
+                  resultList.innerHTML = "";
+
+                  // 모달 닫기
+                  const modalEl = document.getElementById("addressModal");
+                  const modal = bootstrap.Modal.getInstance(modalEl);
+                  modal.hide();
+                });
+
+                resultList.appendChild(div);
+              });
+
+            } else {
+              resultList.innerHTML = '<div class="text-danger">주소 검색에 실패했습니다.</div>';
+            }
+          });
+        }
+
+        // 검색 버튼 이벤트 등록
+        document.getElementById("convertBtn").addEventListener("click", convertAddress);
+      });
+    
+    // 입력정보 전송
+    function getFormData() {
+      const industry = $('#industry').val();
+      const address = $('#address').val();
+      const area = $('#area').val();
+      const service = $('#service').val();
+      const tmX = $('#tm_x').val();
+      const tmY = $('#tm_y').val();
+
+      if (!industry || !address || !area || !service) {
+        alert("모든 필드를 입력해주세요.");
+        return;
+      }
+
+      // console.log("업종:", industry, "주소:", address, "면적:", area, "주류 판매 여부:", service);
+      const paramData = {
+        industry: industry,
+        address: address,
+        area: area,
+        service: service,
+        tm_x: tmX,
+        tm_y: tmY
+      };
+
+      $.ajax(createPostAjaxOption('analyze', paramData));
+    }
+
+    function createPostAjaxOption(requestType, paramData) {
+    const csrfToken = '{{ csrf_token }}';
+    let url;
+
+    if (requestType === 'analyze') {
+      url = '/api/';
+    } else if (requestType === 'pdf') {
+      url = '/api/pdf/';
+    }
+
+    paramData.csrfmiddlewaretoken = csrfToken;
+
+    return {
+      url: url,
+      type: 'POST',
+      data: paramData,
+      success: function(response) {
+        document.getElementById("report-section").innerHTML = response.html;
+        renderCharts();  // 차트 그리기 함수 실행
+  },
+
+      error: function(xhr, status, error) {
+        console.error("분석 요청 실패:", error);
+        alert("상권 분석 요청에 실패했습니다.");
+      }
+    };
+  }
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <script>
+  function prepareAndSavePDF() {
+    const report = document.getElementById("report-section");
+
+    if (!report || report.innerText.trim().length === 0) {
+      alert("먼저 분석을 실행해주세요!");
+      return;
+    }
+
+    // PDF 바로 저장
+    html2pdf().set({
+      margin: 0.2,
+      filename: '상권_분석_결과.pdf',
+      image: { type: 'jpeg', quality: 1 },
+      html2canvas: { scale: 3, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    }).from(report).save();
+  }
+</script>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+function renderCharts() {
+  // 유동인구 차트
+  const popEl = document.getElementById("populationChart");
+  if (popEl) {
+    const data = [
+      parseFloat(popEl.dataset.pop20),
+      parseFloat(popEl.dataset.pop30),
+      parseFloat(popEl.dataset.pop40),
+      parseFloat(popEl.dataset.pop50)
+    ];
+    new Chart(popEl.getContext("2d"), {
+      type: 'bar',
+      data: {
+        labels: ['20대', '30대', '40대', '50대'],
+        datasets: [{
+          label: '유동인구 비율',
+          data: data,
+          backgroundColor: 'rgba(54, 162, 235, 0.6)'
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+
+  // SHAP 차트
+  const shapEl = document.getElementById("shapChart");
+  if (shapEl) {
+    const labels = JSON.parse(shapEl.dataset.labels);
+    const values = JSON.parse("[" + shapEl.dataset.values + "]");
+    new Chart(shapEl.getContext("2d"), {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'SHAP 영향도',
+          data: values,
+          backgroundColor: 'rgba(255, 159, 64, 0.6)'
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        scales: { x: { beginAtZero: true } }
+      }
+    });
+  }
+}
+</script>
+
+
+=======
+  
+>>>>>>> c1c48b3d4d6f2e06d375abf2faffb027d90cb125
+>>>>>>> mkchoi
+{% endblock %}

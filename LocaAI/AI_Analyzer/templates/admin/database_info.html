@@ -1,0 +1,228 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}SpatiaLite 데이터베이스 정보{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Home</a>
+    &rsaquo; SpatiaLite 데이터베이스 정보
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="module">
+    <h1>SpatiaLite 데이터베이스 정보</h1>
+    
+    <div style="margin-bottom: 30px;">
+        <h2>공간 데이터 테이블 현황</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>테이블명</th>
+                    <th>레코드 수</th>
+                    <th>설명</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>life_pop_grid_10m_5186</code></td>
+                    <td>{{ spatial_table_counts.life_pop_grid_10m_5186|default:"0"|floatformat:"0" }}</td>
+                    <td>생활인구 격자 (10m)</td>
+                </tr>
+                <tr>
+                    <td><code>workgrid_10m_5186</code></td>
+                    <td>{{ spatial_table_counts.workgrid_10m_5186|default:"0"|floatformat:"0" }}</td>
+                    <td>직장인구 격자 (10m)</td>
+                </tr>
+                <tr>
+                    <td><code>temp_25m_5186</code></td>
+                    <td>{{ spatial_table_counts.temp_25m_5186|default:"0"|floatformat:"0" }}</td>
+                    <td>단기체류외국인 분포</td>
+                </tr>
+                <tr>
+                    <td><code>long_25m_5186</code></td>
+                    <td>{{ spatial_table_counts.long_25m_5186|default:"0"|floatformat:"0" }}</td>
+                    <td>장기체류외국인 분포</td>
+                </tr>
+                <tr>
+                    <td><code>store_point_5186</code></td>
+                    <td>{{ spatial_table_counts.store_point_5186|default:"0"|floatformat:"0" }}</td>
+                    <td>상점 포인트</td>
+                </tr>
+                <tr>
+                    <td><code>school_5186</code></td>
+                    <td>{{ spatial_table_counts.school_5186|default:"0"|floatformat:"0" }}</td>
+                    <td>학교 포인트</td>
+                </tr>
+                <tr>
+                    <td><code>ltv_5186</code></td>
+                    <td>{{ spatial_table_counts.ltv_5186|default:"0"|floatformat:"0" }}</td>
+                    <td>공시지가 폴리곤</td>
+                </tr>
+                <tr>
+                    <td><code>public_5186</code></td>
+                    <td>{{ spatial_table_counts.public_5186|default:"0"|floatformat:"0" }}</td>
+                    <td>공공건물 포인트</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    {% if spatial_refs %}
+    <div style="margin-bottom: 30px;">
+        <h2>공간 참조 시스템 (SRID)</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>SRID</th>
+                    <th>기관명</th>
+                    <th>기관 SRID</th>
+                    <th>참조시스템명</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for srid, auth_name, auth_srid, ref_sys_name, proj4text in spatial_refs %}
+                <tr>
+                    <td><strong>{{ srid }}</strong></td>
+                    <td>{{ auth_name|default:"-" }}</td>
+                    <td>{{ auth_srid|default:"-" }}</td>
+                    <td>{{ ref_sys_name|default:"-"|truncatechars:50 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    {% if geometry_columns %}
+    <div style="margin-bottom: 30px;">
+        <h2>지오메트리 컬럼 정보</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>테이블명</th>
+                    <th>지오메트리 컬럼</th>
+                    <th>차원</th>
+                    <th>SRID</th>
+                    <th>타입</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for table_name, geom_column, coord_dim, srid, geom_type in geometry_columns %}
+                <tr>
+                    <td><code>{{ table_name }}</code></td>
+                    <td><code>{{ geom_column }}</code></td>
+                    <td>{{ coord_dim }}D</td>
+                    <td>{{ srid }}</td>
+                    <td>{{ geom_type }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <div>
+        <h2>전체 데이터베이스 테이블</h2>
+        <div style="max-height: 400px; overflow-y: auto;">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>테이블명</th>
+                        <th>타입</th>
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for name, type, sql in tables %}
+                    <tr>
+                        <td><code>{{ name }}</code></td>
+                        <td>
+                            {% if type == 'table' %}
+                                <span class="badge badge-primary">테이블</span>
+                            {% elif type == 'view' %}
+                                <span class="badge badge-info">뷰</span>
+                            {% else %}
+                                <span class="badge badge-secondary">{{ type }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if 'spatialite' in name or 'spatial' in name %}
+                                <em>SpatiaLite 시스템 테이블</em>
+                            {% elif 'django' in name %}
+                                <em>Django 시스템 테이블</em>
+                            {% elif 'auth' in name %}
+                                <em>인증 관련 테이블</em>
+                            {% elif name in spatial_table_counts %}
+                                <strong>공간 데이터 테이블</strong>
+                            {% else %}
+                                <em>일반 테이블</em>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+}
+
+.table th,
+.table td {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f9f9f9;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.25em 0.4em;
+    font-size: 75%;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 0.25rem;
+}
+
+.badge-primary {
+    color: #fff;
+    background-color: #007bff;
+}
+
+.badge-info {
+    color: #fff;
+    background-color: #17a2b8;
+}
+
+.badge-secondary {
+    color: #fff;
+    background-color: #6c757d;
+}
+
+code {
+    background-color: #f8f9fa;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: monospace;
+}
+</style>
+{% endblock %} 

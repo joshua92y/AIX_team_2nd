@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>상권 분석 리포트</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      margin: 30px;
+      color: #222;
+      line-height: 1.6;
+    }
+    h1, h2 {
+      color: #2c3e50;
+    }
+    .section { margin-bottom: 40px; }
+    .summary-card {
+      background-color: #f2f6ff;
+      padding: 20px;
+      border-left: 5px solid #4a90e2;
+      margin-bottom: 20px;
+    }
+    .data-card {
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 5px;
+    }
+    .tag {
+      display: inline-block;
+      background-color: #dff0d8;
+      color: #3c763d;
+      padding: 5px 10px;
+      margin: 2px;
+      border-radius: 3px;
+      font-size: 14px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    td, th {
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+    }
+    th { background-color: #f4f4f4; }
+    canvas { width: 100% !important; height: 350px !important; }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      text-align: center;
+    }
+    .card {
+      padding: 10px;
+      background: #f7f7f7;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      min-height: 380px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .chart-wrapper {
+      margin: 10px auto;
+      flex-grow: 1;
+      display: flex;
+      align-items: center;
+    }
+    .flex-box {
+      display: flex;
+      gap: 30px;
+      align-items: stretch;
+      flex-wrap: wrap;
+    }
+    .flex-text {
+      flex: 1.2;
+      min-width: 280px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .flex-chart {
+      flex: 1;
+      min-width: 280px;
+      display: flex;
+      align-items: center;
+    }
+    .emoji-large {
+      font-size: 48px;
+    }
+        .pdf-button {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+    
+     <button class="pdf-button" onclick="window.print()">📄 PDF로 저장</button>
+
+  <h1>📍 성동구 성수2가3동 - 카페 상권 분석 리포트</h1>
+
+  <div class="summary-card">
+    <h2>🎯 생존 확률: <strong>73.4%</strong></h2>
+    <svg width="100%" height="30">
+    <rect width="100%" height="30" fill="#eee" rx="10" />
+    <rect width="73.4%" height="30" fill="green" rx="10" />
+    <text x="36.7%" y="20" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="14">
+    생존 가능 (73.4%)
+    </text>
+    </svg>
+    <br>
+    <h2>🎯 생존 확률: <strong>42.1%</strong></h2>
+    <svg width="100%" height="30">
+    <rect width="100%" height="30" fill="#eee" rx="10" />
+    <rect width="42.1%" height="30" fill="red" rx="10" />
+    <text x="21.05%" y="20" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="14">
+    생존 어려움 (42.1%)
+    </text>
+    </svg>
+    </div>
+    <p><strong>요약 인사이트:</strong> 직장인 비중이 높고 경쟁 밀도가 낮아 생존 가능성이 높습니다.</p>
+    <p><strong>📉 주요 리스크:</strong> 점포 면적 협소, 유동 인구 감소</p>
+    <p><strong>✅ 추천 전략:</strong> 배달 중심 전략 강화, 30대 여성 타깃 마케팅</p>
+  </div>
+
+  <div class="section">
+    <h2>👥 인구 및 유동 특성</h2>
+    <div class="flex-box">
+      <div class="flex-text">
+        <span class="tag">20대: 25%</span>
+        <span class="tag">30대: 40%</span>
+        <span class="tag">40대: 20%</span>
+        <span class="tag">50대: 10%</span>
+        <span class="tag">60대: 5%</span>
+        <br>
+        <span class="tag">👨 남성: 52%</span>
+        <span class="tag">👩 여성: 48%</span>
+        <div class="data-card">직장인 수 (300m): <strong>1,320명</strong></div>
+        <div class="data-card">외국인 (단기): <strong>130명</strong>, 장기: <strong>300명</strong></div>
+      </div>
+      <div class="flex-chart">
+        <canvas id="ageChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>🏢 점포 및 위치 정보</h2>
+    <table>
+      <tr><th>면적 (㎡)</th><th>총 지가 (₩)</th><th>주류 판매</th></tr>
+      <tr><td>48</td><td>243,000,000</td><td>가능</td></tr>
+    </table>
+  </div>
+  
+  
+  <div class="section">
+    <h2>🏫 인프라 및 입지 요건</h2>
+    <ul>
+      <li>반경 250m 내 학교 수: 2개</li>
+      <li>공공기관 수: 3개</li>
+      <li>도로 접근성: 양호</li>
+    </ul>
+  </div>
+
+  <div class="section">
+  <h2>🛵 배달 건수 (최근 1개월)</h2>
+  <div class="data-card">
+    반경 500m 내 <strong>주문 건수: 2,480건</strong><br>
+    평균 일 배달 수요는 <strong>약 83건/일</strong>로, 테이크아웃 및 배달 전용 메뉴 구성에 유리한 지역입니다.
+  </div>
+</div>
+
+  <div class="section">
+  <h2>💰 AI 기반 예상 매출</h2>
+  <div class="summary-card">
+    <strong>예상 일 매출: 380,000원</strong><br>
+    <strong>예상 월 매출: 11,400,000원</strong><br>
+    (예상 객단가: 5,500원 × 예상 방문객 70명/일 기준)
+  </div>
+</div>
+    <div class="section">
+  <h2>📅 시간대별 유동인구</h2>
+  <canvas id="timePopulationChart"></canvas>
+</div>
+
+<script>
+  new Chart(document.getElementById('timePopulationChart'), {
+    type: 'bar',
+    data: {
+      labels: ['08~10시', '12~14시', '17~19시', '20~22시'],
+      datasets: [{
+        label: '유동인구 수',
+        data: [200, 850, 600, 300],
+        backgroundColor: 'rgba(54, 162, 235, 0.7)'
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
+</script>
+
+  <div class="section">
+    <h2>📊 SHAP 주요 영향 요인</h2>
+    <p class="positive"><strong>긍정 요인</strong></p>
+    <ul>
+      <li>30대 인구 비율: <span class="positive">+23.1%</span></li>
+      <li>직장인 수: <span class="positive">+12.4%</span></li>
+    </ul>
+    <p class="negative"><strong>부정 요인</strong></p>
+    <ul>
+      <li>점포 면적: <span class="negative">-7.6%</span></li>
+      <li>학교 수: <span class="negative">-3.2%</span></li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>🔎 경쟁 및 업종 환경</h2>
+    <div class="card-grid">
+      <div class="card">
+        <div class="emoji-large">☕</div>
+        카페 수: 18개
+      </div>
+      <div class="card">
+        📊<br>동일 업종 비중
+        <div class="chart-wrapper"><canvas id="sameBizChart"></canvas></div>
+      </div>
+      <div class="card">
+        🧩<br>업종 다양성
+        <div class="chart-wrapper"><canvas id="varietyPieChart"></canvas></div>
+      </div>
+      <div class="card">
+        🏙️<br>밀집도
+        <div class="chart-wrapper"><canvas id="densityBarChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    new Chart(document.getElementById('ageChart'), {
+      type: 'bar',
+      data: {
+        labels: ['20대', '30대', '40대', '50대', '60대'],
+        datasets: [{
+          label: '연령대 비율 (%)',
+          data: [25, 40, 20, 10, 5],
+          backgroundColor: 'rgba(54, 162, 235, 0.7)'
+        }]
+      },
+      options: { responsive: true, scales: { y: { beginAtZero: true } } }
+    });
+
+    new Chart(document.getElementById('sameBizChart'), {
+      type: 'bar',
+      data: {
+        labels: ['동일 업종'],
+        datasets: [{
+          label: '비중 (%)',
+          data: [13],
+          backgroundColor: 'rgba(255, 159, 64, 0.7)'
+        }]
+      },
+      options: { responsive: true, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
+    });
+
+    new Chart(document.getElementById('varietyPieChart'), {
+      type: 'pie',
+      data: {
+        labels: ['한식', '양식', '디저트', '기타'],
+        datasets: [{
+          label: '업종 분포',
+          data: [35, 25, 25, 15],
+          backgroundColor: [
+            'rgba(255, 99, 132, 0.6)',
+            'rgba(75, 192, 192, 0.6)',
+            'rgba(255, 206, 86, 0.6)',
+            'rgba(153, 102, 255, 0.6)'
+          ]
+        }]
+      },
+      options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+    });
+
+    new Chart(document.getElementById('densityBarChart'), {
+      type: 'bar',
+      data: {
+        labels: ['밀집도'],
+        datasets: [{
+          label: '요식업 밀집도 (지수)',
+          data: [78],
+          backgroundColor: 'rgba(255, 99, 132, 0.7)'
+        }]
+      },
+      options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } }, plugins: { legend: { display: false } } }
+    });
+  </script>
+
+  <div class="section">
+    <h2>🔄 What-if 분석</h2>
+    <table>
+      <tr><th>조건 변경</th><th>변경 후 생존확률</th><th>주요 효과</th></tr>
+      <tr><td>면적 48㎡ → 65㎡</td><td>79.2%</td><td>규모 안정성 향상</td></tr>
+      <tr><td>주류 판매 불가 → 가능</td><td>76.0%</td><td>매출 확장 가능성</td></tr>
+      <tr><td>카페 → 디저트 특화</td><td>74.8%</td><td>30대 여성 수요 강화</td></tr>
+    </table>
+  </div>
+</body>
+</html>
