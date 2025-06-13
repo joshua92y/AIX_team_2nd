@@ -1242,7 +1242,7 @@
                     <small>분석일: {{ doc.created_at|date:"Y-m-d H:i" }}</small><br>
                     <small>생존 확률: {{ doc.survival_percentage }}%</small>
                   </div>
-                  <a href="{% url 'AI_Analyzer:result_detail' doc.request.id %}" class="btn btn-sm btn-outline-primary">결과 보기</a>
+                  <a href="{% url 'AI_Analyzer:result_detail' doc.request.id %}" class="btn btn-sm btn-outline-primary">결과보기</a>
                 </li>
               {% endfor %}
             </ul>
