@@ -36,6 +36,7 @@ urlpatterns = [
     path("auth/", include("custom_auth.urls", namespace="custom_auth")),
     path("geodb/", include("GeoDB.urls")),  # GeoDB 대시보드
     path("ai_analyzer/", include("AI_Analyzer.urls")),  # AI 상권분석
+    path("shopdash/", include("shopdash.urls")),  # ShopDash 대시보드
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:

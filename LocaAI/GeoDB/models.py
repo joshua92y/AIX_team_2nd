@@ -204,3 +204,90 @@ class EditablePublicBuilding(models.Model):
     
     def __str__(self):
         return f"{self.building_name} ({self.building_type})"
+
+
+class AdministrativeDistrict(models.Model):
+    """행정동구역 데이터"""
+    fid = django_models.AutoField(primary_key=True)
+    emd_cd = django_models.CharField(max_length=8, verbose_name="행정동코드", help_text="8자리 행정동 코드")
+    emd_eng_nm = django_models.CharField(max_length=100, null=True, blank=True, verbose_name="영문행정동명")
+    emd_kor_nm = django_models.CharField(max_length=100, null=True, blank=True, verbose_name="한글행정동명")
+    geom = models.MultiPolygonField(srid=5186, verbose_name="행정구역경계")
+    
+    class Meta:
+        db_table = '행정동구역'
+        verbose_name = "행정동구역"
+        verbose_name_plural = "행정동구역"
+        managed = False  # 기존 테이블을 사용하므로 Django가 관리하지 않음
+        ordering = ['emd_cd']
+    
+    def __str__(self):
+        return f"{self.emd_kor_nm or self.emd_eng_nm or '행정동'} ({self.emd_cd})"
+    
+    @property
+    def gu_name(self):
+        """구 이름 반환"""
+        gu_codes = {
+            '11110': '종로구', '11140': '중구', '11170': '용산구', '11200': '성동구',
+            '11215': '광진구', '11230': '동대문구', '11260': '중랑구', '11290': '성북구',
+            '11305': '강북구', '11320': '도봉구', '11350': '노원구', '11380': '은평구',
+            '11410': '서대문구', '11440': '마포구', '11470': '양천구', '11500': '강서구',
+            '11530': '구로구', '11545': '금천구', '11560': '영등포구', '11590': '동작구',
+            '11620': '관악구', '11650': '서초구', '11680': '강남구', '11710': '송파구',
+            '11740': '강동구'
+        }
+        return gu_codes.get(self.emd_cd[:5], '알 수 없음')
+    
+    @property
+    def full_name(self):
+        """구 + 동 전체 이름"""
+        return f"{self.gu_name} {self.emd_kor_nm or self.emd_eng_nm or '행정동'}"
+
+
+class AdministrativeDistrictStats(models.Model):
+    """행정동별 집계 통계 데이터"""
+    emd_cd = django_models.CharField(max_length=8, unique=True, verbose_name="행정동코드")
+    emd_kor_nm = django_models.CharField(max_length=50, verbose_name="행정동명")
+    
+    # 인구 데이터
+    total_population = django_models.IntegerField(default=0, verbose_name="총 거주인구")
+    total_working_population = django_models.IntegerField(default=0, verbose_name="총 직장인구")
+    total_foreign_visitors = django_models.IntegerField(default=0, verbose_name="총 외국인 여행객")
+    
+    # 그리드 개수 (참고용)
+    population_grid_count = django_models.IntegerField(default=0, verbose_name="거주인구 그리드 수")
+    working_grid_count = django_models.IntegerField(default=0, verbose_name="직장인구 그리드 수")
+    foreign_grid_count = django_models.IntegerField(default=0, verbose_name="외국인 그리드 수")
+    
+    # 업데이트 시간
+    updated_at = django_models.DateTimeField(auto_now=True, verbose_name="업데이트 시간")
+    created_at = django_models.DateTimeField(auto_now_add=True, verbose_name="생성 시간")
+    
+    class Meta:
+        db_table = 'administrative_district_stats'
+        verbose_name = "행정동별 집계통계"
+        verbose_name_plural = "행정동별 집계통계"
+        managed = True
+        ordering = ['-total_population']
+    
+    def __str__(self):
+        return f"{self.emd_kor_nm} ({self.emd_cd})"
+    
+    @property
+    def gu_name(self):
+        """행정동코드에서 구 이름 추출"""
+        gu_mapping = {
+            '11110': '종로구', '11140': '중구', '11170': '용산구', '11200': '성동구',
+            '11215': '광진구', '11230': '동대문구', '11260': '중랑구', '11290': '성북구',
+            '11305': '강북구', '11320': '도봉구', '11350': '노원구', '11380': '은평구',
+            '11410': '서대문구', '11440': '마포구', '11470': '양천구', '11500': '강서구',
+            '11530': '구로구', '11545': '금천구', '11560': '영등포구', '11590': '동작구',
+            '11620': '관악구', '11650': '서초구', '11680': '강남구', '11710': '송파구',
+            '11740': '강동구'
+        }
+        return gu_mapping.get(self.emd_cd[:5], '기타')
+    
+    @property
+    def full_name(self):
+        """구명 + 동명"""
+        return f"{self.gu_name} {self.emd_kor_nm}"
