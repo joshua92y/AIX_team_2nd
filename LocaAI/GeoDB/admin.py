@@ -134,9 +134,18 @@ class BaseGISAdmin(admin.GISModelAdmin):
     @admin.display(description="XY 좌표 (EPSG:5186)")
     def get_xy_coordinates(self, obj):
         try:
-            if hasattr(obj, "geom") and obj.geom and len(obj.geom) > 0:
-                first_point = obj.geom[0]
-                return f"({first_point.x:.6f}, {first_point.y:.6f})"
+            if hasattr(obj, "geom") and obj.geom:
+                if hasattr(obj.geom, "centroid"):
+                    # 폴리곤의 경우 중심점 사용
+                    centroid = obj.geom.centroid
+                    return f"({centroid.x:.6f}, {centroid.y:.6f})"
+                elif hasattr(obj.geom, "x") and hasattr(obj.geom, "y"):
+                    # 포인트의 경우 직접 좌표 사용
+                    return f"({obj.geom.x:.6f}, {obj.geom.y:.6f})"
+                elif len(obj.geom) > 0:
+                    # 첫 번째 점 사용
+                    first_point = obj.geom[0]
+                    return f"({first_point.x:.6f}, {first_point.y:.6f})"
             elif obj.x and obj.y:
                 return f"({obj.x}, {obj.y})"
             return "좌표 없음"
@@ -418,9 +427,18 @@ class StorePointAdmin(BaseGISAdmin):
     @admin.display(description="XY 좌표 (EPSG:5186)")
     def get_xy_coordinates(self, obj):
         try:
-            if hasattr(obj, "geom") and obj.geom and len(obj.geom) > 0:
-                first_point = obj.geom[0]
-                return f"({first_point.x:.6f}, {first_point.y:.6f})"
+            if hasattr(obj, "geom") and obj.geom:
+                if hasattr(obj.geom, "centroid"):
+                    # 폴리곤의 경우 중심점 사용
+                    centroid = obj.geom.centroid
+                    return f"({centroid.x:.6f}, {centroid.y:.6f})"
+                elif hasattr(obj.geom, "x") and hasattr(obj.geom, "y"):
+                    # 포인트의 경우 직접 좌표 사용
+                    return f"({obj.geom.x:.6f}, {obj.geom.y:.6f})"
+                elif len(obj.geom) > 0:
+                    # 첫 번째 점 사용
+                    first_point = obj.geom[0]
+                    return f"({first_point.x:.6f}, {first_point.y:.6f})"
             elif obj.x and obj.y:
                 return f"({obj.x}, {obj.y})"
             return "좌표 없음"
