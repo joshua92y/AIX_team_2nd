@@ -73,6 +73,7 @@ LOCAL_APPS = [  # 메인 웹사이트
     "chatbot",  # AI 챗봇
     "GeoDB",  # 지오메트리 데이터베이스 관리
     "AI_Analyzer",  # AI 상권분석 시스템
+    "smtp",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -124,7 +125,7 @@ TEMPLATES = [
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.contrib.gis.db.backends.postgis",  # SpatiaLite 엔진으로 변경
+        "ENGINE": "django.contrib.gis.db.backends.postgis",
         "NAME": "aidata",
         "USER": "postgres",
         "PASSWORD": "aix25bestgmail",
@@ -261,6 +262,17 @@ QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
 
 # Channels (WebSocket) 설정
 CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
+
+# ============================================================================
+# SMTP 메일 서버 설정
+# ============================================================================
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'aix25best@gmail.com'
+EMAIL_HOST_PASSWORD = 'ozfz nosx hhtm lqpe'  # 구글 앱 비밀번호
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # ============================================================================
 # 로깅 설정

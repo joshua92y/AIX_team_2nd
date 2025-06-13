@@ -147,13 +147,13 @@ class PublicBuilding(models.Model):
 
 class LandValue(models.Model):
     """공시지가 데이터"""
-    ogc_fid = django_models.AutoField(primary_key=True)
-    a1 = django_models.CharField(max_length=255, null=True, blank=True, verbose_name="A1")
-    a2 = django_models.CharField(max_length=255, null=True, blank=True, verbose_name="A2")
-    a3 = django_models.CharField(max_length=255, null=True, blank=True, verbose_name="A3")
-    a6 = django_models.CharField(max_length=255, null=True, blank=True, verbose_name="A6")
-    a9 = django_models.FloatField(null=True, blank=True, verbose_name="공시지가")
-    geom = models.MultiPolygonField(srid=5186, verbose_name="지오메트리")
+    ogc_fid = django_models.IntegerField(primary_key=True, db_column='ogc_fid')
+    A1 = django_models.CharField(max_length=255, null=True, blank=True, verbose_name="A1", db_column='A1')
+    A2 = django_models.CharField(max_length=255, null=True, blank=True, verbose_name="A2", db_column='A2')
+    A3 = django_models.CharField(max_length=255, null=True, blank=True, verbose_name="A3", db_column='A3')
+    A6 = django_models.CharField(max_length=255, null=True, blank=True, verbose_name="A6", db_column='A6')
+    A9 = django_models.FloatField(null=True, blank=True, verbose_name="공시지가", db_column='A9')
+    geom = models.MultiPolygonField(srid=5186, verbose_name="지오메트리", db_column='geom')
     
     class Meta:
         db_table = 'ltv_5186'
@@ -162,7 +162,7 @@ class LandValue(models.Model):
         managed = False
     
     def __str__(self):
-        return f"공시지가: {self.a9 or 0:,.0f}원/㎡"
+        return f"공시지가: {self.A9 or 0:,.0f}원/㎡"
 
 
 # 새로운 데이터 추가/편집을 위한 관리형 모델들 (managed=True)

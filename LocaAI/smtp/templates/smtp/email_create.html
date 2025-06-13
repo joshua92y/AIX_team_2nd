@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}이메일 작성{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">이메일 작성</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="emailForm">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="template" class="form-label">템플릿 선택</label>
+                            <select class="form-select" id="template" name="template">
+                                <option value="">템플릿 없이 작성</option>
+                                {% for template in templates %}
+                                <option value="{{ template.id }}">{{ template.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="recipient" class="form-label">수신자</label>
+                            <input type="email" class="form-control" id="recipient" name="recipient" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">제목</label>
+                            <input type="text" class="form-control" id="subject" name="subject">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="message" class="form-label">내용</label>
+                            <textarea class="form-control" id="message" name="message" rows="10"></textarea>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="is_encrypted" name="is_encrypted">
+                            <label class="form-check-label" for="is_encrypted">이메일 암호화</label>
+                        </div>
+
+                        <div class="text-end">
+                            <a href="{% url 'smtp:email_list' %}" class="btn btn-secondary">취소</a>
+                            <button type="submit" class="btn btn-primary">전송</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const templateSelect = document.getElementById('template');
+    const subjectInput = document.getElementById('subject');
+    const messageTextarea = document.getElementById('message');
+    const emailForm = document.getElementById('emailForm');
+
+    // 템플릿 선택 시 내용 자동 채우기
+    templateSelect.addEventListener('change', function() {
+        const templateId = this.value;
+        if (templateId) {
+            fetch(`/api/smtp/templates/${templateId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    subjectInput.value = data.subject;
+                    messageTextarea.value = data.body;
+                })
+                .catch(error => {
+                    console.error('템플릿 로드 실패:', error);
+                });
+        } else {
+            subjectInput.value = '';
+            messageTextarea.value = '';
+        }
+    });
+
+    // 폼 제출 처리
+    emailForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const data = {
+            recipient: formData.get('recipient'),
+            is_encrypted: formData.get('is_encrypted') === 'on'
+        };
+
+        if (formData.get('template')) {
+            data.template = formData.get('template');
+        } else {
+            data.subject = formData.get('subject');
+            data.message = formData.get('message');
+        }
+
+        fetch('/api/smtp/messages/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert('이메일이 성공적으로 전송되었습니다.');
+                window.location.href = "{% url 'smtp:email_list' %}";
+            } else {
+                alert('이메일 전송 실패: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('오류가 발생했습니다: ' + error);
+        });
+    });
+});
+
+// CSRF 토큰 가져오기
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}
+{% endblock %} 

@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}이메일 상세{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">이메일 상세</h3>
+                    <a href="{% url 'smtp:email_list' %}" class="btn btn-secondary">목록으로</a>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h5>기본 정보</h5>
+                        <table class="table">
+                            <tr>
+                                <th style="width: 150px;">제목</th>
+                                <td>{{ email.subject }}</td>
+                            </tr>
+                            <tr>
+                                <th>발신자</th>
+                                <td>{{ email.sender }}</td>
+                            </tr>
+                            <tr>
+                                <th>수신자</th>
+                                <td>{{ email.recipient }}</td>
+                            </tr>
+                            <tr>
+                                <th>상태</th>
+                                <td>
+                                    <span class="badge {% if email.status == 'sent' %}bg-success{% elif email.status == 'failed' %}bg-danger{% else %}bg-warning{% endif %}">
+                                        {{ email.get_status_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>전송 시간</th>
+                                <td>{{ email.sent_at|default:"-" }}</td>
+                            </tr>
+                            <tr>
+                                <th>암호화</th>
+                                <td>
+                                    {% if email.is_encrypted %}
+                                    <span class="badge bg-info">암호화됨</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">암호화되지 않음</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5>이메일 내용</h5>
+                        <div class="card">
+                            <div class="card-body">
+                                {% if email.is_encrypted %}
+                                <div class="alert alert-info">
+                                    <i class="fas fa-lock"></i> 암호화된 이메일입니다.
+                                    <button class="btn btn-sm btn-primary float-end" onclick="decryptEmail()">복호화</button>
+                                </div>
+                                <div id="encryptedContent" class="d-none">
+                                    {{ email.message }}
+                                </div>
+                                <div id="decryptedContent" class="d-none"></div>
+                                {% else %}
+                                {{ email.message|linebreaks }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if email.status == 'failed' %}
+                    <div class="mb-4">
+                        <h5>실패 정보</h5>
+                        <div class="alert alert-danger">
+                            <p><strong>실패 시간:</strong> {{ email.failed_at }}</p>
+                            <p><strong>실패 사유:</strong> {{ email.failure_reason }}</p>
+                            <button class="btn btn-primary" onclick="retryEmail()">재시도</button>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if email.template %}
+                    <div class="mb-4">
+                        <h5>사용된 템플릿</h5>
+                        <div class="card">
+                            <div class="card-body">
+                                <h6>{{ email.template.name }}</h6>
+                                <p class="text-muted">{{ email.template.description }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function decryptEmail() {
+    const encryptedContent = document.getElementById('encryptedContent').textContent;
+    const decryptedContent = document.getElementById('decryptedContent');
+    
+    fetch(`/api/smtp/messages/${emailId}/decrypt/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            decryptedContent.innerHTML = data.message;
+            decryptedContent.classList.remove('d-none');
+            document.getElementById('encryptedContent').classList.add('d-none');
+        } else {
+            alert('복호화 실패: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('오류가 발생했습니다: ' + error);
+    });
+}
+
+function retryEmail() {
+    if (!confirm('이메일 전송을 재시도하시겠습니까?')) {
+        return;
+    }
+
+    fetch(`/api/smtp/messages/${emailId}/retry/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            alert('이메일 재전송이 시작되었습니다.');
+            location.reload();
+        } else {
+            alert('재전송 실패: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('오류가 발생했습니다: ' + error);
+    });
+}
+
+// CSRF 토큰 가져오기
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}
+{% endblock %} 
