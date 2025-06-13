@@ -188,10 +188,10 @@ else:
 # GDAL 라이브러리 경로 (시스템 설치 버전)
 if platform.system() == "Windows":
     GEOS_LIBRARY_PATH = os.path.join(
-        BASE_DIR, "gdal_libs", "geos_c.dll"
+        BASE_DIR, "venv", "Lib", "site-packages", "osgeo", "geos_c.dll"
     )
     GDAL_LIBRARY_PATH = os.path.join(
-        BASE_DIR, "gdal_libs", "gdal310.dll"
+        BASE_DIR, "venv", "Lib", "site-packages", "osgeo", "gdal.dll"
     )
 # Leaflet 지도 설정
 LEAFLET_CONFIG = {
