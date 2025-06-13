@@ -369,8 +369,13 @@
               </div>
             </div>
           </div>
+<<<<<<< HEAD
           <p class="text-muted">* 분석 결과는 이곳에 표시됩니다.</p>
           <button class="btn btn-primary custom mt-3">PDF로 저장</button>
+=======
+          <div id="report-section" class="mt-8"></div>
+          <button class="btn btn-primary custom mt-3" onclick="prepareAndSavePDF()">PDF로 저장</button>
+>>>>>>> mkchoi
         </div>
       </div>
 
@@ -400,5 +405,254 @@
       </div>
     </div>
   </div>
+<<<<<<< HEAD
   
+=======
+<<<<<<< HEAD
+
+  <script>
+    function fillExampleQuestion(text) {
+      document.getElementById('chatInput').value = text;
+    }
+  </script>
+
+  <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=7c59e20b66722b3db31164cd5f88d3a5&libraries=services,coord"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.7.5/proj4.js"></script>
+
+    
+
+    {% comment %} // 카카오맵 init {% endcomment %}
+    <script>
+      // 카카오 지도 API 로드 및 주소 검색 기능 구현
+      kakao.maps.load(function () {
+        const geocoder = new kakao.maps.services.Geocoder();
+
+        function convertAddress() {
+          const address = document.getElementById("modalAddressInput").value;
+          const resultList = document.getElementById("modalResult");
+          resultList.innerHTML = "";
+
+          if (!address) {
+            alert("주소를 입력하세요");
+            return;
+          }
+
+          geocoder.addressSearch(address, function (result, status) {
+            if (status === kakao.maps.services.Status.OK) {
+              resultList.innerHTML = "";
+
+            const invalid = result.some((item) => {
+              const roadAddr = item.road_address;
+              // 도로명 주소가 없거나, main_building_no가 없거나 "0"이면 무효
+              return !roadAddr || !roadAddr.main_building_no || roadAddr.main_building_no === "0";
+            });
+
+            if (invalid) {
+              alert("정확한 도로명 주소를 입력해주세요. 예: 서울 강남구 테헤란로 231");
+              return;
+            }
+
+              result.forEach((item) => {
+                const roadAddr = item.road_address;
+                const jibunAddr = item.address;
+                const fullAddr = item.road_address?.address_name || item.address.address_name;
+                // 위도 경도 (WGS84)
+                const lat = parseFloat(item.y);
+                const lng = parseFloat(item.x);
+
+                let tmX = null;
+                let tmY = null;
+                
+                // proj4 정의 (5186 좌표계 정의, 공식 문서나 EPSG 코드로 확인)
+                proj4.defs("EPSG:5186", "+proj=tmerc +lat_0=38 +lon_0=127 +k=1 +x_0=1000000 +y_0=2000000 +ellps=GRS80 +units=m +no_defs");
+                
+                
+                if (!isFinite(lat) || !isFinite(lng)) {
+                  console.error("유효하지 않은 좌표값:", lat, lng);
+                } else {
+                  // 변환 실행 (proj4에서 [경도, 위도] 순서임)
+                  const [x, y] = proj4("EPSG:4326", "EPSG:5186", [lng, lat]);
+                  tmX = x;
+                  tmY = y;
+                  console.log("변환된 좌표:", x, y);
+                }
+
+                const div = document.createElement("div");
+                div.textContent = fullAddr;
+                div.classList.add("search-result-item");
+                div.style.cursor = "pointer";
+                div.style.border = "1px solid #ccc";
+                div.style.borderRadius = "5px";
+                div.style.padding = "8px";
+                div.style.marginBottom = "5px";
+
+                div.addEventListener("click", () => {
+                  // 주소 값들 입력창에 넣기
+                  document.getElementById("latitude").value = lat;
+                  document.getElementById("longitude").value = lng;
+                  document.getElementById("tm_x").value = tmX.toFixed(2);  // 소수점 2자리까지
+                  document.getElementById("tm_y").value = tmY.toFixed(2);
+                  document.getElementById("address").value = fullAddr;
+
+                  // 모달 컨텐츠 초기화
+                  document.getElementById("modalAddressInput").value = '';
+                  resultList.innerHTML = "";
+
+                  // 모달 닫기
+                  const modalEl = document.getElementById("addressModal");
+                  const modal = bootstrap.Modal.getInstance(modalEl);
+                  modal.hide();
+                });
+
+                resultList.appendChild(div);
+              });
+
+            } else {
+              resultList.innerHTML = '<div class="text-danger">주소 검색에 실패했습니다.</div>';
+            }
+          });
+        }
+
+        // 검색 버튼 이벤트 등록
+        document.getElementById("convertBtn").addEventListener("click", convertAddress);
+      });
+    
+    // 입력정보 전송
+    function getFormData() {
+      const industry = $('#industry').val();
+      const address = $('#address').val();
+      const area = $('#area').val();
+      const service = $('#service').val();
+      const tmX = $('#tm_x').val();
+      const tmY = $('#tm_y').val();
+
+      if (!industry || !address || !area || !service) {
+        alert("모든 필드를 입력해주세요.");
+        return;
+      }
+
+      // console.log("업종:", industry, "주소:", address, "면적:", area, "주류 판매 여부:", service);
+      const paramData = {
+        industry: industry,
+        address: address,
+        area: area,
+        service: service,
+        tm_x: tmX,
+        tm_y: tmY
+      };
+
+      $.ajax(createPostAjaxOption('analyze', paramData));
+    }
+
+    function createPostAjaxOption(requestType, paramData) {
+    const csrfToken = '{{ csrf_token }}';
+    let url;
+
+    if (requestType === 'analyze') {
+      url = '/api/';
+    } else if (requestType === 'pdf') {
+      url = '/api/pdf/';
+    }
+
+    paramData.csrfmiddlewaretoken = csrfToken;
+
+    return {
+      url: url,
+      type: 'POST',
+      data: paramData,
+      success: function(response) {
+        document.getElementById("report-section").innerHTML = response.html;
+        renderCharts();  // 차트 그리기 함수 실행
+  },
+
+      error: function(xhr, status, error) {
+        console.error("분석 요청 실패:", error);
+        alert("상권 분석 요청에 실패했습니다.");
+      }
+    };
+  }
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <script>
+  function prepareAndSavePDF() {
+    const report = document.getElementById("report-section");
+
+    if (!report || report.innerText.trim().length === 0) {
+      alert("먼저 분석을 실행해주세요!");
+      return;
+    }
+
+    // PDF 바로 저장
+    html2pdf().set({
+      margin: 0.2,
+      filename: '상권_분석_결과.pdf',
+      image: { type: 'jpeg', quality: 1 },
+      html2canvas: { scale: 3, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    }).from(report).save();
+  }
+</script>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+function renderCharts() {
+  // 유동인구 차트
+  const popEl = document.getElementById("populationChart");
+  if (popEl) {
+    const data = [
+      parseFloat(popEl.dataset.pop20),
+      parseFloat(popEl.dataset.pop30),
+      parseFloat(popEl.dataset.pop40),
+      parseFloat(popEl.dataset.pop50)
+    ];
+    new Chart(popEl.getContext("2d"), {
+      type: 'bar',
+      data: {
+        labels: ['20대', '30대', '40대', '50대'],
+        datasets: [{
+          label: '유동인구 비율',
+          data: data,
+          backgroundColor: 'rgba(54, 162, 235, 0.6)'
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+
+  // SHAP 차트
+  const shapEl = document.getElementById("shapChart");
+  if (shapEl) {
+    const labels = JSON.parse(shapEl.dataset.labels);
+    const values = JSON.parse("[" + shapEl.dataset.values + "]");
+    new Chart(shapEl.getContext("2d"), {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'SHAP 영향도',
+          data: values,
+          backgroundColor: 'rgba(255, 159, 64, 0.6)'
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        scales: { x: { beginAtZero: true } }
+      }
+    });
+  }
+}
+</script>
+
+
+=======
+  
+>>>>>>> c1c48b3d4d6f2e06d375abf2faffb027d90cb125
+>>>>>>> mkchoi
 {% endblock %}

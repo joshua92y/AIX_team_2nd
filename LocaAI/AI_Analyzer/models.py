@@ -2,7 +2,6 @@ from django.contrib.gis.db import models
 from django.db import models as django_models
 
 
-
 class BusinessType(django_models.Model):
     """
     업종 마스터 데이터
@@ -169,3 +168,5 @@ class AnalysisResult(django_models.Model):
     
     def __str__(self):
         return f"{self.request.address} 분석결과"
+    
+    

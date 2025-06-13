@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
-
+{% load user_extras %}
 {% block title %}
-    {% if board_type == 'inquiry' %}문의 게시판{% else %}공지사항{% endif %} - LocaAI
+    {% if board_type == 'inquiry' %}문의 게시판{% elif board_type == 'portfolio' %}포트폴리오{% else %}공지사항{% endif %} - LocaAI
 {% endblock %}
 
 {% block css %}
@@ -12,12 +12,12 @@
 {% block content %}
 <div class="container mt-4">
     <div class="board-header d-flex justify-content-between align-items-center mb-4">
-        <h2>{% if board_type == 'inquiry' %}문의 게시판{% else %}공지사항{% endif %}</h2>
-        {% if board_type == 'inquiry' or user.is_staff %}
-        <a href="{% url 'border:post_create' board_type %}" class="btn btn-primary">
-            <i class="fas fa-pen"></i> 글쓰기
-        </a>
-        {% endif %}
+        <h2>{% if board_type == 'inquiry' %}문의 게시판{% elif board_type == 'portfolio' %}포트폴리오{% else %}공지사항{% endif %}</h2>
+        {% if board_type == 'inquiry' or board_type == 'notice' and user|is_admin_call or board_type == 'portfolio' and user|is_admin_call %}
+    <a href="{% url 'border:post_create' board_type %}" class="btn btn-primary">
+        <i class="fas fa-pen"></i> 글쓰기
+    </a>
+    {% endif %}
     </div>
 
     <!-- 검색 폼 -->
