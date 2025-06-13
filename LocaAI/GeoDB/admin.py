@@ -549,37 +549,33 @@ class LandValueAdmin(BaseGISAdmin):
     list_display = (
         "ogc_fid",
         "get_land_value_display",
-        "a2",
-        "a6",
+        "A2",
+        "A6",
         "get_xy_coordinates",
         "get_geom_type",
     )
-    list_filter = ("a1", "a3")
-    search_fields = ("a2", "a6")
-    ordering = ("-a9",)
+    list_filter = ("A1", "A3")
+    search_fields = ("A2", "A6")
+    ordering = ("ogc_fid",)  # ogc_fid 오름차순 정렬
     readonly_fields = ("get_coordinate_detail",)
 
     fieldsets = (
-        ("공시지가 정보", {"fields": ("a1", "a2", "a3", "a6", "a9")}),
+        ("공시지가 정보", {"fields": ("A1", "A2", "A3", "A6", "A9")}),
         ("좌표 정보", {"fields": ("get_coordinate_detail",), "classes": ("collapse",)}),
-        ("공간 정보", {"fields": ("geom",), "classes": ("collapse",)}),
+        ("지리 정보", {"fields": ("geom",)}),
     )
 
     def get_land_value_display(self, obj):
-        if obj.a9 and isinstance(obj.a9, (int, float)):
-            # 천 단위 구분자를 사용한 숫자 포맷팅
-            formatted_value = f"{int(obj.a9):,}"
-            return format_html("<strong>{}원/㎡</strong>", formatted_value)
-        return "가격 정보 없음"
+        return f"{obj.A9 or 0:,.0f}원/㎡"
 
     get_land_value_display.short_description = "공시지가"
 
     def get_geom_type(self, obj):
         if obj.geom:
             return obj.geom.geom_type
-        return "None"
+        return "없음"
 
-    get_geom_type.short_description = "지오메트리 타입"
+    get_geom_type.short_description = "지오메트리 유형"
 
 
 # 편집 가능한 모델들을 위한 Admin 클래스들

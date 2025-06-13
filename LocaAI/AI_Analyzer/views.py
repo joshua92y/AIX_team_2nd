@@ -1019,29 +1019,40 @@ def perform_spatial_analysis(analysis_request):
                 print("✅ [5/6] 경쟁업체 분석 완료")
 
                 print("\n💰 [6/6] 공시지가 분석 시작...")
-                # 9. 공시지가 분석
+                # 6. 공시지가 분석
+                print("\n💰 [6/6] 공시지가 분석 시작...")
                 try:
                     cursor.execute(
                         f"""
-                        SELECT COALESCE(a9, 0) as land_price
-                        FROM ltv_5186 
-                        WHERE ST_Contains(geom, ST_GeomFromText('POINT({x_coord} {y_coord})', 5186))
+                        SELECT COALESCE("A9", 0) as land_price
+                        FROM ltv_5186
+                        WHERE ST_Intersects(
+                            ltv_5186.geom,
+                            ST_Buffer(
+                                ST_SetSRID(ST_GeomFromText('POINT({x_coord} {y_coord})'), 900914),
+                                300
+                            )
+                        )
+                        ORDER BY ST_Distance(
+                            ltv_5186.geom,
+                            ST_SetSRID(ST_GeomFromText('POINT({x_coord} {y_coord})'), 900914)
+                        )
                         LIMIT 1
                     """
                     )
                     row = cursor.fetchone()
-                    land_price = float(row[0]) if row and row[0] else 0
-                    total_land_value = area * land_price
-
-                    results["total_land_value"] = round(total_land_value, 0)
-                    print(
-                        f"   ✅ 공시지가: {land_price:,.0f}원/㎡, 총 토지가치: {total_land_value:,.0f}원"
-                    )
+                    land_price = row[0] if row[0] else 0
+                    total_land_value = land_price * area
+                    results.update({
+                        "total_land_value": total_land_value,
+                    })
+                    print(f"   ✅ 공시지가: {land_price:,.0f}원/㎡")
+                    print(f"   ✅ 총 공시지가: {total_land_value:,.0f}원")
                 except Exception as e:
                     print(f"   ❌ 공시지가 분석 오류: {e}")
-                    results["total_land_value"] = 0
-
-                print("✅ [6/6] 공시지가 분석 완료")
+                    results.update({
+                        "total_land_value": 0,
+                    })
 
                 # 기본 정보 추가
                 results.update(
