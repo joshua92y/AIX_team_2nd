@@ -40,7 +40,7 @@ def logout_view(request):
     user.save()
     logout(request)
     messages.success(request, '로그아웃되었습니다.')
-    return redirect('border:inquiry_list')
+    return redirect('index')
 
 @login_required
 def get_user_info(request):
@@ -58,8 +58,11 @@ def register(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            messages.success(request, '회원가입이 완료되었습니다.')
-            return redirect('border:inquiry_list')
-    else:
-        form = UserRegistrationForm()
-    return render(request, 'custom_auth/register.html', {'form': form})
+            return JsonResponse({
+                'success': True,
+                'redirect_url': '/'  # ✅ 여기에 리다이렉트할 경로 지정!
+            })
+        else:
+            error_message = next(iter(form.errors.values()))[0]
+            return JsonResponse({'success': False, 'error': error_message})
+    return JsonResponse({'success': False, 'error': '잘못된 요청입니다.'})

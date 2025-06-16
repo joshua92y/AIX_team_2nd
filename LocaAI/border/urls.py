@@ -5,8 +5,9 @@ app_name = 'border'
 
 urlpatterns = [
     # 게시글 목록
-    path('inquiry/', views.post_list, {'board_type': 'inquiry'}, name='inquiry_list'),
-    path('notice/', views.post_list, {'board_type': 'notice'}, name='notice_list'),
+    path('inquiry/', views.post_list, {'board_type': 'inquiry'}, name='inquiry_list'), # 문의 게시판
+    path('notice/', views.post_list, {'board_type': 'notice'}, name='notice_list'),    # 공지사항 게시판
+    path('portfolio/', views.post_list, {'board_type': 'portfolio'}, name='portfolio_list'), # 포트폴리오 게시판
     
     # 게시글 상세
     path('post/<int:pk>/', views.post_detail, name='post_detail'),

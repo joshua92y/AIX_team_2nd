@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Analyzer - 서울시 상권분석 AI서비스</title>
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey={{ KAKAO_JS_API_KEY }}"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e1e5e9;
+            padding: 12px 15px;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+        }
+        
+        .btn-outline-primary {
+            border: 2px solid #667eea;
+            color: #667eea;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+        }
+        
+        .loading {
+            display: none;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .hero-title {
+            color: white;
+            font-size: 3rem;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .hero-subtitle {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin: 0 auto 1rem auto;
+        }
+        
+        /* 분석 진행 상황 스타일 */
+        .analysis-progress {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+        }
+        
+        .progress-step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .progress-step.active {
+            background: rgba(102, 126, 234, 0.1);
+            border-left: 4px solid #667eea;
+        }
+        
+        .progress-step.completed {
+            background: rgba(34, 197, 94, 0.1);
+            border-left: 4px solid #22c55e;
+        }
+        
+        .progress-step.error {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid #ef4444;
+        }
+        
+        .progress-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 16px;
+        }
+        
+        .progress-step.active .progress-icon {
+            background: #667eea;
+            color: white;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .progress-step.completed .progress-icon {
+            background: #22c55e;
+            color: white;
+        }
+        
+        .progress-step.error .progress-icon {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .progress-step:not(.active):not(.completed):not(.error) .progress-icon {
+            background: #e5e7eb;
+            color: #9ca3af;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .progress-text {
+            flex: 1;
+        }
+        
+        .progress-title {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        
+        .progress-detail {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+        
+        .overall-progress {
+            margin-bottom: 1.5rem;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body class="gradient-bg">
+    <div class="container py-5">
+        <!-- Hero Section -->
+        <div class="text-center mb-5">
+            <h1 class="hero-title">
+                <i class="fas fa-map-marker-alt me-3"></i>AI Analyzer
+            </h1>
+            <p class="hero-subtitle">
+                AI 기반 서울시 상권분석 서비스<br>
+                창업 전 입지 분석을 통해 성공 가능성을 미리 확인하세요
+            </p>
+        </div>
+
+        <!-- Features -->
+        <div class="row mb-5">
+            <div class="col-md-3 text-center mb-4">
+                <div class="feature-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h5>생활인구 분석</h5>
+                <p class="text-white-50">연령대별 유동인구 및 직장인구 분석</p>
+            </div>
+            <div class="col-md-3 text-center mb-4">
+                <div class="feature-icon">
+                    <i class="fas fa-store"></i>
+                </div>
+                <h5>경쟁업체 분석</h5>
+                <p class="text-white-50">동종업계 밀집도 및 경쟁강도 분석</p>
+            </div>
+            <div class="col-md-3 text-center mb-4">
+                <div class="feature-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <h5>주변시설 분석</h5>
+                <p class="text-white-50">학교, 공공시설 등 유동인구 유발시설</p>
+            </div>
+            <div class="col-md-3 text-center mb-4">
+                <div class="feature-icon">
+                    <i class="fas fa-won-sign"></i>
+                </div>
+                <h5>공시지가 분석</h5>
+                <p class="text-white-50">임대료 예상 산출 및 투자비용 분석</p>
+            </div>
+        </div>
+
+        <!-- Main Form -->
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-white text-center border-0 pt-4">
+                        <h3 class="mb-0">
+                            <i class="fas fa-chart-line text-primary me-2"></i>
+                            상권분석 시작하기
+                        </h3>
+                        <p class="text-muted mt-2">창업을 계획하시는 지역의 정보를 입력해주세요</p>
+                    </div>
+                    <div class="card-body p-4">
+                        <form id="analysisForm">
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="address" class="form-label">
+                                        <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                                        창업 예정 주소 *
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="address" readonly 
+                                               placeholder="주소검색 버튼을 클릭하여 주소를 입력하세요" required>
+                                        <button class="btn btn-outline-primary" type="button" onclick="openAddressSearch()">
+                                            <i class="fas fa-search me-1"></i>주소검색
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="area" class="form-label">
+                                        <i class="fas fa-ruler-combined text-primary me-2"></i>
+                                        점포 면적 (㎡) *
+                                    </label>
+                                    <input type="number" class="form-control" id="area" 
+                                           placeholder="예: 33" min="1" step="0.1" required>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="serviceType" class="form-label">
+                                        <i class="fas fa-utensils text-primary me-2"></i>
+                                        음식점 유형 *
+                                    </label>
+                                    <select class="form-select" id="serviceType" required>
+                                        <option value="">선택하세요</option>
+                                        <option value="1">일반음식점 (주류 판매 가능)</option>
+                                        <option value="0">휴게음식점 (주류 판매 불가)</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-12 mb-4">
+                                    <label for="businessType" class="form-label">
+                                        <i class="fas fa-tags text-primary me-2"></i>
+                                        업종 *
+                                    </label>
+                                    <select class="form-select" id="businessType" required>
+                                        <option value="">업종을 선택하세요</option>
+                                        {% for business_type in business_types %}
+                                        <option value="{{ business_type.id }}">{{ business_type.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary btn-lg px-5" id="submitBtn">
+                                    <i class="fas fa-analytics me-2"></i>
+                                    상권분석 시작하기
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <!-- 분석 진행 상황 -->
+                        <div id="analysisProgress" class="analysis-progress" style="display: none;">
+                            <h4 class="text-center mb-4">
+                                <i class="fas fa-cog fa-spin text-primary me-2"></i>
+                                상권분석 진행 중...
+                            </h4>
+                            
+                            <div class="overall-progress">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">전체 진행률</span>
+                                    <span id="overallPercent">0%</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar bg-primary" id="overallProgressBar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            
+                            <div id="progressSteps">
+                                <div class="progress-step" id="step-coords">
+                                    <div class="progress-icon">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                    </div>
+                                    <div class="progress-text">
+                                        <div class="progress-title">좌표 변환</div>
+                                        <div class="progress-detail">주소를 지리좌표로 변환 중...</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="progress-step" id="step-population">
+                                    <div class="progress-icon">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <div class="progress-text">
+                                        <div class="progress-title">생활인구 분석</div>
+                                        <div class="progress-detail">300m/1000m 반경 내 생활인구 및 연령대 분석</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="progress-step" id="step-foreign">
+                                    <div class="progress-icon">
+                                        <i class="fas fa-globe"></i>
+                                    </div>
+                                    <div class="progress-text">
+                                        <div class="progress-title">외국인 분석</div>
+                                        <div class="progress-detail">단기/장기체류외국인 분포 분석</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="progress-step" id="step-facilities">
+                                    <div class="progress-icon">
+                                        <i class="fas fa-building"></i>
+                                    </div>
+                                    <div class="progress-text">
+                                        <div class="progress-title">주변시설 분석</div>
+                                        <div class="progress-detail">학교, 공공건물, 직장인구 분석</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="progress-step" id="step-competition">
+                                    <div class="progress-icon">
+                                        <i class="fas fa-store"></i>
+                                    </div>
+                                    <div class="progress-text">
+                                        <div class="progress-title">경쟁업체 분석</div>
+                                        <div class="progress-detail">동일업종 및 요식업체 경쟁강도 분석</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="progress-step" id="step-land">
+                                    <div class="progress-icon">
+                                        <i class="fas fa-won-sign"></i>
+                                    </div>
+                                    <div class="progress-text">
+                                        <div class="progress-title">공시지가 분석</div>
+                                        <div class="progress-detail">토지가치 및 임대료 추정</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="progress-step" id="step-complete">
+                                    <div class="progress-icon">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <div class="progress-text">
+                                        <div class="progress-title">분석 완료</div>
+                                        <div class="progress-detail">결과 페이지로 이동 중...</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-5">
+            <p class="text-white-50">
+                <small>
+                    <i class="fas fa-info-circle me-1"></i>
+                    본 서비스는 공공데이터를 기반으로 한 분석 결과이며, 실제 창업 시 추가적인 시장조사를 권장합니다.
+                </small>
+            </p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- 카카오맵 SDK 현대적 로딩 -->
+    <script>
+        // 카카오맵 SDK 동적 로딩 함수
+        function loadKakaoSDK() {
+            return new Promise((resolve, reject) => {
+                if (window.daum && window.daum.Postcode) {
+                    resolve();
+                    return;
+                }
+                
+                // 우편번호 서비스 SDK 로드
+                const postcodeScript = document.createElement('script');
+                postcodeScript.src = '//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
+                postcodeScript.onload = () => {
+                    // 지도 SDK 로드
+                    const mapScript = document.createElement('script');
+                    mapScript.src = '//dapi.kakao.com/v2/maps/sdk.js?appkey={{ KAKAO_JS_API_KEY }}';
+                    mapScript.onload = resolve;
+                    mapScript.onerror = reject;
+                    document.head.appendChild(mapScript);
+                };
+                postcodeScript.onerror = reject;
+                document.head.appendChild(postcodeScript);
+            });
+        }
+
+        // 페이지 로드 시 카카오 SDK 로드
+        loadKakaoSDK().then(() => {
+            console.log('카카오 SDK 로드 완료');
+        }).catch(error => {
+            console.error('카카오 SDK 로드 실패:', error);
+        });
+    </script>
+    
+    <script>
+        let coordinates = {};
+        let analysisInProgress = false;
+
+        // 분석 진행 상황 관리
+        const progressSteps = [
+            { id: 'step-coords', name: '좌표 변환', duration: 500 },
+            { id: 'step-population', name: '생활인구 분석', duration: 3000 },
+            { id: 'step-foreign', name: '외국인 분석', duration: 2500 },
+            { id: 'step-facilities', name: '주변시설 분석', duration: 2000 },
+            { id: 'step-competition', name: '경쟁업체 분석', duration: 3000 },
+            { id: 'step-land', name: '공시지가 분석', duration: 1500 },
+            { id: 'step-complete', name: '분석 완료', duration: 500 }
+        ];
+
+        // 주소 검색 창 열기
+        function openAddressSearch() {
+            if (!window.daum || !window.daum.Postcode) {
+                alert('주소 검색 서비스를 로딩 중입니다. 잠시 후 다시 시도해주세요.');
+                return;
+            }
+
+            new daum.Postcode({
+                oncomplete: function(data) {
+                    // 선택된 주소 정보 처리
+                    let fullAddress = data.address;
+                    if(data.addressType === 'R'){
+                        if(data.bname !== '' && data.buildingName !== ''){
+                            fullAddress += ' (' + data.bname + ', ' + data.buildingName + ')';
+                        } else if(data.bname !== ''){
+                            fullAddress += ' (' + data.bname + ')';
+                        } else if(data.buildingName !== '') {
+                            fullAddress += ' (' + data.buildingName + ')';
+                        }
+                    }
+                    
+                    document.getElementById('address').value = fullAddress;
+                    
+                    // 좌표 변환 요청
+                    getCoordinates(fullAddress);
+                }
+            }).open();
+        }
+
+        // 좌표 변환 함수
+        function getCoordinates(address) {
+            fetch('/get-coordinates/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    address: address
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    coordinates = {
+                        longitude: data.longitude,
+                        latitude: data.latitude,
+                        x_coord: data.x_coord,
+                        y_coord: data.y_coord
+                    };
+                    console.log('좌표 변환 완료:', coordinates);
+                } else {
+                    alert('주소를 좌표로 변환하는데 실패했습니다: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('좌표 변환 중 오류가 발생했습니다.');
+            });
+        }
+
+        // 진행 상황 업데이트 함수
+        function updateProgress(stepIndex, status = 'active') {
+            const step = progressSteps[stepIndex];
+            const stepElement = document.getElementById(step.id);
+            
+            // 이전 단계들을 완료로 표시
+            for (let i = 0; i < stepIndex; i++) {
+                const prevStep = document.getElementById(progressSteps[i].id);
+                prevStep.className = 'progress-step completed';
+            }
+            
+            // 현재 단계 표시
+            stepElement.className = `progress-step ${status}`;
+            
+            // 전체 진행률 업데이트
+            const percentage = Math.round((stepIndex / (progressSteps.length - 1)) * 100);
+            document.getElementById('overallPercent').textContent = percentage + '%';
+            document.getElementById('overallProgressBar').style.width = percentage + '%';
+            
+            // 진행 상황별 메시지 업데이트
+            const detailElement = stepElement.querySelector('.progress-detail');
+            
+            switch(step.id) {
+                case 'step-coords':
+                    if (status === 'active') detailElement.textContent = '주소를 지리좌표로 변환 중...';
+                    else if (status === 'completed') detailElement.textContent = `좌표 변환 완료 (${coordinates.latitude?.toFixed(6)}, ${coordinates.longitude?.toFixed(6)})`;
+                    break;
+                case 'step-population':
+                    if (status === 'active') detailElement.textContent = '300m/1000m 반경 내 생활인구 및 연령대 분석 중...';
+                    else if (status === 'completed') detailElement.textContent = '생활인구 분석 완료';
+                    break;
+                case 'step-foreign':
+                    if (status === 'active') detailElement.textContent = '단기/장기체류외국인 분포 분석 중...';
+                    else if (status === 'completed') detailElement.textContent = '외국인 분석 완료';
+                    break;
+                case 'step-facilities':
+                    if (status === 'active') detailElement.textContent = '학교, 공공건물, 직장인구 분석 중...';
+                    else if (status === 'completed') detailElement.textContent = '주변시설 분석 완료';
+                    break;
+                case 'step-competition':
+                    if (status === 'active') detailElement.textContent = '동일업종 및 요식업체 경쟁강도 분석 중...';
+                    else if (status === 'completed') detailElement.textContent = '경쟁업체 분석 완료';
+                    break;
+                case 'step-land':
+                    if (status === 'active') detailElement.textContent = '토지가치 및 임대료 추정 중...';
+                    else if (status === 'completed') detailElement.textContent = '공시지가 분석 완료';
+                    break;
+                case 'step-complete':
+                    if (status === 'completed') detailElement.textContent = '분석이 완료되었습니다!';
+                    break;
+            }
+        }
+
+        // 진행 상황 시뮬레이션 - 백엔드 완료와 동기화
+        function simulateProgress(analysisPromise) {
+            let currentStep = 0;
+            let progressCompleted = false;
+            let analysisCompleted = false;
+            
+            function nextStep() {
+                if (currentStep < progressSteps.length && !progressCompleted) {
+                    updateProgress(currentStep, 'active');
+                    
+                    setTimeout(() => {
+                        updateProgress(currentStep, 'completed');
+                        currentStep++;
+                        
+                        // 마지막 단계가 아니면 계속 진행
+                        if (currentStep < progressSteps.length - 1) {
+                            setTimeout(nextStep, 200);
+                        } else {
+                            // 마지막 단계(분석 완료)는 실제 분석이 끝날 때까지 대기
+                            progressCompleted = true;
+                            waitForAnalysisCompletion();
+                        }
+                    }, progressSteps[currentStep].duration);
+                }
+            }
+            
+            function waitForAnalysisCompletion() {
+                analysisPromise.then(() => {
+                    // 실제 분석이 완료되면 마지막 단계 완료
+                    updateProgress(progressSteps.length - 1, 'active');
+                    setTimeout(() => {
+                        updateProgress(progressSteps.length - 1, 'completed');
+                        analysisCompleted = true;
+                    }, 300);
+                }).catch(() => {
+                    analysisCompleted = true;
+                });
+            }
+            
+            nextStep();
+        }
+
+        // 폼 제출 처리
+        document.getElementById('analysisForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (analysisInProgress) {
+                return;
+            }
+            
+            // 입력값 검증
+            const address = document.getElementById('address').value;
+            const area = document.getElementById('area').value;
+            const businessType = document.getElementById('businessType').value;
+            const serviceType = document.getElementById('serviceType').value;
+            
+            if (!address || !area || !businessType || !serviceType) {
+                alert('모든 필수 항목을 입력해주세요.');
+                return;
+            }
+            
+            if (!coordinates.longitude) {
+                alert('주소 검색을 통해 정확한 주소를 입력해주세요.');
+                return;
+            }
+            
+            analysisInProgress = true;
+            
+            // 폼 숨기고 진행 상황 표시
+            document.querySelector('form').style.display = 'none';
+            document.getElementById('analysisProgress').style.display = 'block';
+            document.getElementById('submitBtn').disabled = true;
+            
+            // 분석 요청
+            const requestData = {
+                address: address,
+                area: parseFloat(area),
+                business_type_id: parseInt(businessType),
+                service_type: parseInt(serviceType),
+                longitude: coordinates.longitude,
+                latitude: coordinates.latitude,
+                x_coord: coordinates.x_coord,
+                y_coord: coordinates.y_coord
+            };
+            
+            // 실제 분석 요청을 Promise로 래핑
+            const analysisPromise = fetch('/analyze/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('백엔드 분석 완료, 결과 페이지로 이동 준비');
+                    
+                    // 잠시 후 결과 페이지로 이동 (진행률 100% 표시 후)
+                    setTimeout(() => {
+                        window.location.href = `/result/${data.request_id}/`;
+                    }, 800);
+                    
+                    return data;
+                } else {
+                    throw new Error(data.error);
+                }
+            })
+            .catch(error => {
+                console.error('분석 오류:', error);
+                
+                // 오류 발생 시 현재 단계를 오류로 표시
+                const currentStepElement = document.querySelector('.progress-step.active');
+                if (currentStepElement) {
+                    currentStepElement.className = 'progress-step error';
+                    currentStepElement.querySelector('.progress-detail').textContent = '분석 중 오류가 발생했습니다: ' + error.message;
+                }
+                
+                setTimeout(() => {
+                    alert('분석 중 오류가 발생했습니다: ' + error.message);
+                    location.reload();
+                }, 2000);
+                
+                throw error;
+            });
+            
+            // 진행 상황 애니메이션 시작 (실제 분석과 동기화)
+            simulateProgress(analysisPromise);
+        });
+
+        // CSRF 토큰 가져오기
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html> 
