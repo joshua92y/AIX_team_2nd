@@ -1,72 +1,104 @@
-# models.py
-from django.db import models
-from django.utils.translation import gettext_lazy as _
-from django.core.validators import MinLengthValidator
 import uuid
+from django.conf import settings
+from django.db import models
+from django.utils import timezone
+from django.core.mail import send_mail
+from django.core.validators import MinLengthValidator
+from django.utils.translation import gettext_lazy as _
 
-class EmailTemplate(models.Model):
-    name = models.CharField(_('템플릿 이름'), max_length=100, unique=True)
-    subject = models.CharField(_('제목'), max_length=255)
-    body = models.TextField(_('본문'))
-    is_active = models.BooleanField(_('활성화 여부'), default=True)
-    created_at = models.DateTimeField(_('생성일'), auto_now_add=True)
-    updated_at = models.DateTimeField(_('수정일'), auto_now=True)
-
-    class Meta:
-        verbose_name = _('이메일 템플릿')
-        verbose_name_plural = _('이메일 템플릿')
-
-    def __str__(self):
-        return self.name
 
 class EmailMessage(models.Model):
-    class Status(models.TextChoices):
-        PENDING = 'pending', _('대기중')
-        SENDING = 'sending', _('전송중')
-        SENT = 'sent', _('전송완료')
-        FAILED = 'failed', _('전송실패')
+    STATUS_CHOICES = [
+        ('pending', '대기중'),
+        ('sent', '전송됨'),
+        ('failed', '실패'),
+    ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    template = models.ForeignKey(
-        EmailTemplate,
+
+    # ✅ 유저 외래키 (nullable, optional)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        verbose_name=_('이메일 템플릿')
+        verbose_name=_('사용자'),
+        related_name='email_messages'
     )
+
     subject = models.CharField(_('제목'), max_length=255)
     message = models.TextField(_('메시지'), validators=[MinLengthValidator(10)])
     recipient = models.EmailField(_('수신자'))
     sender = models.EmailField(_('발신자'))
+
     status = models.CharField(
         _('상태'),
         max_length=20,
-        choices=Status.choices,
-        default=Status.PENDING
+        choices=STATUS_CHOICES,
+        default='pending'
     )
     sent_at = models.DateTimeField(_('전송일시'), null=True, blank=True)
-    error_message = models.TextField(_('에러 메시지'), null=True, blank=True)
-    retry_count = models.PositiveIntegerField(_('재시도 횟수'), default=0)
-    max_retries = models.PositiveIntegerField(_('최대 재시도 횟수'), default=3)
-    
-    # 보안 관련 필드
-    is_encrypted = models.BooleanField(_('암호화 여부'), default=False)
-    encryption_key = models.CharField(_('암호화 키'), max_length=255, null=True, blank=True)
-    
+    failed_at = models.DateTimeField(_('실패일시'), null=True, blank=True)
+    failure_reason = models.TextField(_('실패 이유'), blank=True)
+
     created_at = models.DateTimeField(_('생성일'), auto_now_add=True)
     updated_at = models.DateTimeField(_('수정일'), auto_now=True)
 
     class Meta:
-        verbose_name = _('이메일 메시지')
-        verbose_name_plural = _('이메일 메시지')
+        verbose_name = _('이메일')
+        verbose_name_plural = _('이메일')
         indexes = [
             models.Index(fields=['status', 'created_at']),
             models.Index(fields=['recipient']),
+            models.Index(fields=['user']),
         ]
         ordering = ['-created_at']
 
     def __str__(self):
         return f"To: {self.recipient} | Subject: {self.subject} | Status: {self.status}"
 
-    def can_retry(self):
-        return self.retry_count < self.max_retries and self.status in [self.Status.FAILED, self.Status.PENDING]
+    def retry(self):
+        """실패한 이메일에 대해 재전송을 시도합니다."""
+        if self.status != 'failed':
+            raise ValueError('실패한 이메일만 재전송할 수 있습니다.')
+
+        try:
+            send_mail(
+                subject=self.subject,
+                message=self.message,
+                from_email=self.sender,
+                recipient_list=[self.recipient],
+                fail_silently=False,
+            )
+            self.status = 'sent'
+            self.sent_at = timezone.now()
+            self.failure_reason = ''
+        except Exception as e:
+            self.status = 'failed'
+            self.failed_at = timezone.now()
+            self.failure_reason = str(e)
+
+        self.save()
+        
+    def send(self):
+        """이메일 전송 (대기중 상태에서 호출 가능)"""
+        if self.status != 'pending':
+            raise ValueError('대기중 상태의 이메일만 발송할 수 있습니다.')
+
+        try:
+            send_mail(
+                subject=self.subject,
+                message=self.message,
+                from_email=self.sender,
+                recipient_list=[self.recipient],
+                fail_silently=False,
+            )
+            self.status = 'sent'
+            self.sent_at = timezone.now()
+            self.failure_reason = ''
+        except Exception as e:
+            self.status = 'failed'
+            self.failed_at = timezone.now()
+            self.failure_reason = str(e)
+
+        self.save()
