@@ -34,12 +34,10 @@ Content-Type: application/json
 }
 
 ### 문의 메일 전송 요청 (짧은 메시지)
-POST http://127.0.0.1:8000/api/smtp/contact/
+### 비밀번호 초기화 요청
+POST http://127.0.0.1:8000/auth/password-reset/
 Content-Type: application/json
 
 {
-  "subject": "문의사항",
-  "message": "질문",
-  "recipient": "support@example.com",
-  "sender": "customer@example.com"
+  "identifier": "admin"
 }
