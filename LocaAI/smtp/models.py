@@ -102,3 +102,47 @@ class EmailMessage(models.Model):
             self.failure_reason = str(e)
 
         self.save()
+        
+class NewsletterSubscriber(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    # ✅ 회원인 경우 연결 (비회원은 null 가능)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='newsletter_subscriptions',
+        verbose_name=_('사용자')
+    )
+
+    email = models.EmailField(_('이메일'), unique=True)
+    is_active = models.BooleanField(_('수신 동의'), default=True)
+    subscribed_at = models.DateTimeField(_('구독 시작일'), auto_now_add=True)
+    unsubscribed_at = models.DateTimeField(_('구독 해지일'), null=True, blank=True)
+
+    # 선택적 이름 등 추가 메타정보
+    name = models.CharField(_('이름'), max_length=100, blank=True)
+
+    class Meta:
+        verbose_name = _('뉴스레터 구독자')
+        verbose_name_plural = _('뉴스레터 구독자')
+        indexes = [
+            models.Index(fields=['email']),
+            models.Index(fields=['is_active']),
+        ]
+
+    def __str__(self):
+        return f"{self.email} ({'활성' if self.is_active else '해지됨'})"
+
+    def unsubscribe(self):
+        if self.is_active:
+            self.is_active = False
+            self.unsubscribed_at = timezone.now()
+            self.save()
+
+    def subscribe(self):
+        if not self.is_active:
+            self.is_active = True
+            self.unsubscribed_at = None
+            self.save()

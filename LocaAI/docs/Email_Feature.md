@@ -149,3 +149,123 @@ python manage.py test smtp
 - 사용자 인증 상태 확인
 - API 엔드포인트 접근 권한 확인
 - 관리자 페이지 접근 권한 확인 
+
+## 뉴스레터 구독 시스템
+
+### 모델 구조
+
+#### NewsletterSubscriber
+뉴스레터 구독자를 관리하는 모델입니다.
+
+**필드:**
+- `id`: UUID (기본키)
+- `user`: 사용자 외래키 (선택적, 비회원 구독 가능)
+- `email`: 이메일 주소 (고유값)
+- `is_active`: 구독 상태 (기본값: True)
+- `subscribed_at`: 구독 시작일
+- `unsubscribed_at`: 구독 해지일 (선택적)
+- `name`: 구독자 이름 (선택적)
+
+**인덱스:**
+- `email`
+- `is_active`
+
+### API 엔드포인트
+
+#### 1. 구독 신청
+- **URL**: `/api/newsletter/subscribe/`
+- **Method**: POST
+- **요청 데이터:**
+  ```json
+  {
+    "email": "user@example.com",
+    "name": "홍길동"  // 선택사항
+  }
+  ```
+- **응답:**
+  ```json
+  {
+    "message": "user@example.com 님, 구독이 완료되었습니다."
+  }
+  ```
+
+#### 2. 구독 해지
+- **URL**: `/api/newsletter/unsubscribe/`
+- **Method**: POST
+- **요청 데이터:**
+  ```json
+  {
+    "email": "user@example.com"
+  }
+  ```
+- **응답:**
+  ```json
+  {
+    "message": "user@example.com 님, 구독이 해지되었습니다."
+  }
+  ```
+
+### 관리자 기능
+
+관리자 페이지(`/admin/smtp/newslettersubscriber/`)에서 다음과 같은 기능을 제공합니다:
+
+1. **목록 보기**
+   - 이메일
+   - 이름
+   - 사용자
+   - 구독 상태
+   - 구독/해지 일시
+   - 구독 상태 토글 버튼
+
+2. **필터링**
+   - 구독 상태
+   - 구독 시작일
+   - 구독 해지일
+
+3. **검색**
+   - 이메일
+   - 이름
+   - 사용자명
+
+4. **상세 보기**
+   - 기본 정보 (사용자, 이메일, 이름, 구독 상태)
+   - 구독 정보 (구독 시작일, 구독 해지일)
+
+### 주요 기능
+
+1. **구독 신청**
+   - 이메일 주소 유효성 검증
+   - 중복 구독 방지
+   - 이름 미입력 시 이메일 앞부분 자동 설정
+
+2. **구독 해지**
+   - 이메일 주소로 구독자 확인
+   - 구독 상태 변경
+   - 해지 일시 기록
+
+3. **구독 관리**
+   - 구독 상태 토글
+   - 구독 이력 추적
+   - 회원/비회원 구독자 구분
+
+### 사용 예시
+
+```python
+# 구독 신청
+subscriber = NewsletterSubscriber.objects.create(
+    email="user@example.com",
+    name="홍길동"
+)
+
+# 구독 해지
+subscriber.unsubscribe()
+
+# 구독 재활성화
+subscriber.subscribe()
+```
+
+### 주의사항
+
+1. 이메일 주소는 고유값으로 설정되어 있어 중복 구독이 불가능합니다.
+2. 구독 해지 후 재구독 시 기존 구독 정보를 재활성화합니다.
+3. 회원인 경우 사용자 정보와 연결되며, 비회원도 구독이 가능합니다. 
