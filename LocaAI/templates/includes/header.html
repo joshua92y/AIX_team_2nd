@@ -75,6 +75,7 @@
 
     // 언어 변경 함수
     function funcChangeLang(lang) {
+      console.log("funcChangeLang 실행됨:", lang); // 콘솔에 출력 확인
 			$('[data-lang]').hide();
 			$('[data-lang="'+lang+'"]').show();
 		}
