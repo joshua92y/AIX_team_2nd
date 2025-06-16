@@ -1,6 +1,6 @@
 #LocaAI/smtp/admin.py
 from django.contrib import admin
-from .models import EmailMessage
+from .models import EmailMessage, NewsletterSubscriber
 from django.utils.html import format_html
 from django.shortcuts import redirect
 from django.contrib import messages
@@ -85,5 +85,87 @@ class EmailMessageAdmin(admin.ModelAdmin):
                 self.message_user(request, f"이메일은 이미 발송되었습니다.", level=messages.WARNING)
         except Exception as e:
             self.message_user(request, f"이메일 발송 실패: {str(e)}", level=messages.ERROR)
+
+        return redirect("..")
+
+@admin.register(NewsletterSubscriber)
+class NewsletterSubscriberAdmin(admin.ModelAdmin):
+    list_display = (
+        'email',
+        'name',
+        'user',
+        'is_active',
+        'subscribed_at',
+        'unsubscribed_at',
+        'toggle_subscription',
+    )
+    list_filter = (
+        'is_active',
+        'subscribed_at',
+        'unsubscribed_at',
+    )
+    search_fields = (
+        'email',
+        'name',
+        'user__username',
+    )
+    readonly_fields = (
+        'subscribed_at',
+        'unsubscribed_at',
+    )
+    fieldsets = (
+        (None, {
+            'fields': ('user', 'email', 'name', 'is_active')
+        }),
+        ('구독 정보', {
+            'fields': ('subscribed_at', 'unsubscribed_at'),
+        }),
+    )
+
+    def toggle_subscription(self, obj):
+        if obj.is_active:
+            return format_html(
+                '<a class="button" href="{}">🔕 구독 해지</a>',
+                f'./{obj.pk}/unsubscribe/'
+            )
+        return format_html(
+            '<a class="button" href="{}">🔔 구독 활성화</a>',
+            f'./{obj.pk}/subscribe/'
+        )
+    toggle_subscription.short_description = '구독 상태 변경'
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('<path:object_id>/unsubscribe/', self.admin_site.admin_view(self.unsubscribe_view), name='smtp_newslettersubscriber_unsubscribe'),
+            path('<path:object_id>/subscribe/', self.admin_site.admin_view(self.subscribe_view), name='smtp_newslettersubscriber_subscribe'),
+        ]
+        return custom_urls + urls
+
+    def unsubscribe_view(self, request, object_id):
+        obj = self.get_object(request, object_id)
+        if obj is None:
+            self.message_user(request, "대상이 존재하지 않습니다.", level=messages.ERROR)
+            return redirect("..")
+
+        try:
+            obj.unsubscribe()
+            self.message_user(request, f"'{obj.email}' 구독이 해지되었습니다.", level=messages.SUCCESS)
+        except Exception as e:
+            self.message_user(request, f"구독 해지 실패: {str(e)}", level=messages.ERROR)
+
+        return redirect("..")
+
+    def subscribe_view(self, request, object_id):
+        obj = self.get_object(request, object_id)
+        if obj is None:
+            self.message_user(request, "대상이 존재하지 않습니다.", level=messages.ERROR)
+            return redirect("..")
+
+        try:
+            obj.subscribe()
+            self.message_user(request, f"'{obj.email}' 구독이 활성화되었습니다.", level=messages.SUCCESS)
+        except Exception as e:
+            self.message_user(request, f"구독 활성화 실패: {str(e)}", level=messages.ERROR)
 
         return redirect("..")

@@ -22,18 +22,23 @@ Content-Type: application/json
   "sender": "joshua92y@gmail.com"
 }
 
-### 문의 메일 전송 요청 (잘못된 이메일 형식)
-POST http://127.0.0.1:8000/api/smtp/contact/
+### 뉴스레터 구독 신청
+POST http://127.0.0.1:8000/api/smtp/newsletter/subscribe/
 Content-Type: application/json
 
 {
-  "subject": "문의사항",
-  "message": "제품 사용 중 궁금한 점이 있습니다.",
-  "recipient": "invalid-email",
-  "sender": "customer@example.com"
+  "email": "aix25best@gmail.com",
+  "name": ""
 }
 
-### 문의 메일 전송 요청 (짧은 메시지)
+### 뉴스레터 구독 해지
+POST http://127.0.0.1:8000/api/smtp/newsletter/unsubscribe/
+Content-Type: application/json
+
+{
+  "email": "aix25best@gmail.com"
+}
+
 ### 비밀번호 초기화 요청
 POST http://127.0.0.1:8000/auth/password-reset/
 Content-Type: application/json
