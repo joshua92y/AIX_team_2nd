@@ -68,23 +68,44 @@ class NewsletterSubscribeSerializer(serializers.ModelSerializer):
 
         User = get_user_model()
         matching_user = None
+
+        print(f"📩 [START] 구독 프로세스 시작 for {email}")
+
         try:
             matching_user = User.objects.get(email=email)
+            print(f"🔗 기존 유저와 연결됨: {matching_user}")
         except User.DoesNotExist:
-            pass
+            print(f"👤 해당 이메일로 등록된 유저 없음: {email}")
 
         try:
             subscriber = NewsletterSubscriber.objects.get(email=email)
+            print("♻️ 기존 구독자 정보 있음, 재구독 처리 중")
+
             if matching_user:
                 subscriber.user = matching_user
-                
+
             subscriber.name = name or subscriber.name
             subscriber.subscribe()
             subscriber.save()
-            
-            send_subscription_email(subscriber)  # ✅ 자동 메일 발송
-            
+
+            print("✅ 재구독 정보 저장 완료")
+
+            send_subscription_email(subscriber)
+            print("📬 환영 메일 전송 시도 완료")
+
             return subscriber
+        except NewsletterSubscriber.DoesNotExist:
+            print("🆕 신규 구독자 생성 중")
+            new_subscriber = NewsletterSubscriber.objects.create(
+                email=email,
+                name=name,
+                user=matching_user
+            )
+            send_subscription_email(new_subscriber)
+            print("📬 환영 메일 전송 완료 (신규)")
+
+            return new_subscriber
+        
         except NewsletterSubscriber.DoesNotExist:
             return NewsletterSubscriber.objects.create(
                 email=email,
