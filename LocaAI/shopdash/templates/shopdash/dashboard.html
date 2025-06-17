@@ -6,7 +6,6 @@
 {% block extra_css %}
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
 <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-<!-- D3.js 지도용 CSS는 인라인으로 처리 -->
 <style>
     /* 기존 사이트 색상 변수 사용 */
     :root {
@@ -167,24 +166,6 @@
         margin: 0;
     }
 
-    /* 지도 컨테이너 */
-    .map-container {
-        height: 500px;
-        border-radius: 10px;
-        overflow: hidden;
-        box-shadow: 0 5px 25px rgba(0,0,0,0.1);
-        border: 1px solid rgba(65, 84, 241, 0.1);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    
-    /* D3.js 지도 스타일 */
-    .map-container svg {
-        max-width: 100%;
-        max-height: 100%;
-    }
-
     /* 로딩 스피너 */
     .loading-spinner {
         display: inline-block;
@@ -333,6 +314,12 @@
             <div class="section-title" data-aos="fade-up">
                 <h2>핵심 지표</h2>
                 <p>서울시 상권 분석의 주요 통계 정보를 한눈에 확인하세요</p>
+            </div>
+            
+            <!-- 경고 메시지 영역 -->
+            <div id="warning-message" class="alert alert-warning" style="display: none;" data-aos="fade-up">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                <span id="warning-text"></span>
             </div>
             
             <div class="row" data-aos="fade-up" data-aos-delay="100">
@@ -542,47 +529,12 @@
             </div>
         </div>
     </div>
-
-    <!-- 지도 섹션 -->
-    <div class="content-section">
-        <div class="container">
-            <div class="section-title" data-aos="fade-up">
-                <h2>서울시 상권 분석 지도</h2>
-                <p>구별 데이터를 확인하고, 클릭하여 행정동별 상세 정보를 확인하세요</p>
-            </div>
-            
-            <div class="row">
-                <div class="col-12" data-aos="fade-up" data-aos-delay="100">
-                    <div class="chart-card">
-                        <div class="card-header">
-                            <h5 class="card-title">
-                                <i class="bi bi-geo-alt-fill text-primary me-2"></i>
-                                대화형 서울시 지도
-                            </h5>
-                            <div class="card-subtitle text-muted mt-1">
-                                <small>
-                                    <i class="bi bi-info-circle me-1"></i>
-                                    마우스 오버: 구별 정보 확인 | 클릭: 행정동 상세보기 | 마우스 휠: 확대/축소
-                                </small>
-                            </div>
-                        </div>
-                        <div class="card-body p-0">
-                            <div id="map" class="map-container"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-<script src="https://d3js.org/d3.v7.min.js"></script>
-<script src="https://unpkg.com/topojson@3"></script>
-<script src="{% static 'shopdash/js/d3-map/seoul-dashboard-map.js' %}"></script>
 
 <script>
 // AOS 초기화
@@ -600,13 +552,11 @@ Chart.defaults.color = '#444444';
 
 // 전역 변수
 let charts = {};
-let map;
 
 // 페이지 로드 시 실행
 document.addEventListener('DOMContentLoaded', function() {
     loadDashboardStats();
     loadAllCharts();
-    initializeSeoulMap();
 });
 
 // 대시보드 통계 로드
@@ -618,6 +568,12 @@ function loadDashboardStats() {
             document.getElementById('avg-survival-rate').textContent = data.avg_survival_rate + '%';
             document.getElementById('total-businesses').textContent = data.total_businesses.toLocaleString();
             document.getElementById('active-districts').textContent = data.active_districts.toLocaleString();
+            
+            // 경고 메시지 표시
+            if (data.warning_message && data.warning_message.trim() !== '') {
+                document.getElementById('warning-text').textContent = data.warning_message;
+                document.getElementById('warning-message').style.display = 'block';
+            }
         })
         .catch(error => {
             console.error('통계 데이터 로드 실패:', error);
@@ -686,6 +642,14 @@ function loadChart(chartId, apiUrl, chartType, primaryColor) {
             };
             
             charts[chartId] = new Chart(ctx, config);
+            
+            // 생존률 차트에 경고 메시지 표시
+            if (chartId === 'survivalRateChart' && data.warning_message && data.warning_message.trim() !== '') {
+                const warningDiv = document.createElement('div');
+                warningDiv.className = 'alert alert-warning mt-2';
+                warningDiv.innerHTML = `<i class="bi bi-exclamation-triangle me-2"></i>${data.warning_message}`;
+                document.querySelector('#survivalRateChart').closest('.chart-card').querySelector('.card-body').appendChild(warningDiv);
+            }
         })
         .catch(error => {
             console.error(`${chartId} 차트 로드 실패:`, error);
@@ -755,6 +719,14 @@ function loadTopBusinessSurvivalChart() {
             
             // 상세 정보 업데이트
             updateTopBusinessDetails(data);
+            
+            // 경고 메시지 표시 (업종별 생존률 차트용)
+            if (data.warning_message && data.warning_message.trim() !== '') {
+                const warningDiv = document.createElement('div');
+                warningDiv.className = 'alert alert-warning mt-2';
+                warningDiv.innerHTML = `<i class="bi bi-exclamation-triangle me-2"></i>${data.warning_message}`;
+                document.querySelector('#topBusinessSurvivalChart').closest('.chart-card').querySelector('.card-body').appendChild(warningDiv);
+            }
         })
         .catch(error => {
             console.error('평균 생존률 상위 업종 차트 로드 실패:', error);
@@ -867,15 +839,6 @@ function getChartOptions(chartType, chartId) {
     }
 
     return baseOptions;
-}
-
-// D3.js 지도는 seoul-dashboard-map.js에서 관리됩니다
-
-// 차트 새로고침
-function refreshCharts() {
-    loadAllCharts();
-    loadDashboardStats();
-    refreshSeoulMap();
 }
 
 // 에러 처리

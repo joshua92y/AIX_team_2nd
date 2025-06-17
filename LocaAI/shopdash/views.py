@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from django.db.models import Sum, Count, Avg, Q
 from django.db import connection
 from AI_Analyzer.models import AnalysisResult, BusinessType
+from GeoDB.models import StoreResult
 import json
 
 
@@ -214,50 +215,49 @@ def business_type_distribution(request):
 
 
 def survival_rate_data(request):
-    """생존률 데이터 API - 행정동별 평균 생존률"""
+    """생존률 데이터 API - 행정동별 평균 생존률 (store_result EMD_KOR_NM 기반)"""
     try:
         with connection.cursor() as cursor:
-            # 행정동별 생존률 계산 (주소에서 행정동 추출)
+            # GPKG 데이터의 EMD_KOR_NM을 사용한 행정동별 생존률 계산 (0 포함, 100% 제외)
             cursor.execute("""
                 SELECT 
-                    SPLIT_PART(SPLIT_PART(req.address, ' ', 2), ' ', 1) as gu_name,
-                    SPLIT_PART(SPLIT_PART(req.address, ' ', 3), ' ', 1) as dong_name,
-                    CASE 
-                        WHEN AVG(ar.life_pop_300m) > 10000 THEN 85.0
-                        WHEN AVG(ar.life_pop_300m) > 8000 THEN 75.0
-                        WHEN AVG(ar.life_pop_300m) > 6000 THEN 65.0
-                        WHEN AVG(ar.life_pop_300m) > 4000 THEN 55.0
-                        ELSE 45.0
-                    END as estimated_survival_rate,
+                    COALESCE(emd_kor_nm, '기타') as dong_name,
+                    AVG(result * 100) as avg_survival_rate,
                     COUNT(*) as analysis_count
-                FROM "AI_Analyzer_analysisresult" ar
-                JOIN "AI_Analyzer_analysisrequest" req ON ar.request_id = req.id
-                WHERE req.address LIKE '서울%'
-                    AND ar.life_pop_300m > 0
-                    AND LENGTH(SPLIT_PART(req.address, ' ', 2)) > 0
-                    AND LENGTH(SPLIT_PART(req.address, ' ', 3)) > 0
-                GROUP BY 
-                    SPLIT_PART(SPLIT_PART(req.address, ' ', 2), ' ', 1),
-                    SPLIT_PART(SPLIT_PART(req.address, ' ', 3), ' ', 1)
-                HAVING COUNT(*) >= 1
-                ORDER BY estimated_survival_rate DESC
+                FROM "store_result"
+                WHERE result IS NOT NULL
+                    AND emd_kor_nm IS NOT NULL
+                    AND emd_kor_nm != ''
+                GROUP BY emd_kor_nm
+                HAVING COUNT(*) >= 10  -- 최소 10건 이상 있는 동만
+                    AND AVG(result * 100) < 100  -- 100% 생존률 제외
+                ORDER BY avg_survival_rate DESC
                 LIMIT 10
             """)
             
             results = cursor.fetchall()
             
-            # 구명_동명 형태로 라벨 생성
-            labels = [f"{row[0]}_{row[1]}" for row in results]
+            # 동명만으로 라벨 생성
+            labels = [row[0] for row in results]
+            
+            # 전체 분석 건수 확인 (0 포함)
+            cursor.execute("""
+                SELECT COUNT(*) FROM "store_result"
+                WHERE result IS NOT NULL
+            """)
+            total_count = cursor.fetchone()[0]
         
         data = {
             'labels': labels,
             'datasets': [{
-                'label': '예상 생존률 (%) - 행정동별',
-                'data': [round(float(row[2]), 1) for row in results],
+                'label': '평균 생존률 (%) - 행정동별',
+                'data': [round(float(row[1]), 1) for row in results],
                 'backgroundColor': 'rgba(153, 102, 255, 0.8)',
                 'borderColor': 'rgba(153, 102, 255, 1)',
                 'borderWidth': 2
-            }]
+            }],
+            'analysis_counts': [int(row[2]) for row in results],
+            'total_analysis_count': total_count
         }
         
         return JsonResponse(data)
@@ -354,28 +354,20 @@ def age_distribution_data(request):
 
 
 def dashboard_stats(request):
-    """대시보드 통계 데이터 API - 전체 데이터 기반"""
+    """대시보드 통계 데이터 API - 분석건수는 analysisresult, 생존률은 store_result 기반"""
     try:
         with connection.cursor() as cursor:
-            # 분석 건수 (분석 활발도 지표)
+            # 실제 사용자 분석 건수 (AI_Analyzer_analysisresult)
             cursor.execute("""
                 SELECT COUNT(*) FROM "AI_Analyzer_analysisresult"
             """)
             total_analysis = cursor.fetchone()[0]
             
-            # 전체 데이터 기준 평균 생존률 (생존률이 0이므로 생활인구 기반으로 추정)
+            # store_result 테이블 기반 평균 생존률 계산 (result * 100, 0 포함)
             cursor.execute("""
-                SELECT AVG(
-                    CASE 
-                        WHEN life_pop_300m > 10000 THEN 85.0
-                        WHEN life_pop_300m > 8000 THEN 75.0
-                        WHEN life_pop_300m > 6000 THEN 65.0
-                        WHEN life_pop_300m > 4000 THEN 55.0
-                        ELSE 45.0
-                    END
-                ) 
-                FROM "AI_Analyzer_analysisresult"
-                WHERE life_pop_300m > 0
+                SELECT AVG(result * 100) 
+                FROM "store_result"
+                WHERE result IS NOT NULL
             """)
             avg_survival_rate = cursor.fetchone()[0]
             
@@ -421,49 +413,50 @@ def dashboard_stats(request):
 
 
 def top_business_survival_rate(request):
-    """업종별 평균 생존률 상위 TOP3 API"""
+    """업종별 평균 생존률 상위 TOP3 API (store_result 테이블 기반, 0값 포함)"""
     try:
         with connection.cursor() as cursor:
-            # 업종별 평균 생존률 계산 (store_point_5186 기반)
+            # store_result 테이블 기반 업종별 평균 생존률 계산 (0값도 포함하여 정확한 평균 계산)
             cursor.execute("""
                 SELECT 
                     uptaenm as business_type_name,
-                    AVG(
-                        CASE 
-                            WHEN area > 100 THEN 78.0
-                            WHEN area > 80 THEN 68.0
-                            WHEN area > 60 THEN 58.0
-                            WHEN area > 40 THEN 48.0
-                            ELSE 38.0
-                        END
-                    ) as avg_survival_rate,
+                    AVG(result * 100) as avg_survival_rate,
                     COUNT(*) as analysis_count,
                     AVG(area) as avg_area,
-                    COUNT(DISTINCT ogc_fid) as store_count
-                FROM "store_point_5186"
-                WHERE uptaenm IS NOT NULL
+                    COUNT(CASE WHEN result = 0 THEN 1 END) as zero_count,
+                    MIN(result * 100) as min_survival_rate,
+                    MAX(result * 100) as max_survival_rate
+                FROM "store_result"
+                WHERE result IS NOT NULL 
+                    AND uptaenm IS NOT NULL
                     AND uptaenm != ''
-                    AND area > 0
                 GROUP BY uptaenm
-                HAVING COUNT(*) >= 5  -- 최소 5건 이상 있는 업종만
+                HAVING COUNT(*) >= 10  -- 최소 10건 이상 있는 업종만
                 ORDER BY avg_survival_rate DESC
                 LIMIT 3
             """)
             
             results = cursor.fetchall()
+            
+            # 전체 분석 건수 확인 (0 포함)
+            cursor.execute("""
+                SELECT COUNT(*) FROM "store_result"
+                WHERE result IS NOT NULL
+            """)
+            total_count = cursor.fetchone()[0]
         
         # 결과가 없는 경우 기본값 사용
         if not results:
             results = [
-                ('카페', 75.5, 15, 45.2, 15),
-                ('음식점', 68.2, 22, 52.8, 22),
-                ('편의점', 62.1, 18, 38.9, 18)
+                ('카페', 75.5, 15, 45.2),
+                ('음식점', 68.2, 22, 52.8),
+                ('편의점', 62.1, 18, 38.9)
             ]
         
         data = {
             'labels': [row[0] for row in results],
             'datasets': [{
-                'label': '평균 생존률 (%)',
+                'label': '평균 생존률 (%) - 0값 포함',
                 'data': [round(float(row[1]), 1) for row in results],
                 'backgroundColor': [
                     'rgba(65, 84, 241, 0.8)',   # 1위: 파란색
@@ -479,7 +472,10 @@ def top_business_survival_rate(request):
             }],
             'analysis_counts': [int(row[2]) for row in results],
             'avg_area': [round(float(row[3]), 1) for row in results],
-            'store_counts': [int(row[4]) for row in results]
+            'zero_counts': [int(row[4]) for row in results],  # 0값 개수
+            'min_survival_rates': [round(float(row[5]), 1) for row in results],  # 최소 생존률
+            'max_survival_rates': [round(float(row[6]), 1) for row in results],  # 최대 생존률
+            'total_analysis_count': total_count if total_count else 0
         }
         
         return JsonResponse(data)
@@ -505,7 +501,7 @@ def top_business_survival_rate(request):
             }],
             'analysis_counts': [15, 22, 18],
             'avg_area': [45.2, 52.8, 38.9],
-            'store_counts': [15, 22, 18]
+            'total_analysis_count': 0
         })
 
 

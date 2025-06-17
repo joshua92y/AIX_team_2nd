@@ -291,3 +291,82 @@ class AdministrativeDistrictStats(models.Model):
     def full_name(self):
         """구명 + 동명"""
         return f"{self.gu_name} {self.emd_kor_nm}"
+
+
+class StoreResult(models.Model):
+    """상점 분석 결과 데이터 (CSV에서 가져온 예측 데이터)"""
+    
+    # 기본 정보
+    area = django_models.FloatField(verbose_name="면적", null=True, blank=True)
+    adjacent_biz = django_models.IntegerField(verbose_name="인접업체수", null=True, blank=True)
+    
+    # 생활인구 데이터 (1A_Total부터 6A_60까지)
+    life_pop_total = django_models.IntegerField(verbose_name="총생활인구", null=True, blank=True)
+    life_pop_20_300m = django_models.IntegerField(verbose_name="20대_300m", null=True, blank=True)
+    life_pop_30_300m = django_models.IntegerField(verbose_name="30대_300m", null=True, blank=True)
+    life_pop_40_300m = django_models.IntegerField(verbose_name="40대_300m", null=True, blank=True)
+    life_pop_50_300m = django_models.IntegerField(verbose_name="50대_300m", null=True, blank=True)
+    life_pop_60_300m = django_models.IntegerField(verbose_name="60대_300m", null=True, blank=True)
+    
+    life_pop_20_1000m = django_models.IntegerField(verbose_name="20대_1000m", null=True, blank=True)
+    life_pop_30_1000m = django_models.IntegerField(verbose_name="30대_1000m", null=True, blank=True)
+    life_pop_40_1000m = django_models.IntegerField(verbose_name="40대_1000m", null=True, blank=True)
+    life_pop_50_1000m = django_models.IntegerField(verbose_name="50대_1000m", null=True, blank=True)
+    life_pop_60_1000m = django_models.IntegerField(verbose_name="60대_1000m", null=True, blank=True)
+    
+    # 외국인 데이터
+    temp_foreign_total = django_models.IntegerField(verbose_name="단기체류외국인총계", null=True, blank=True)
+    temp_foreign_cn_300m = django_models.FloatField(verbose_name="단기체류중국인_300m", null=True, blank=True)
+    temp_foreign_cn_1000m = django_models.FloatField(verbose_name="단기체류중국인_1000m", null=True, blank=True)
+    
+    long_foreign_300m = django_models.IntegerField(verbose_name="장기체류외국인_300m", null=True, blank=True)
+    long_foreign_1000m = django_models.IntegerField(verbose_name="장기체류외국인_1000m", null=True, blank=True)
+    long_foreign_cn_1000m = django_models.FloatField(verbose_name="장기체류중국인_1000m", null=True, blank=True)
+    
+    # 직장인구 및 시설
+    working_pop_300m = django_models.IntegerField(verbose_name="직장인구_300m", null=True, blank=True)
+    public_building_250m = django_models.IntegerField(verbose_name="공공건물_250m", null=True, blank=True)
+    school_250m = django_models.IntegerField(verbose_name="학교_250m", null=True, blank=True)
+    
+    # 상권 분석
+    competitor_300m = django_models.IntegerField(verbose_name="경쟁업체_300m", null=True, blank=True)
+    business_diversity_300m = django_models.IntegerField(verbose_name="업종다양성_300m", null=True, blank=True)
+    
+    # 업종 및 서비스
+    uptaenm = django_models.CharField(max_length=100, verbose_name="업종명", null=True, blank=True)
+    service_type = django_models.IntegerField(verbose_name="서비스유형", null=True, blank=True)
+    
+    # 행정동 정보
+    emd_kor_nm = django_models.CharField(max_length=100, verbose_name="행정동명", null=True, blank=True)
+    
+    # 좌표 정보
+    x_coord = django_models.FloatField(verbose_name="X좌표", null=True, blank=True)
+    y_coord = django_models.FloatField(verbose_name="Y좌표", null=True, blank=True)
+    
+    # 공시지가
+    total_land_value = django_models.FloatField(verbose_name="총공시지가", null=True, blank=True)
+    
+    # AI 예측 결과
+    result = django_models.FloatField(verbose_name="예측결과", null=True, blank=True)
+    
+    # 지오메트리
+    geom = models.PointField(srid=5186, verbose_name="위치", null=True, blank=True)
+    
+    # 생성/수정 시간
+    created_at = django_models.DateTimeField(auto_now_add=True, verbose_name="생성시간")
+    updated_at = django_models.DateTimeField(auto_now=True, verbose_name="수정시간")
+    
+    class Meta:
+        db_table = 'store_result'
+        verbose_name = "상점분석결과"
+        verbose_name_plural = "상점분석결과"
+        managed = True
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.uptaenm or '상점'} - 예측: {self.result or 0:.1f}%"
+    
+    @property
+    def survival_percentage(self):
+        """생존 확률을 퍼센트로 반환"""
+        return self.result * 100 if self.result else 0

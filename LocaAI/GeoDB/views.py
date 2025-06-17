@@ -4,6 +4,7 @@ from django.db import connection
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import user_passes_test
 from django.db.models import Count, Q
+import json
 from .models import (
     LifePopGrid,
     WorkGrid,
@@ -15,6 +16,7 @@ from .models import (
     LandValue,
     EditableStorePoint,
     EditablePublicBuilding,
+    AdministrativeDistrict,
 )
 
 
