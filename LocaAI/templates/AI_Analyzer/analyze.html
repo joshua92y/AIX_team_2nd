@@ -691,8 +691,383 @@
       document.getElementById('chatInput').value = text;
     }
 
+    // PDF 미리보기 모달 표시 함수 (분석 기록용)
+    function showPdfPreview(requestId) {
+      console.log('PDF 미리보기 요청:', requestId);
+      
+      // 모달 표시
+      const previewModal = new bootstrap.Modal(document.getElementById('pdfPreviewModal'));
+      previewModal.show();
+      
+             // 초기 상태 설정
+       document.getElementById('previewLoading').style.display = 'block';
+       document.getElementById('previewError').style.display = 'none';
+       document.getElementById('previewContent').style.display = 'none';
+       document.getElementById('previewDownloadPdfBtn').style.display = 'none';
+       document.getElementById('previewDownloadLightPdfBtn').style.display = 'none';
+      
+      // 분석 결과 데이터 가져오기
+      fetch(`/ai_analyzer/api/result/${requestId}/`, {
+        method: 'GET',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}'
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('분석 결과를 불러올 수 없습니다.');
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('분석 결과 데이터:', data);
+        
+                 // 로딩 숨기고 내용 표시
+         document.getElementById('previewLoading').style.display = 'none';
+         document.getElementById('previewContent').style.display = 'block';
+         document.getElementById('previewDownloadPdfBtn').style.display = 'inline-block';
+         document.getElementById('previewDownloadLightPdfBtn').style.display = 'inline-block';
+        
+        // 데이터 채우기
+        populatePreviewData(data, requestId);
+      })
+      .catch(error => {
+        console.error('PDF 미리보기 오류:', error);
+        
+        // 오류 상태 표시
+        document.getElementById('previewLoading').style.display = 'none';
+        document.getElementById('previewError').style.display = 'block';
+        document.getElementById('previewErrorMessage').textContent = error.message;
+      });
+    }
+
+    // 미리보기 데이터 채우기 함수
+    function populatePreviewData(data, requestId) {
+      const request = data.request;
+      const result = data.result;
+      
+      // 기본 정보
+      document.getElementById('previewAddr').textContent = request.address || '-';
+      document.getElementById('previewBizType').textContent = getBusinessTypeName(request.business_type_id) || '-';
+      document.getElementById('previewAreaSize').textContent = request.area || '-';
+      
+      // 분석일시
+      const analysisDate = new Date(request.created_at).toLocaleDateString('ko-KR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      document.getElementById('previewAnalysisDate').textContent = analysisDate;
+      document.getElementById('previewReportGeneratedDate').textContent = analysisDate;
+      
+      // AI 생존 확률
+      const survivalRate = Math.round(result.survival_percentage || 0);
+      document.getElementById('previewSurvivalRate').textContent = survivalRate + '%';
+      
+      // 프로그레스 바 설정
+      const progressBar = document.getElementById('previewSurvivalProgressBar');
+      progressBar.style.width = survivalRate + '%';
+      
+      // 생존 확률에 따른 색상 및 메시지
+      const survivalComment = document.getElementById('previewSurvivalComment');
+      if (survivalRate >= 80) {
+        progressBar.className = 'progress-bar bg-success';
+        survivalComment.textContent = '높은 생존 가능성 - 장기적 사업 지속에 매우 좋은 조건';
+        survivalComment.className = 'text-success mb-0';
+      } else if (survivalRate >= 60) {
+        progressBar.className = 'progress-bar bg-warning';
+        survivalComment.textContent = '보통 생존 가능성 - 적절한 조건이나 추가 전략 검토 필요';
+        survivalComment.className = 'text-warning mb-0';
+      } else {
+        progressBar.className = 'progress-bar bg-danger';
+        survivalComment.textContent = '낮은 생존 가능성 - 장기 사업 지속에 어려움 예상';
+        survivalComment.className = 'text-danger mb-0';
+      }
+      
+      // 핵심 지표
+      document.getElementById('previewLifePopulation').textContent = 
+        Math.round(result.life_pop_300m || 0).toLocaleString() + '명';
+      document.getElementById('previewWorkingPopulation').textContent = 
+        Math.round(result.working_pop_300m || 0).toLocaleString() + '명';
+      document.getElementById('previewCompetitors').textContent = 
+        (result.competitor_300m || 0) + '개';
+      
+      // 공시지가
+      const landValue = result.total_land_value || 0;
+      let landValueText = '';
+      if (landValue >= 100000000) { // 1억 이상
+        landValueText = `₩${(landValue / 100000000).toFixed(1)}억`;
+      } else if (landValue >= 10000) { // 1만 이상
+        landValueText = `₩${(landValue / 10000).toFixed(0)}만`;
+      } else {
+        landValueText = `₩${landValue.toLocaleString()}`;
+      }
+      document.getElementById('previewLandPrice').textContent = landValueText;
+      
+             // 강점과 주의사항 분석
+       populateStrengthsAndCautions(result);
+       
+       // 현재 미리보기 중인 requestId를 전역 변수에 저장 (PDF 다운로드용)
+       currentPreviewRequestId = requestId;
+    }
+
+    // 강점과 주의사항 분석 함수 (미리보기용)
+    function populateStrengthsAndCautions(result) {
+      const strengths = [];
+      const cautions = [];
+      
+      // 생활인구 분석
+      const lifePop300 = result.life_pop_300m || 0;
+      if (lifePop300 > 5000) {
+        strengths.push('300m 반경 내 생활인구가 풍부합니다 (' + Math.round(lifePop300).toLocaleString() + '명)');
+      } else if (lifePop300 < 2000) {
+        cautions.push('300m 반경 내 생활인구가 부족합니다 (' + Math.round(lifePop300).toLocaleString() + '명)');
+      }
+      
+      // 직장인구 분석
+      const workingPop300 = result.working_pop_300m || 0;
+      if (workingPop300 > 3000) {
+        strengths.push('300m 반경 내 직장인구가 많아 점심/저녁 수요가 기대됩니다');
+      } else if (workingPop300 < 1000) {
+        cautions.push('300m 반경 내 직장인구가 적어 평일 수요가 제한적일 수 있습니다');
+      }
+      
+      // 경쟁업체 분석
+      const competitor300 = result.competitor_300m || 0;
+      if (competitor300 < 3) {
+        strengths.push('300m 반경 내 경쟁업체가 적어 시장 선점 기회가 있습니다');
+      } else if (competitor300 > 10) {
+        cautions.push('300m 반경 내 경쟁업체가 많아 치열한 경쟁이 예상됩니다 (' + competitor300 + '개)');
+      }
+      
+      // 공시지가 분석
+      const landValue = result.total_land_value || 0;
+      if (landValue < 50000000) { // 5천만원 미만
+        strengths.push('상대적으로 낮은 공시지가로 임대료 부담이 적을 것으로 예상됩니다');
+      } else if (landValue > 200000000) { // 2억 초과
+        cautions.push('높은 공시지가로 인한 임대료 부담이 클 수 있습니다');
+      }
+      
+      // 생존 확률 분석
+      const survivalRate = result.survival_percentage || 0;
+      if (survivalRate >= 80) {
+        strengths.push('AI 예측 생존 확률이 매우 높아 안정적인 사업 운영이 기대됩니다');
+      } else if (survivalRate < 50) {
+        cautions.push('AI 예측 생존 확률이 낮아 신중한 사업 계획이 필요합니다');
+      }
+      
+      // 기본 메시지 추가
+      if (strengths.length === 0) {
+        strengths.push('현재 상권 조건이 평균적인 수준입니다');
+      }
+      if (cautions.length === 0) {
+        cautions.push('현재 상권 조건이 양호합니다');
+      }
+      
+      // HTML 생성
+      const strengthsList = document.getElementById('previewStrengthsList').querySelector('ul');
+      const cautionsList = document.getElementById('previewCautionsList').querySelector('ul');
+      
+      strengthsList.innerHTML = strengths.map(item => 
+        `<li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>${item}</li>`
+      ).join('');
+      
+             cautionsList.innerHTML = cautions.map(item => 
+         `<li class="mb-2"><i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>${item}</li>`
+       ).join('');
+     }
+
+    // 미리보기 모달에서 PDF 다운로드 함수 (고품질)
+    function downloadPreviewPDF() {
+      if (!currentPreviewRequestId) {
+        alert('미리보기 데이터가 없습니다.');
+        return;
+      }
+      
+      try {
+        // 미리보기 컨테이너를 이미지로 변환
+        const element = document.getElementById('previewContent');
+        
+        if (!element) {
+          alert('미리보기 내용을 찾을 수 없습니다.');
+          return;
+        }
+        
+        // 로딩 상태 표시
+        document.getElementById('previewDownloadPdfBtn').innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>생성 중...';
+        document.getElementById('previewDownloadPdfBtn').disabled = true;
+        document.getElementById('previewDownloadLightPdfBtn').disabled = true;
+        
+        html2canvas(element, {
+          scale: 1.5,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          width: element.offsetWidth,
+          height: element.offsetHeight,
+          removeContainer: true,
+          imageTimeout: 0,
+          logging: false
+        }).then(canvas => {
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF('p', 'mm', 'a4');
+          
+          // 이미지 크기 계산 (A4 크기에 맞게 조정)
+          const imgWidth = 210; // A4 width in mm
+          const pageHeight = 297; // A4 height in mm
+          const imgHeight = (canvas.height * imgWidth) / canvas.width;
+          
+          let heightLeft = imgHeight;
+          let position = 0;
+          
+          // JPEG 품질 설정으로 용량 줄이기
+          const imgData = canvas.toDataURL('image/jpeg', 0.8);
+          
+          // 첫 번째 페이지
+          doc.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+          
+          // 추가 페이지가 필요한 경우
+          while (heightLeft >= 0) {
+            position = heightLeft - imgHeight;
+            doc.addPage();
+            doc.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+          }
+          
+          // 파일명 생성
+          const currentDate = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+          const filename = `AI_상권분석_보고서_${currentDate}.pdf`;
+          
+          // PDF 다운로드
+          doc.save(filename);
+          
+          // 버튼 상태 복원
+          document.getElementById('previewDownloadPdfBtn').innerHTML = '<i class="bi bi-download me-2"></i>고품질 PDF (이미지)';
+          document.getElementById('previewDownloadPdfBtn').disabled = false;
+          document.getElementById('previewDownloadLightPdfBtn').disabled = false;
+          
+          alert('PDF 다운로드가 완료되었습니다.');
+          
+        }).catch(error => {
+          console.error('html2canvas 오류:', error);
+          alert('PDF 생성 중 오류가 발생했습니다: ' + error.message);
+          
+          // 버튼 상태 복원
+          document.getElementById('previewDownloadPdfBtn').innerHTML = '<i class="bi bi-download me-2"></i>고품질 PDF (이미지)';
+          document.getElementById('previewDownloadPdfBtn').disabled = false;
+          document.getElementById('previewDownloadLightPdfBtn').disabled = false;
+        });
+        
+      } catch (error) {
+        console.error('PDF 생성 오류:', error);
+        alert('PDF 생성 중 오류가 발생했습니다: ' + error.message);
+        
+        // 버튼 상태 복원
+        document.getElementById('previewDownloadPdfBtn').innerHTML = '<i class="bi bi-download me-2"></i>고품질 PDF (이미지)';
+        document.getElementById('previewDownloadPdfBtn').disabled = false;
+        document.getElementById('previewDownloadLightPdfBtn').disabled = false;
+      }
+    }
+
+    // 미리보기 모달에서 경량 PDF 다운로드 함수 (한글 폰트 지원)
+    function downloadPreviewLightweightPDF() {
+      if (!currentPreviewRequestId) {
+        alert('미리보기 데이터가 없습니다.');
+        return;
+      }
+      
+      try {
+        // 로딩 상태 표시
+        document.getElementById('previewDownloadLightPdfBtn').innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>생성 중...';
+        document.getElementById('previewDownloadLightPdfBtn').disabled = true;
+        document.getElementById('previewDownloadPdfBtn').disabled = true;
+        
+        // 미리보기 컨테이너를 이미지로 변환 (경량화 옵션 적용)
+        const element = document.getElementById('previewContent');
+        
+        if (!element) {
+          alert('미리보기 내용을 찾을 수 없습니다.');
+          return;
+        }
+        
+        html2canvas(element, {
+          scale: 0.8, // 낮은 해상도로 용량 절약
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          width: element.offsetWidth,
+          height: element.offsetHeight,
+          removeContainer: true,
+          imageTimeout: 0,
+          logging: false
+        }).then(canvas => {
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF('p', 'mm', 'a4');
+          
+          // 이미지 크기 계산 (A4 크기에 맞게 조정)
+          const imgWidth = 210; // A4 width in mm
+          const pageHeight = 297; // A4 height in mm
+          const imgHeight = (canvas.height * imgWidth) / canvas.width;
+          
+          let heightLeft = imgHeight;
+          let position = 0;
+          
+          // JPEG 품질을 더 낮춰서 용량 절약 (경량 버전)
+          const imgData = canvas.toDataURL('image/jpeg', 0.5); // 50% 품질
+          
+          // 첫 번째 페이지
+          doc.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+          
+          // 추가 페이지가 필요한 경우
+          while (heightLeft >= 0) {
+            position = heightLeft - imgHeight;
+            doc.addPage();
+            doc.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+          }
+          
+          // 파일명 생성
+          const currentDate = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+          const filename = `AI_상권분석_경량_${currentDate}.pdf`;
+          
+          // PDF 다운로드
+          doc.save(filename);
+          
+          // 버튼 상태 복원
+          document.getElementById('previewDownloadLightPdfBtn').innerHTML = '<i class="bi bi-file-text me-2"></i>경량 PDF (텍스트)';
+          document.getElementById('previewDownloadLightPdfBtn').disabled = false;
+          document.getElementById('previewDownloadPdfBtn').disabled = false;
+          
+          alert('경량 PDF 다운로드가 완료되었습니다.');
+          
+        }).catch(error => {
+          console.error('html2canvas 오류:', error);
+          alert('경량 PDF 생성 중 오류가 발생했습니다: ' + error.message);
+          
+          // 버튼 상태 복원
+          document.getElementById('previewDownloadLightPdfBtn').innerHTML = '<i class="bi bi-file-text me-2"></i>경량 PDF (텍스트)';
+          document.getElementById('previewDownloadLightPdfBtn').disabled = false;
+          document.getElementById('previewDownloadPdfBtn').disabled = false;
+        });
+        
+      } catch (error) {
+        console.error('경량 PDF 생성 오류:', error);
+        alert('경량 PDF 생성 중 오류가 발생했습니다: ' + error.message);
+        
+        // 버튼 상태 복원
+        document.getElementById('previewDownloadLightPdfBtn').innerHTML = '<i class="bi bi-file-text me-2"></i>경량 PDF (텍스트)';
+        document.getElementById('previewDownloadLightPdfBtn').disabled = false;
+        document.getElementById('previewDownloadPdfBtn').disabled = false;
+      }
+    }
+
     // 전역 변수로 현재 분석 결과 ID 저장
     let currentRequestId = null;
+    let currentPreviewRequestId = null;
 
     // PDF 생성 함수 (jsPDF 사용)
     function generatePDF() {
@@ -1242,7 +1617,7 @@
                     <small>분석일: {{ doc.created_at|date:"Y-m-d H:i" }}</small><br>
                     <small>생존 확률: {{ doc.survival_percentage }}%</small>
                   </div>
-                  <a href="{% url 'AI_Analyzer:result_detail' doc.request.id %}" class="btn btn-sm btn-outline-primary">결과보기</a>
+                  <button class="btn btn-sm btn-outline-primary" onclick="showPdfPreview({{ doc.request.id }})">결과보기</button>
                 </li>
               {% endfor %}
             </ul>
@@ -1604,6 +1979,163 @@
           <!-- 질문 입력 및 전송 -->
           <input type="text" class="form-control mb-2" id="chatInput" placeholder="질문을 입력하세요">
           <button type="button" class="btn btn-outline-primary w-100">보내기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PDF 미리보기 모달 (분석 기록용) -->
+  <div class="modal fade" id="pdfPreviewModal" tabindex="-1" aria-labelledby="pdfPreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="pdfPreviewModalLabel">
+            <i class="bi bi-file-earmark-pdf me-2"></i>분석 결과 미리보기
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
+          <div id="previewLoading" class="text-center">
+            <div class="spinner-border text-primary mb-3" role="status">
+              <span class="visually-hidden">로딩 중...</span>
+            </div>
+            <h6>분석 결과를 불러오고 있습니다...</h6>
+            <p class="text-muted">잠시만 기다려 주세요.</p>
+          </div>
+          
+          <div id="previewError" style="display: none;" class="text-center">
+            <i class="bi bi-exclamation-triangle text-warning mb-3" style="font-size: 3rem;"></i>
+            <h6>분석 결과를 불러올 수 없습니다</h6>
+            <p class="text-muted" id="previewErrorMessage">잠시 후 다시 시도해 주세요.</p>
+          </div>
+          
+          <!-- PDF 스타일 미리보기 내용 -->
+          <div id="previewContent" style="display: none; background: white; padding: 30px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: 'Nanum Gothic', Arial, sans-serif;">
+            <!-- 헤더 -->
+            <div class="text-center mb-4" style="border-bottom: 3px solid #1e3a8a; padding-bottom: 20px;">
+              <h2 class="text-primary mb-1" style="font-weight: 800; font-size: 24px;">AI 상권분석 보고서</h2>
+              <p class="text-muted mb-0" style="font-size: 14px;">인공지능 기반 상업지구 분석 결과</p>
+            </div>
+            
+            <!-- 기본 정보 -->
+            <div class="mb-4" style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #1e3a8a;">
+              <h5 class="text-primary mb-3"><i class="bi bi-geo-alt me-2"></i>분석 대상 정보</h5>
+              <div class="row">
+                <div class="col-md-6">
+                  <p><strong>주소:</strong> <span id="previewAddr">-</span></p>
+                  <p><strong>업종:</strong> <span id="previewBizType">-</span></p>
+                </div>
+                <div class="col-md-6">
+                  <p><strong>면적:</strong> <span id="previewAreaSize">-</span>㎡</p>
+                  <p><strong>분석일시:</strong> <span id="previewAnalysisDate">-</span></p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- AI 생존 확률 -->
+            <div class="mb-4" style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;">
+              <h5 class="text-success mb-3"><i class="bi bi-robot me-2"></i>AI 생존 확률</h5>
+              <div class="display-4 mb-3 text-primary" id="previewSurvivalRate" style="font-weight: 800;">-%</div>
+              <div class="progress mb-3" style="height: 20px;">
+                <div class="progress-bar" id="previewSurvivalProgressBar" role="progressbar" style="width: 0%"></div>
+              </div>
+              <p class="text-muted mb-0" id="previewSurvivalComment">분석 중...</p>
+            </div>
+            
+            <!-- 핵심 지표 -->
+            <div class="mb-4">
+              <h5 class="text-primary border-bottom border-primary pb-2 mb-3"><i class="bi bi-speedometer me-2"></i>핵심 지표</h5>
+              <div class="row">
+                <div class="col-md-3">
+                  <div class="card border-info h-100 text-center">
+                    <div class="card-body">
+                      <i class="bi bi-people text-info mb-2" style="font-size: 2rem;"></i>
+                      <h6 class="card-title">생활인구</h6>
+                      <p class="card-text fw-bold text-primary" id="previewLifePopulation">-</p>
+                      <small class="text-muted">300m 반경</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="card border-warning h-100 text-center">
+                    <div class="card-body">
+                      <i class="bi bi-briefcase text-warning mb-2" style="font-size: 2rem;"></i>
+                      <h6 class="card-title">직장인구</h6>
+                      <p class="card-text fw-bold text-primary" id="previewWorkingPopulation">-</p>
+                      <small class="text-muted">300m 반경</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="card border-danger h-100 text-center">
+                    <div class="card-body">
+                      <i class="bi bi-shop text-danger mb-2" style="font-size: 2rem;"></i>
+                      <h6 class="card-title">경쟁업체</h6>
+                      <p class="card-text fw-bold text-primary" id="previewCompetitors">-</p>
+                      <small class="text-muted">300m 반경</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="card border-secondary h-100 text-center">
+                    <div class="card-body">
+                      <i class="bi bi-currency-dollar text-secondary mb-2" style="font-size: 2rem;"></i>
+                      <h6 class="card-title">공시지가</h6>
+                      <p class="card-text fw-bold text-primary" id="previewLandPrice">-</p>
+                      <small class="text-muted">총 공시지가</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 강점/주의사항 -->
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <div class="card border-success h-100">
+                  <div class="card-header bg-light">
+                    <h6 class="mb-0 text-success"><i class="bi bi-check-circle me-2"></i>강점</h6>
+                  </div>
+                  <div class="card-body" id="previewStrengthsList">
+                    <ul class="list-unstyled mb-0">
+                      <li class="text-muted">분석 중...</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="card border-warning h-100">
+                  <div class="card-header bg-light">
+                    <h6 class="mb-0 text-warning"><i class="bi bi-exclamation-triangle me-2"></i>주의사항</h6>
+                  </div>
+                  <div class="card-body" id="previewCautionsList">
+                    <ul class="list-unstyled mb-0">
+                      <li class="text-muted">분석 중...</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 보고서 하단 -->
+            <div class="text-center text-muted" style="border-top: 1px solid #dee2e6; padding-top: 20px;">
+              <small>
+                본 보고서는 AI 기반 상권분석 시스템에 의해 생성되었습니다.<br>
+                분석 기준일: <span id="previewReportGeneratedDate"></span>
+              </small>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+          <div class="btn-group">
+            <button type="button" class="btn btn-primary" id="previewDownloadPdfBtn" onclick="downloadPreviewPDF()" style="display: none;">
+              <i class="bi bi-download me-2"></i>고품질 PDF (이미지)
+            </button>
+            <button type="button" class="btn btn-outline-primary" id="previewDownloadLightPdfBtn" onclick="downloadPreviewLightweightPDF()" style="display: none;">
+              <i class="bi bi-file-text me-2"></i>경량 PDF (텍스트)
+            </button>
+          </div>
         </div>
       </div>
     </div>

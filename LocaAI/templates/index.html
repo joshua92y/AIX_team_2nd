@@ -9,8 +9,26 @@
       <div class="container">
         <div class="row gy-4">
           <div class="col-lg-6 order-2 order-lg-1 d-flex flex-column justify-content-center">
-            <h1 data-aos="fade-up">빅데이터 기반 상권분석과 <br> 생존률 예측, 단 한 번의 클릭으로!</h1>
-            <p data-aos="fade-up" data-aos-delay="100">소상공인을 위한 맞춤 AI 비즈니스 솔루션!</p>
+            <!-- 헤딩 -->
+            <h1 data-aos="fade-up" data-lang="KOR">
+              빅데이터 기반 상권분석과 <br> 생존률 예측, 단 한 번의 클릭으로!
+            </h1>
+            <h1 data-aos="fade-up" data-lang="ENG">
+              Big data-driven market analysis <br> and survival prediction, with just one click!
+            </h1>
+            <h1 data-aos="fade-up" data-lang="ESP">
+              Análisis del mercado basado en grandes datos <br> y predicción de supervivencia, con sólo un clic!
+            </h1>
+            <!-- 설명 -->
+            <p data-aos="fade-up" data-aos-delay="100" data-lang="KOR">
+              소상공인을 위한 맞춤 AI 비즈니스 솔루션
+            </p>
+            <p data-aos="fade-up" data-aos-delay="100" data-lang="ENG">
+              Tailored AI business solution for small business owners
+            </p>
+            <p data-aos="fade-up" data-aos-delay="100" data-lang="ESP">
+              Solución de negocio de AI a medida para los propietarios de pequeñas empresas
+            </p>
             <div class="d-flex flex-column flex-md-row" data-aos="fade-up" data-aos-delay="200">
               <a href="{% url 'AI_Analyzer:analyze_page' %}" class="btn-get-started">Get Started <i class="bi bi-arrow-right"></i></a>
               <a href="https://www.youtube.com/watch?v=Y7f98aduVJ8" class="glightbox btn-watch-video d-flex align-items-center justify-content-center ms-0 ms-md-4 mt-4 mt-md-0"><i class="bi bi-play-circle"></i><span>Watch Video</span></a>
@@ -33,9 +51,20 @@
           <div class="col-lg-6 d-flex flex-column justify-content-center" data-aos="fade-up" data-aos-delay="200">
             <div class="content">
               <h3>Who We Are</h3>
-              <h2>감에 의존한 창업, 이제는 그만.</h2>
-              <p>
-                우리는 창업자에게 빅데이터를 통해 말하는 상권 분석 레포트를 제공합니다. <br> 경쟁률, 유사 업종 분포, 생존률 예측까지, 창업자와 함께 고민해주는 동반자가 우리의 목표입니다.
+              <h2 data-lang="KOR">감에 의존한 창업, 이제는 그만.</h2>
+              <h2 data-lang="ENG">No More Guesswork in Starting a Business.</h2>
+              <h2 data-lang="ESP">No más emprendimientos basados en la intuición.</h2>
+              <p data-lang="KOR">
+                우리는 창업자에게 빅데이터를 통해 말하는 상권 분석 레포트를 제공합니다. <br> 
+                경쟁률, 유사 업종 분포, 생존률 예측까지, 창업자와 함께 고민해주는 동반자가 우리의 목표입니다.
+              </p>
+              <p data-lang="ENG">
+                We offer data-driven market insights for entrepreneurs. <br>
+                From competition analysis to business distribution and survival rate predictions, we're your trusted partner in starting smart.
+              </p>
+              <p data-lang="ESP">
+                Proporcionamos a los emprendedores informes de análisis comercial basados en big data. <br> 
+                Desde el nivel de competencia, la distribución de negocios similares hasta la predicción de la tasa de supervivencia, nuestro objetivo es ser un compañero que comparta sus preocupaciones y los apoye en su camino.
               </p>
               <div class="text-center text-lg-start">
                 <a href="#" class="btn-read-more d-inline-flex align-items-center justify-content-center align-self-center">
@@ -71,24 +100,39 @@
           <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
             <div class="card">
               <img src="{% static 'assets/img/values-1.png' %}" class="img-fluid" alt="">
-              <h3>창업자의 관점에서</h3>
-              <p>사용자의 질문에 답하는 구조, 쉬운 UI</p>
+              <h3 data-lang="KOR">창업자의 관점에서</h3>
+              <h3 data-lang="ENG">From the Entrepreneur's Perspective</h3>
+              <h3 data-lang="ESP">Desde la perspectiva del emprendedor</h3>
+              
+              <p data-lang="KOR">사용자의 질문에 답하는 구조, 쉬운 UI</p>
+              <p data-lang="ENG">A structure that answers user questions, with a simple UI</p>
+              <p data-lang="ESP">Una estructura que responde a las preguntas del usuario, con una interfaz sencilla</p>
             </div>
           </div><!-- End Card Item -->
 
           <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200">
             <div class="card">
               <img src="{% static 'assets/img/values-2.png' %}" class="img-fluid" alt="">
-              <h3>데이터 기반 예측</h3>
-              <p>공공데이터 + AI로 실제 생존률 예측</p>
+              <h3 data-lang="KOR">데이터 기반 예측</h3>
+              <h3 data-lang="ENG">Data-Driven Prediction</h3>
+              <h3 data-lang="ESP">Predicción basada en datos</h3>
+
+              <p data-lang="KOR">공공데이터 + AI로 실제 생존률 예측</p>
+              <p data-lang="ENG">Predicting real survival rates with public data and AI</p>
+              <p data-lang="ESP">Predicción real de tasas de supervivencia con datos públicos y IA</p>
             </div>
           </div><!-- End Card Item -->
 
           <div class="col-lg-4" data-aos="fade-up" data-aos-delay="300">
             <div class="card">
               <img src="{% static 'assets/img/values-3.png' %}" class="img-fluid" alt="">
-              <h3>설명 가능한 AI</h3>
-              <p>단순 숫자 예측이 아니라 “왜 그런지”까지 설명</p>
+              <h3 data-lang="KOR">설명 가능한 AI</h3>
+              <h3 data-lang="ENG">Explainable AI</h3>
+              <h3 data-lang="ESP">AI Explicable</h3>
+
+              <p data-lang="KOR">단순 숫자 예측이 아니라 “왜 그런지”까지 설명</p>
+              <p data-lang="ENG">Not just number predictions — we explain the “why” behind them</p>
+              <p data-lang="ESP">No solo predicciones numéricas: explicamos el “por qué” detrás de ellas</p>
             </div>
           </div><!-- End Card Item -->
 
@@ -110,7 +154,9 @@
               <i class="bi bi-house-add-fill color-blue flex-shrink-0"></i>
               <div>
                 <span data-purecounter-start="0" data-purecounter-end="232" data-purecounter-duration="1" class="purecounter"></span>
-                <p>등록된 업종</p>
+                  <p data-lang="KOR">등록된 업종</p>
+                  <p data-lang="ENG">Registered Business Types</p>
+                  <p data-lang="ESP">Tipos de negocios registrados</p>
               </div>
             </div>
           </div><!-- End Stats Item -->
@@ -120,7 +166,9 @@
               <i class="bi bi-journal-richtext color-orange flex-shrink-0" style="color: #ee6c20;"></i>
               <div>
                 <span data-purecounter-start="0" data-purecounter-end="521" data-purecounter-duration="1" class="purecounter"></span>
-                <p>생성된 보고서 수</p>
+                  <p data-lang="KOR">생성된 보고서 수</p>
+                  <p data-lang="ENG">Reports Generated</p>
+                  <p data-lang="ESP">Informes Generados</p>
               </div>
             </div>
           </div><!-- End Stats Item -->
@@ -130,7 +178,9 @@
               <i class="bi bi-headset color-green flex-shrink-0" style="color: #15be56;"></i>
               <div>
                 <span data-purecounter-start="0" data-purecounter-end="1463" data-purecounter-duration="1" class="purecounter"></span>
-                <p>등록된 창업자 수</p>
+                  <p data-lang="KOR">등록된 창업자 수</p>
+                  <p data-lang="ENG">Registered Entrepreneurs</p>
+                  <p data-lang="ESP">Emprendedores Registrados</p>
               </div>
             </div>
           </div><!-- End Stats Item -->
@@ -140,7 +190,9 @@
               <i class="bi bi-robot color-pink flex-shrink-0" style="color: #bb0852;"></i>
               <div>
                 <span data-purecounter-start="0" data-purecounter-end="15" data-purecounter-duration="1" class="purecounter"></span>
-                <p>모델 업데이트 횟수</p>
+                  <p data-lang="KOR">모델 업데이트 횟수</p>
+                  <p data-lang="ENG">Model Update Count</p>
+                  <p data-lang="ESP">Número de Actualizaciones del Modelo</p>
               </div>
             </div>
           </div><!-- End Stats Item -->
@@ -174,42 +226,66 @@
               <div class="col-md-6" data-aos="fade-up" data-aos-delay="200">
                 <div class="feature-box d-flex align-items-center">
                   <i class="bi bi-check"></i>
-                  <h3>위치 기반 업종 추천</h3>
+                  <h3>
+                    <span data-lang="KOR">위치 기반 업종 추천</span>
+                    <span data-lang="ENG">Location-based Business Recommendation</span>
+                    <span data-lang="ESP">Recomendación de Negocios Basada en Ubicación</span>
+                  </h3>
                 </div>
               </div><!-- End Feature Item -->
 
               <div class="col-md-6" data-aos="fade-up" data-aos-delay="300">
                 <div class="feature-box d-flex align-items-center">
                   <i class="bi bi-check"></i>
-                  <h3>경쟁률 유사 업종 분석</h3>
+                  <h3>
+                    <span data-lang="KOR">경쟁률 유사 업종 분석</span>
+                    <span data-lang="ENG">Analysis of Competitively Similar Businesses</span>
+                    <span data-lang="ESP">Análisis de Negocios con Competencia Similar</span>
+                  </h3>
                 </div>
               </div><!-- End Feature Item -->
 
               <div class="col-md-6" data-aos="fade-up" data-aos-delay="400">
                 <div class="feature-box d-flex align-items-center">
                   <i class="bi bi-check"></i>
-                  <h3>생존률 시뮬레이션</h3>
+                  <h3>
+                    <span data-lang="KOR">생존률 시뮬레이션</span>
+                    <span data-lang="ENG">Survival Rate Simulation</span>
+                    <span data-lang="ESP">Simulación de Tasa de Supervivencia</span>
+                  </h3>
                 </div>
               </div><!-- End Feature Item -->
 
               <div class="col-md-6" data-aos="fade-up" data-aos-delay="500">
                 <div class="feature-box d-flex align-items-center">
                   <i class="bi bi-check"></i>
-                  <h3>상황별 시나리오 지원</h3>
+                  <h3>
+                    <span data-lang="KOR">상황별 시나리오 지원</span>
+                    <span data-lang="ENG">Scenario-based Situation Support</span>
+                    <span data-lang="ESP">Apoyo de Escenarios Según Situaciones</span>
+                  </h3>
                 </div>
               </div><!-- End Feature Item -->
 
               <div class="col-md-6" data-aos="fade-up" data-aos-delay="600">
                 <div class="feature-box d-flex align-items-center">
                   <i class="bi bi-check"></i>
-                  <h3>지역 업종별 상황 분석</h3>
+                  <h3>
+                    <span data-lang="KOR">지역 업종별 상황 분석</span>
+                    <span data-lang="ENG">Regional Industry Analysis</span>
+                    <span data-lang="ESP">Análisis de Situación por Industria Regional</span>
+                  </h3>
                 </div>
               </div><!-- End Feature Item -->
 
               <div class="col-md-6" data-aos="fade-up" data-aos-delay="700">
                 <div class="feature-box d-flex align-items-center">
                   <i class="bi bi-check"></i>
-                  <h3>실제 상권 매장 비교 시각화</h3>
+                  <h3>
+                    <span data-lang="KOR">실제 상권 매장 비교 시각화</span>
+                    <span data-lang="ENG">Visualization of Real Store Comparison</span>
+                    <span data-lang="ESP">Visualización de Comparación con Tiendas Reales</span>
+                  </h3>
                 </div>
               </div><!-- End Feature Item -->
 
@@ -226,134 +302,145 @@
 
     <!-- Services Section -->
     <section id="services" class="services section">
-
-      <!-- Section Title -->
       <div class="container section-title" data-aos="fade-up">
         <h2>Services</h2>
         <p>Check Our Services<br></p>
-      </div><!-- End Section Title -->
-
+      </div>
       <div class="container">
+        <div class="d-flex justify-content-center gap-4">
 
-        <div class="row gy-4">
-
+          <!-- Service 1 -->
           <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
             <div class="service-item item-cyan position-relative">
               <i class="bi bi-activity icon"></i>
-              <h3>업종 분석</h3>
-              <p>	생존률, 경쟁률, 유사도 기반 업종 평가</p>
+              <h3>
+                <span data-lang="KOR">업종 분석</span>
+                <span data-lang="ENG">Business Analysis</span>
+                <span data-lang="ESP">Análisis de Negocios</span>
+              </h3>
+              <p>
+                <span data-lang="KOR">생존률, 경쟁률, 유사도 기반 업종 평가</span>
+                <span data-lang="ENG">Evaluation based on survival rate, competition, and similarity</span>
+                <span data-lang="ESP">Evaluación basada en tasa de supervivencia, competencia y similitud</span>
+              </p>
             </div>
-          </div><!-- End Service Item -->
+          </div>
 
+          <!-- Service 2 -->
           <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
             <div class="service-item item-orange position-relative">
               <i class="bi bi-broadcast icon"></i>
-              <h3>위치 추천</h3>
-              <p>위치 기반 AI가 유리한 업종을 제안합니다.</p>
+              <h3>
+                <span data-lang="KOR">위치 추천</span>
+                <span data-lang="ENG">Location Recommendation</span>
+                <span data-lang="ESP">Recomendación de Ubicación</span>
+              </h3>
+              <p>
+                <span data-lang="KOR">위치 기반 AI가 유리한 업종을 제안합니다.</span>
+                <span data-lang="ENG">AI recommends favorable businesses based on location</span>
+                <span data-lang="ESP">La IA recomienda negocios favorables según la ubicación</span>
+              </p>
             </div>
-          </div><!-- End Service Item -->
+          </div>
 
+          <!-- Service 3 -->
           <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
             <div class="service-item item-teal position-relative">
               <i class="bi bi-easel icon"></i>
-              <h3>What-if 시뮬레이터</h3>
-              <p>평수/업종 바꿨을 때 생존률 예측</p>
+              <h3>
+                <span data-lang="KOR">What-if 시뮬레이터</span>
+                <span data-lang="ENG">What-if Simulator</span>
+                <span data-lang="ESP">Simulador de Supuestos</span>
+              </h3>
+              <p>
+                <span data-lang="KOR">평수/업종 바꿨을 때 생존률 예측</span>
+                <span data-lang="ENG">Predict survival rate when area/type is changed</span>
+                <span data-lang="ESP">Predecir la tasa de supervivencia al cambiar área o tipo de negocio</span>
+              </p>
             </div>
-          </div><!-- End Service Item -->
+          </div>
 
-              <!-- Pricing Section -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing Section -->
     <section id="pricing" class="pricing section">
-
-      <!-- Section Title -->
       <div class="container section-title" data-aos="fade-up">
         <h2>Pricing</h2>
         <p>Check Our Affordable Pricing<br></p>
-      </div><!-- End Section Title -->
-
+      </div>
       <div class="container">
-
         <div class="row gy-4">
 
+          <!-- Plan 1 -->
           <div class="col-lg-3 col-md-6" data-aos="zoom-in" data-aos-delay="100">
             <div class="pricing-tem">
               <h3 style="color: #20c997;">Free Plan</h3>
               <div class="price"><sup>$</sup>0<span> / mo</span></div>
-              <div class="icon">
-                <i class="bi bi-box" style="color: #20c997;"></i>
-              </div>
+              <div class="icon"><i class="bi bi-box" style="color: #20c997;"></i></div>
               <ul>
                 <li>Newsletter 정기발송</li>
-                <li>상권분석 <span style="color: #20c997; font-size: 1.5rem; font-weight: bold;">1</span>회</li>
+                <li>상권분석 <span style="color: #20c997; font-weight: bold;">1</span>회</li>
                 <li class="na">보고서출력</li>
                 <li class="na">이전 분석기록 조회</li>
               </ul>
               <a href="#" class="btn-buy">Buy Now</a>
             </div>
-          </div><!-- End Pricing Item -->
+          </div>
 
+          <!-- Plan 2 -->
           <div class="col-lg-3 col-md-6" data-aos="zoom-in" data-aos-delay="200">
             <div class="pricing-tem">
               <span class="featured">Featured</span>
               <h3 style="color: #0dcaf0;">Starter Plan</h3>
               <div class="price"><sup>$</sup>9.9<span> / mo</span></div>
-              <div class="icon">
-                <i class="bi bi-send" style="color: #0dcaf0;"></i>
-              </div>
+              <div class="icon"><i class="bi bi-send" style="color: #0dcaf0;"></i></div>
               <ul>
                 <li>Newsletter 정기발송</li>
-                <li>상권분석 <span style="color: #0dcaf0; font-size: 1.5rem; font-weight: bold;">10</span>회</li>
-                <li>보고서출력 <span style="color: #0dcaf0; font-size: 1.5rem; font-weight: bold;">5</span>회</li>
+                <li>상권분석 <span style="color: #0dcaf0; font-weight: bold;">10</span>회</li>
+                <li>보고서출력 <span style="color: #0dcaf0; font-weight: bold;">5</span>회</li>
                 <li class="na">이전 분석기록 조회</li>
               </ul>
               <a href="#" class="btn-buy">Buy Now</a>
             </div>
-          </div><!-- End Pricing Item -->
+          </div>
 
+          <!-- Plan 3 -->
           <div class="col-lg-3 col-md-6" data-aos="zoom-in" data-aos-delay="300">
             <div class="pricing-tem">
               <h3 style="color: #fd7e14;">Business Plan</h3>
               <div class="price"><sup>$</sup>19<span> / mo</span></div>
-              <div class="icon">
-                <i class="bi bi-airplane" style="color: #fd7e14;"></i>
-              </div>
+              <div class="icon"><i class="bi bi-airplane" style="color: #fd7e14;"></i></div>
               <ul>
                 <li>Newsletter 정기발송</li>
-                <li>상권분석 <span style="color: #fd7e14; font-size: 1.5rem; font-weight: bold;">30</span>회</li>
-                <li>보고서출력 <span style="color: #fd7e14; font-size: 1.5rem; font-weight: bold;">10</span>회</li>
-                <li>최근 <span style="color: #fd7e14; font-size: 1.5rem; font-weight: bold;">5</span>회 이전 분석기록 조회</li>
+                <li>상권분석 <span style="color: #fd7e14; font-weight: bold;">30</span>회</li>
+                <li>보고서출력 <span style="color: #fd7e14; font-weight: bold;">10</span>회</li>
+                <li>최근 <span style="color: #fd7e14; font-weight: bold;">5</span>회 이전 분석기록 조회</li>
               </ul>
               <a href="#" class="btn-buy">Buy Now</a>
             </div>
-          </div><!-- End Pricing Item -->
+          </div>
 
+          <!-- Plan 4 -->
           <div class="col-lg-3 col-md-6" data-aos="zoom-in" data-aos-delay="400">
             <div class="pricing-tem">
               <h3 style="color: #0d6efd;">Ultimate Plan</h3>
               <div class="price"><sup>$</sup>39<span> / mo</span></div>
-              <div class="icon">
-                <i class="bi bi-rocket" style="color: #0d6efd;"></i>
-              </div>
+              <div class="icon"><i class="bi bi-rocket" style="color: #0d6efd;"></i></div>
               <ul>
                 <li>Newsletter 정기발송</li>
-                <li>상권분석 <span style="color: #0d6efd; font-size: 1.5rem; font-weight: bold;">무제한</span></li>
-                <li>보고서출력 <span style="color: #0d6efd; font-size: 1.5rem; font-weight: bold;">무제한</span></li>
-                <li>최근 <span style="color: #0d6efd; font-size: 1.5rem; font-weight: bold;">10</span>회 이전 분석기록 조회</li>
+                <li>상권분석 <span style="color: #0d6efd; font-weight: bold;">무제한</span></li>
+                <li>보고서출력 <span style="color: #0d6efd; font-weight: bold;">무제한</span></li>
+                <li>최근 <span style="color: #0d6efd; font-weight: bold;">10</span>회 이전 분석기록 조회</li>
               </ul>
               <a href="#" class="btn-buy">Buy Now</a>
             </div>
-          </div><!-- End Pricing Item -->
-
-        </div><!-- End pricing row -->
-
-      </div>
-
-    </section><!-- /Pricing Section -->
+          </div>
 
         </div>
-
       </div>
-
-    </section><!-- /Services Section -->  
+    </section>
 
     <!-- Testimonials Section -->
     <section id="testimonials" class="testimonials section">
@@ -400,12 +487,22 @@
                   <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
                 </div>
                 <p>
-                  “단순한 리포트가 아니라, 제 창업 아이디어를 점검해주는 파트너 같았어요.”
+                  <span data-lang="KOR">“단순한 리포트가 아니라, 제 창업 아이디어를 점검해주는 파트너 같았어요.”</span>
+                  <span data-lang="ENG">“It wasn’t just a report – it felt like a partner validating my business idea.”</span>
+                  <span data-lang="ESP">“No era solo un informe, parecía un socio que evaluaba mi idea de negocio.”</span>
                 </p>
                 <div class="profile mt-auto">
                   <img src="{% static 'assets/img/testimonials/testimonials-1.png' %}" class="testimonial-img" alt="">
-                  <h3>김OO</h3>
-                  <h4>예비 창업자</h4>
+                  <h3>
+                    <span data-lang="KOR">김OO</span>
+                    <span data-lang="ENG">Kim **</span>
+                    <span data-lang="ESP">Kim **</span>
+                  </h3>
+                  <h4>
+                    <span data-lang="KOR">예비 창업자</span>
+                    <span data-lang="ENG">Aspiring Entrepreneur</span>
+                    <span data-lang="ESP">Futuro Emprendedor</span>
+                  </h4>
                 </div>
               </div>
             </div><!-- End testimonial item -->
@@ -416,12 +513,28 @@
                   <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
                 </div>
                 <p>
-                  “동네를 바꿔가며 업종을 추천받을 수 있어서 매우 현실적이에요.”
+                  <span data-lang="KOR">
+                    “동네를 바꿔가며 업종을 추천받을 수 있어서 매우 현실적이에요.”
+                  </span>
+                  <span data-lang="ENG">
+                    “It’s very practical because I can receive business recommendations based on different neighborhoods.”
+                  </span>
+                  <span data-lang="ESP">
+                    “Es muy práctico porque puedo recibir recomendaciones de negocios según el vecindario.”
+                  </span>
                 </p>
                 <div class="profile mt-auto">
                   <img src="{% static 'assets/img/testimonials/testimonials-2.png' %}" class="testimonial-img" alt="">
-                  <h3>이OO</h3>
-                  <h4>카페 창업자</h4>
+                  <h3>
+                    <span data-lang="KOR">이OO</span>
+                    <span data-lang="ENG">Lee **</span>
+                    <span data-lang="ESP">Lee **</span>
+                  </h3>
+                  <h4>
+                    <span data-lang="KOR">카페 창업자</span>
+                    <span data-lang="ENG">Café Owner</span>
+                    <span data-lang="ESP">Dueño de cafetería</span>
+                  </h4>
                 </div>
               </div>
             </div><!-- End testimonial item -->
@@ -432,12 +545,22 @@
                   <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
                 </div>
                 <p>
-                  “단순한 리포트가 아니라, 제 창업 아이디어를 점검해주는 파트너 같았어요.”
+                  <span data-lang="KOR">“단순한 리포트가 아니라, 제 창업 아이디어를 점검해주는 파트너 같았어요.”</span>
+                  <span data-lang="ENG">“It wasn’t just a report – it felt like a partner validating my business idea.”</span>
+                  <span data-lang="ESP">“No era solo un informe, parecía un socio que evaluaba mi idea de negocio.”</span>
                 </p>
                 <div class="profile mt-auto">
                   <img src="{% static 'assets/img/testimonials/testimonials-1.png' %}" class="testimonial-img" alt="">
-                  <h3>김OO</h3>
-                  <h4>예비 창업자</h4>
+                  <h3>
+                    <span data-lang="KOR">김OO</span>
+                    <span data-lang="ENG">Kim **</span>
+                    <span data-lang="ESP">Kim **</span>
+                  </h3>
+                  <h4>
+                    <span data-lang="KOR">예비 창업자</span>
+                    <span data-lang="ENG">Aspiring Entrepreneur</span>
+                    <span data-lang="ESP">Futuro Emprendedor</span>
+                  </h4>
                 </div>
               </div>
             </div><!-- End testimonial item -->
@@ -448,13 +571,28 @@
                   <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
                 </div>
                 <p>
-                  “동네를 바꿔가며 업종을 추천받을 수 있어서 매우 현실적이에요.”
+                  <span data-lang="KOR">
+                    “동네를 바꿔가며 업종을 추천받을 수 있어서 매우 현실적이에요.”
+                  </span>
+                  <span data-lang="ENG">
+                    “It’s very practical because I can receive business recommendations based on different neighborhoods.”
+                  </span>
+                  <span data-lang="ESP">
+                    “Es muy práctico porque puedo recibir recomendaciones de negocios según el vecindario.”
+                  </span>
                 </p>
                 <div class="profile mt-auto">
                   <img src="{% static 'assets/img/testimonials/testimonials-2.png' %}" class="testimonial-img" alt="">
-                  <h3>이OO</h3>
-                  <h4>카페 창업자</h4>
-                </div>
+                  <h3>
+                    <span data-lang="KOR">김OO</span>
+                    <span data-lang="ENG">Kim **</span>
+                    <span data-lang="ESP">Kim **</span>
+                  </h3>
+                  <h4>
+                    <span data-lang="KOR">예비 창업자</span>
+                    <span data-lang="ENG">Aspiring Entrepreneur</span>
+                    <span data-lang="ESP">Futuro Emprendedor</span>
+                  </h4>
               </div>
             </div><!-- End testimonial item -->
 
@@ -492,8 +630,16 @@
               </div>
               <div class="member-info">
                 <h4>JinHo Yoon</h4>
-                <span>기획 · 개발 총괄</span>
-                <p>데이터와 AI로 창업을 돕는 팀</p>
+                <span>
+                  <span data-lang="KOR">기획 · 개발 총괄</span>
+                  <span data-lang="ENG">Head of Planning & Development</span>
+                  <span data-lang="ESP">Director de Planificación y Desarrollo</span>
+                </span>
+                <p>
+                  <span data-lang="KOR">데이터와 AI로 창업을 돕는 팀</span>
+                  <span data-lang="ENG">A team that supports startups with data and AI</span>
+                  <span data-lang="ESP">Un equipo que apoya a emprendedores con datos e IA</span>
+                </p>
               </div>
             </div>
           </div><!-- End Team Member -->
@@ -511,8 +657,16 @@
               </div>
               <div class="member-info">
                 <h4>SangHwa Shin</h4>
-                <span>모델 설계</span>
-                <p>AI 모델링</p>
+                <span>
+                  <span data-lang="KOR">모델 설계</span>
+                  <span data-lang="ENG">Model Architect</span>
+                  <span data-lang="ESP">Diseñador de Modelos</span>
+                </span>
+                <p>
+                  <span data-lang="KOR">AI 모델링</span>
+                  <span data-lang="ENG">AI Modeling</span>
+                  <span data-lang="ESP">Modelado de IA</span>
+                </p>
               </div>
             </div>
           </div><!-- End Team Member -->
@@ -530,8 +684,16 @@
               </div>
               <div class="member-info">
                 <h4>SoHee Kim</h4>
-                <span>프론트엔드팀</span>
-                <p>UI/UX</p>
+                <span>
+                  <span data-lang="KOR">프론트엔드팀</span>
+                  <span data-lang="ENG">Frontend Team</span>
+                  <span data-lang="ESP">Equipo Frontend</span>
+                </span>
+                <p>
+                  <span data-lang="KOR">UI/UX</span>
+                  <span data-lang="ENG">UI/UX</span>
+                  <span data-lang="ESP">UI/UX</span>
+                </p>
               </div>
             </div>
           </div><!-- End Team Member -->
@@ -549,8 +711,16 @@
               </div>
               <div class="member-info">
                 <h4>MinKyou Choi</h4>
-                <span>프론트엔드팀</span>
-                <p>UI/UX</p>
+                <span>
+                  <span data-lang="KOR">프론트엔드팀</span>
+                  <span data-lang="ENG">Frontend Team</span>
+                  <span data-lang="ESP">Equipo Frontend</span>
+                </span>
+                <p>
+                  <span data-lang="KOR">UI/UX</span>
+                  <span data-lang="ENG">UI/UX</span>
+                  <span data-lang="ESP">UI/UX</span>
+                </p>
               </div>
             </div>
           </div><!-- End Team Member -->
@@ -567,7 +737,11 @@
       <!-- Section Title -->
       <div class="container section-title" data-aos="fade-up">
         <h2>Clients</h2>
-        <p>Data 제공기관<br></p>
+        <p>
+          <span data-lang="KOR">Data 제공기관</span>
+          <span data-lang="ENG">Data Providers</span>
+          <span data-lang="ESP">Proveedores de Datos</span><br>
+        </p>
       </div><!-- End Section Title -->
 
       <div class="container" data-aos="fade-up" data-aos-delay="100">
@@ -625,7 +799,11 @@
       <!-- Section Title -->
       <div class="container section-title" data-aos="fade-up">
         <h2>Recent Posts</h2>
-        <p>최신 상권 트렌트 읽기</p>
+        <p>
+          <span data-lang="KOR">최신 상권 트렌드 읽기</span>
+          <span data-lang="ENG">Read the Latest Commercial District Trends</span>
+          <span data-lang="ESP">Leer las últimas tendencias comerciales</span>
+        </p>
       </div><!-- End Section Title -->
 
       <div class="container">

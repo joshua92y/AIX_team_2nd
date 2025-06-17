@@ -22,6 +22,7 @@ def set_language(request) :
 
 def index(request):
     lang = getSessionLang(request)
+    print(lang)
     return render(request, 'index.html', {'lang': lang})
 
 def blog(request):

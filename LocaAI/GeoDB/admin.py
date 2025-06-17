@@ -16,6 +16,7 @@ from .models import (
     LandValue,
     EditableStorePoint,
     EditablePublicBuilding,
+    AdministrativeDistrict,
 )
 from .widgets import KakaoPointWidget, KakaoPolygonWidget
 from .forms import (
@@ -29,6 +30,7 @@ from .forms import (
     LandValueForm,
     EditableStorePointForm,
     EditablePublicBuildingForm,
+    AdministrativeDistrictForm,
 )
 
 # 한국 좌표계 최적화를 위한 GIS 설정
@@ -675,6 +677,59 @@ class EditablePublicBuildingAdmin(BaseGISAdmin):
     )
 
 
+class AdministrativeDistrictAdmin(BaseGISAdmin):
+    """행정동구역 관리"""
+    
+    form = AdministrativeDistrictForm  # 카카오맵 위젯 사용
+    list_display = (
+        "fid",
+        "emd_cd", 
+        "emd_kor_nm",
+        "emd_eng_nm",
+        "get_gu_name",
+        "get_full_name_display",
+        "get_geometry_info",
+    )
+    list_display_links = ("fid", "emd_kor_nm")
+    list_filter = ("emd_cd",)
+    search_fields = ("emd_cd", "emd_kor_nm", "emd_eng_nm")
+    readonly_fields = ("fid", "emd_cd", "emd_eng_nm", "emd_kor_nm", "get_coordinate_detail")
+    ordering = ("emd_cd",)
+    
+    # 서울 지역 최적화
+    default_zoom = 10
+    
+    fieldsets = (
+        ("행정동 정보", {
+            "fields": ("emd_cd", "emd_kor_nm", "emd_eng_nm")
+        }),
+        ("좌표 정보", {
+            "fields": ("get_coordinate_detail",), 
+            "classes": ("collapse",)
+        }),
+        ("지리 정보", {
+            "fields": ("geom",)
+        }),
+    )
+    
+    def get_gu_name(self, obj):
+        """구 이름 표시"""
+        return obj.gu_name
+    get_gu_name.short_description = "구"
+    get_gu_name.admin_order_field = "emd_cd"
+    
+    def get_full_name_display(self, obj):
+        """전체 이름 표시"""
+        return obj.full_name
+    get_full_name_display.short_description = "전체 이름"
+    
+    def get_queryset(self, request):
+        """성능 최적화를 위한 쿼리셋 최적화"""
+        qs = super().get_queryset(request)
+        # 지오메트리 데이터는 필요할 때만 로드
+        return qs.defer('geom')
+
+
 # 공간 데이터 통계 정보를 위한 커스텀 뷰
 class SpatialDataStatsView:
     """공간 데이터 통계 관리 뷰"""
@@ -743,3 +798,4 @@ admin.site.register(PublicBuilding, PublicBuildingAdmin)
 admin.site.register(LandValue, LandValueAdmin)
 admin.site.register(EditableStorePoint, EditableStorePointAdmin)
 admin.site.register(EditablePublicBuilding, EditablePublicBuildingAdmin)
+admin.site.register(AdministrativeDistrict, AdministrativeDistrictAdmin)

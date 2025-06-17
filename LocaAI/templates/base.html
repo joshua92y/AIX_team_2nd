@@ -1,12 +1,15 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
   <title>{% block title %}페이지 제목{% endblock %}</title>
   <meta name="description" content="">
   <meta name="keywords" content="">
+
+  <!-- ✅ CSRF token for Ajax  -->
+  <meta name="csrf-token" content="{{ csrf_token }}">
 
   <!-- Favicons -->
   <link href="{% static 'assets/img/favicon.png' %}" rel="icon">
@@ -27,10 +30,14 @@
   <!-- Main CSS -->
   <link href="{% static 'assets/css/main.css' %}" rel="stylesheet">
 
+  <!-- Extra CSS Block -->
+  {% block extra_css %}{% endblock %}
+
   <!-- include js -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
 </head>
+
+<body>
   <!-- ✅ Header -->
   {% include 'includes/header.html' %}
 
@@ -59,5 +66,8 @@
 
   <!-- Main JS -->
   <script src="{% static 'assets/js/main.js' %}"></script>
+
+  <!-- Extra JS Block -->
+  {% block extra_js %}{% endblock %}
 </body>
 </html>
