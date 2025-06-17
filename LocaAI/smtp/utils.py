@@ -26,7 +26,7 @@ def send_subscription_email(subscriber):
     unsubscribe_url = f"{site_domain}/newsletter/unsubscribe?token={token}"
 
     # 템플릿 렌더링
-    html_content = render_to_string("newsletter/email_welcome.html", {
+    html_content = render_to_string("/api/smtp/newsletter/email_welcome.html", {
         "subscriber": subscriber,  # 템플릿에서 subscriber.name 사용 가능하게
         "unsubscribe_url": unsubscribe_url
     })
