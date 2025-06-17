@@ -1,4 +1,5 @@
 {% load static %}
+
 <footer id="footer" class="footer">
 
   <div class="footer-newsletter">
@@ -46,11 +47,15 @@
     <div class="col-12 col-lg-4 footer-links mb-4 mb-lg-0 d-flex flex-column align-items-center">
       <h4>Useful Links</h4>
       <ul class="list-unstyled text-center">
-        <li><a href="/#hero" class="active">Home</a></li>
+        <li><a href="{% url 'index' %}" class="active">Home</a></li>
         <li><a href="/#about">About</a></li>
-        <li><a href="/#services">Services</a></li>
-        <li><a href="/#team">Team</a></li>
-        <li><a href="{% url 'blog' %}">Blog</a></li>
+        <li><a href="{% url 'AI_Analyzer:analyze_page' %}">Services</a></li>
+        <li><a href="#">Data</a></li>
+        <li><a href="{% url 'border:portfolio_list' %}">Portfolio</a></li>
+        <li><a href="/#contact">Contact Us</a></li>
+        <li><a href="#">guide book</a></li>
+        <li><a href="{% url 'border:notice_list' %}">notice</a></li>
+        <li><a href="{% url 'border:inquiry_list' %}">customer board</a></li>        
       </ul>
     </div>
 

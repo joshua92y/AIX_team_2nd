@@ -1,11 +1,3 @@
-/**
-* Template Name: FlexStart
-* Template URL: https://bootstrapmade.com/flexstart-bootstrap-startup-template/
-* Updated: Nov 01 2024 with Bootstrap v5.3.3
-* Author: BootstrapMade.com
-* License: https://bootstrapmade.com/license/
-*/
-
 (function() {
   "use strict";
 
@@ -93,6 +85,16 @@
     });
   }
   window.addEventListener('load', aosInit);
+
+  
+  // ✅ 추가: 섹션 이동 후 AOS 재계산
+  window.addEventListener("hashchange", () => {
+    if (window.location.hash === "#contact") {
+      setTimeout(() => {
+        AOS.refresh();
+      }, 300);
+    }
+  });
 
   /**
    * Initiate glightbox
@@ -206,5 +208,57 @@
   }
   window.addEventListener('load', navmenuScrollspy);
   document.addEventListener('scroll', navmenuScrollspy);
+  const contactForm = document.querySelector("#contact-form");
+
+  if (contactForm) {
+    contactForm.addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const name = contactForm.querySelector('[name="name"]').value.trim();
+      const email = contactForm.querySelector('[name="email"]').value.trim();
+      const subject = contactForm.querySelector('[name="subject"]').value.trim();
+      const message = contactForm.querySelector('[name="message"]').value.trim();
+
+      const payload = {
+        subject: `[문의] ${name} - ${subject}`,
+        message: message,
+        sender: email,
+        recipient: "aix25best@gmail.com"
+      };
+
+      // ✅ CSRF 토큰 자동 추출
+      const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]')?.value;
+
+      const loading = contactForm.querySelector(".loading");
+      const errorMsg = contactForm.querySelector(".error-message");
+      const sentMsg = contactForm.querySelector(".sent-message");
+
+      loading.style.display = "block";
+      errorMsg.style.display = "none";
+      sentMsg.style.display = "none";
+
+      try {
+        const res = await fetch("/api/smtp/contact/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(csrfToken && { "X-CSRFToken": csrfToken })  // ✅ 토큰이 있으면 헤더에 추가
+          },
+          credentials: "same-origin",  // ✅ 이거 중요!
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) throw new Error("메시지 전송 실패");
+
+        sentMsg.style.display = "block";
+        contactForm.reset();
+      } catch (err) {
+        errorMsg.textContent = err.message || "전송 중 오류가 발생했습니다.";
+        errorMsg.style.display = "block";
+      } finally {
+        loading.style.display = "none";
+      }
+    });
+  }
 
 })();

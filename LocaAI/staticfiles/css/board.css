@@ -9,6 +9,17 @@
     background-color: #f8f9fa;
 }
 
+/* 썸네일 영역*/
+
+.card-img-top {
+  height: 180px;          /* 고정 높이 */
+  object-fit: cover;      /* 비율 유지 + 잘림 처리 */
+  width: 100%;            /* 꽉 차게 */
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+}
+
+
 .table td {
     vertical-align: middle;
 }

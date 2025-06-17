@@ -31,6 +31,30 @@
     </form>
 
     <!-- 게시글 목록 -->
+    {% if board_type == 'portfolio' %}
+    <!-- ✅ 포트폴리오 카드 그리드 -->
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
+    {% for post in posts %}
+    <div style="border: 1px solid #ddd; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05); background: #fff;">
+        {% if post.thumbnail %}
+        <img src="{{ post.thumbnail.url }}" alt="{{ post.title }}" style="width: 100%; height: 160px; object-fit: cover;">
+        {% else %}
+        <img src="{% static 'images/default-thumbnail.jpg' %}" alt="기본 이미지" style="width: 100%; height: 160px; object-fit: cover;">
+        {% endif %}
+        <div style="padding: 1rem;">
+        <div style="font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem;">{{ post.title }}</div>
+        <div style="font-size: 0.85rem; color: #777; margin-bottom: 0.5rem;">{{ post.created_at|date:"Y-m-d" }} / {{ post.display_name }}</div>
+        <a href="{% url 'border:post_detail' post.id %}" style="display: inline-block; font-size: 0.8rem; padding: 0.4rem 0.8rem; border: 1px solid #007bff; color: #007bff; border-radius: 4px; text-decoration: none;">자세히 보기</a>
+        </div>
+    </div>
+    {% empty %}
+    <p class="text-center">포트폴리오 게시물이 없습니다.</p>
+    {% endfor %}
+    </div>
+    {% else %}
+
+
+    <!-- ✅ 기존 텍스트 게시판 테이블 -->
     <div class="table-responsive">
         <table class="table table-hover">
             <thead>
@@ -96,6 +120,7 @@
             {% endif %}
         </ul>
     </nav>
+    {% endif %}
     {% endif %}
 </div>
 {% endblock %}
