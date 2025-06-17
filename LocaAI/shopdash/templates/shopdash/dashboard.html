@@ -6,7 +6,6 @@
 {% block extra_css %}
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
 <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-<!-- D3.js 지도용 CSS는 인라인으로 처리 -->
 <style>
     /* 기존 사이트 색상 변수 사용 */
     :root {
@@ -167,24 +166,6 @@
         margin: 0;
     }
 
-    /* 지도 컨테이너 */
-    .map-container {
-        height: 500px;
-        border-radius: 10px;
-        overflow: hidden;
-        box-shadow: 0 5px 25px rgba(0,0,0,0.1);
-        border: 1px solid rgba(65, 84, 241, 0.1);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    
-    /* D3.js 지도 스타일 */
-    .map-container svg {
-        max-width: 100%;
-        max-height: 100%;
-    }
-
     /* 로딩 스피너 */
     .loading-spinner {
         display: inline-block;
@@ -259,6 +240,18 @@
         font-size: 0.85rem;
         color: var(--text-color);
         margin-top: 4px;
+    }
+
+    /* 지도 컨테이너 */
+    .map-container {
+        height: 600px;
+        width: 100%;
+        background: var(--light-bg);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-color);
     }
 
     /* 반응형 */
@@ -345,6 +338,12 @@
                     <span data-lang="ENG">View key statistical data of Seoul's commercial district analysis at a glance</span>
                     <span data-lang="ESP">Consulte de un vistazo los datos estadísticos clave del análisis comercial de Seúl</span>
                 </p>
+            </div>
+            
+            <!-- 경고 메시지 영역 -->
+            <div id="warning-message" class="alert alert-warning" style="display: none;" data-aos="fade-up">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                <span id="warning-text"></span>
             </div>
             
             <div class="row" data-aos="fade-up" data-aos-delay="100">
@@ -642,7 +641,16 @@
                             </div>
                         </div>
                         <div class="card-body p-0">
-                            <div id="map" class="map-container"></div>
+                            <div id="map" class="map-container">
+                                <div class="text-center">
+                                    <i class="bi bi-map" style="font-size: 4rem; opacity: 0.3; margin-bottom: 1rem;"></i>
+                                    <p class="mb-0">
+                                        <span data-lang="KOR">지도 기능은 추후 업데이트 예정입니다</span>
+                                        <span data-lang="ENG">Map feature will be updated soon</span>
+                                        <span data-lang="ESP">La función de mapa se actualizará pronto</span>
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -655,9 +663,6 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-<script src="https://d3js.org/d3.v7.min.js"></script>
-<script src="https://unpkg.com/topojson@3"></script>
-<script src="{% static 'shopdash/js/d3-map/seoul-dashboard-map.js' %}"></script>
 
 <script>
 // AOS 초기화
@@ -675,13 +680,11 @@ Chart.defaults.color = '#444444';
 
 // 전역 변수
 let charts = {};
-let map;
 
 // 페이지 로드 시 실행
 document.addEventListener('DOMContentLoaded', function() {
     loadDashboardStats();
     loadAllCharts();
-    initializeSeoulMap();
 });
 
 // 대시보드 통계 로드
@@ -693,6 +696,12 @@ function loadDashboardStats() {
             document.getElementById('avg-survival-rate').textContent = data.avg_survival_rate + '%';
             document.getElementById('total-businesses').textContent = data.total_businesses.toLocaleString();
             document.getElementById('active-districts').textContent = data.active_districts.toLocaleString();
+            
+            // 경고 메시지 표시
+            if (data.warning_message && data.warning_message.trim() !== '') {
+                document.getElementById('warning-text').textContent = data.warning_message;
+                document.getElementById('warning-message').style.display = 'block';
+            }
         })
         .catch(error => {
             console.error('통계 데이터 로드 실패:', error);
@@ -761,6 +770,14 @@ function loadChart(chartId, apiUrl, chartType, primaryColor) {
             };
             
             charts[chartId] = new Chart(ctx, config);
+            
+            // 생존률 차트에 경고 메시지 표시
+            if (chartId === 'survivalRateChart' && data.warning_message && data.warning_message.trim() !== '') {
+                const warningDiv = document.createElement('div');
+                warningDiv.className = 'alert alert-warning mt-2';
+                warningDiv.innerHTML = `<i class="bi bi-exclamation-triangle me-2"></i>${data.warning_message}`;
+                document.querySelector('#survivalRateChart').closest('.chart-card').querySelector('.card-body').appendChild(warningDiv);
+            }
         })
         .catch(error => {
             console.error(`${chartId} 차트 로드 실패:`, error);
@@ -830,6 +847,14 @@ function loadTopBusinessSurvivalChart() {
             
             // 상세 정보 업데이트
             updateTopBusinessDetails(data);
+            
+            // 경고 메시지 표시 (업종별 생존률 차트용)
+            if (data.warning_message && data.warning_message.trim() !== '') {
+                const warningDiv = document.createElement('div');
+                warningDiv.className = 'alert alert-warning mt-2';
+                warningDiv.innerHTML = `<i class="bi bi-exclamation-triangle me-2"></i>${data.warning_message}`;
+                document.querySelector('#topBusinessSurvivalChart').closest('.chart-card').querySelector('.card-body').appendChild(warningDiv);
+            }
         })
         .catch(error => {
             console.error('평균 생존률 상위 업종 차트 로드 실패:', error);
@@ -942,15 +967,6 @@ function getChartOptions(chartType, chartId) {
     }
 
     return baseOptions;
-}
-
-// D3.js 지도는 seoul-dashboard-map.js에서 관리됩니다
-
-// 차트 새로고침
-function refreshCharts() {
-    loadAllCharts();
-    loadDashboardStats();
-    refreshSeoulMap();
 }
 
 // 에러 처리
