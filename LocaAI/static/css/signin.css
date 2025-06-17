@@ -801,13 +801,3 @@ input[type="submit"].error {
 .mssg.error {
   color: #dc3545;
 }
-
-.navmenu .mobile-nav-toggle {
-  display: inline-block;
-}
-
-@media (min-width: 992px) {
-  .mobile-nav-toggle {
-    display: none;
-  }
-}

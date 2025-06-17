@@ -5,6 +5,7 @@ import os
 from cryptography.fernet import Fernet
 from django.conf import settings
 
+
 fernet = Fernet(settings.FERNET_KEY.encode())
 
 def encrypt_email(email: str) -> str:
@@ -23,10 +24,10 @@ def send_subscription_email(subscriber):
     site_domain = getattr(settings, 'SITE_DOMAIN', os.environ.get("DEFAULT_SITE_DOMAIN", "http://localhost:8000"))
     token = encrypt_email(subscriber.email)
     # 구독 해지 URL 생성 (실제 POST 처리는 나중에 템플릿에서 폼으로 처리해야 함)
-    unsubscribe_url = f"{site_domain}/newsletter/unsubscribe?token={token}"
+    unsubscribe_url = f"{site_domain}/api/smtp/newsletter/unsubscribe?token={token}"
 
     # 템플릿 렌더링
-    html_content = render_to_string("/api/smtp/newsletter/email_welcome.html", {
+    html_content = render_to_string("newsletter/email_welcome.html", {
         "subscriber": subscriber,  # 템플릿에서 subscriber.name 사용 가능하게
         "unsubscribe_url": unsubscribe_url
     })
