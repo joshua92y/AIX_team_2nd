@@ -1,0 +1,773 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}상권 분석{% endblock %}
+
+{% block content %}
+{% include 'includes/header.html' %}
+
+  <style>
+    /* 기본 primary 버튼 disabled 시 커스텀 스타일 */
+    .btn-primary.custom {
+      color: #fff;
+      background-color: #0d6efd; /* 원래 primary 색 */
+      opacity: 0.65;  /* 투명도 조절로 흐릿하게 표시 */
+    }
+    
+    /* 분석 진행 상황 스타일 */
+    .analysis-progress {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      padding: 2rem;
+      margin-top: 1rem;
+      border: 2px solid rgba(102, 126, 234, 0.2);
+    }
+    
+    .progress-step {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding: 10px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+    
+    .progress-step.active {
+      background: rgba(102, 126, 234, 0.1);
+      border-left: 4px solid #667eea;
+    }
+    
+    .progress-step.completed {
+      background: rgba(34, 197, 94, 0.1);
+      border-left: 4px solid #22c55e;
+    }
+    
+    .progress-step.error {
+      background: rgba(239, 68, 68, 0.1);
+      border-left: 4px solid #ef4444;
+    }
+    
+    .progress-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 15px;
+      font-size: 16px;
+    }
+    
+    .progress-step.active .progress-icon {
+      background: #667eea;
+      color: white;
+      animation: pulse 1.5s infinite;
+    }
+    
+    .progress-step.completed .progress-icon {
+      background: #22c55e;
+      color: white;
+    }
+    
+    .progress-step.error .progress-icon {
+      background: #ef4444;
+      color: white;
+    }
+    
+    .progress-step:not(.active):not(.completed):not(.error) .progress-icon {
+      background: #e5e7eb;
+      color: #9ca3af;
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    
+    .progress-text {
+      flex: 1;
+    }
+    
+    .progress-title {
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    
+    .progress-detail {
+      font-size: 0.9rem;
+      color: #6b7280;
+    }
+    
+    .overall-progress {
+      margin-bottom: 1.5rem;
+    }
+    
+    .progress-bar {
+      height: 8px;
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+    
+    /* 공시지가 카드 폰트 크기 조정 */
+    #totalLandValue {
+      font-size: 1.8rem !important;
+      line-height: 1.2;
+    }
+    
+    @media (max-width: 768px) {
+      #totalLandValue {
+        font-size: 1.5rem !important;
+      }
+    }
+
+    /* 챗봇 스타일 */
+    .chat-interface-container {
+      display: flex;
+      flex-direction: column;
+      height: 500px;
+    }
+
+    .chat-messages-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      background-color: #f8f9fa;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .chat-welcome-message {
+      text-align: center;
+      padding: 1rem;
+    }
+
+    .message-entry {
+      margin-bottom: 1rem;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .message-bubble {
+      padding: 0.75rem 1rem;
+      border-radius: 1rem;
+      max-width: 80%;
+      word-wrap: break-word;
+    }
+
+    .user-message {
+      align-items: flex-end;
+    }
+
+    .user-message .message-bubble {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .bot-message {
+      align-items: flex-start;
+    }
+
+    .bot-message .message-bubble {
+      background-color: #e9ecef;
+      color: #212529;
+    }
+
+    .typing-indicator-message .message-bubble {
+      background-color: #e9ecef;
+      color: #6c757d;
+    }
+
+    .chat-input-area {
+      display: flex;
+      gap: 0.5rem;
+      padding: 0.5rem;
+      background-color: white;
+      border-radius: 0.5rem;
+    }
+
+    .chat-input-area textarea {
+      flex: 1;
+      resize: none;
+      border: 1px solid #ced4da;
+      border-radius: 0.5rem;
+      padding: 0.5rem;
+    }
+
+    .chat-input-area button {
+      padding: 0.5rem 1rem;
+    }
+  </style>
+
+  <!-- Daum 우편번호 서비스 -->
+  <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+  
+  <!-- jsPDF 라이브러리 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- 한국어 폰트 지원 -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-customfonts@0.0.4/dist/jspdf-customfonts.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-customfonts@0.0.4/dist/customfonts.js"></script>
+  <!-- html2canvas 라이브러리 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- Marked.js for markdown rendering -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.0/marked.min.js"></script>
+
+  <!-- user_info와 previous_docs 데이터를 위한 스크립트 태그 추가 -->
+  <script type="application/json" id="user-info-data">{{ user_info_json|safe }}</script>
+  <script type="application/json" id="previous-docs-data">{{ previous_docs_json|safe }}</script>
+
+  <div class="container my-6" style="margin-top: 20px; margin-bottom: 100px;">
+    {% if user_info %}
+      <!-- 📁 기존 분석 리스트 섹션 (로그인된 사용자, 기존 분석 기록 있음) -->
+      <div id="existingAnalysisSection">
+    <div class="row mt-5">
+      <div class="col-lg-12">
+        <div class="card p-4 shadow-sm mb-4">
+          <h4 class="mb-3">📁 내 최근 분석 기록</h4>
+              {% if previous_docs.count > 0 %}
+            <ul class="list-group">
+              {% for doc in previous_docs %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <div>
+                        <strong>분석 ID: {{ doc.analysis_result.id }}</strong><br>
+                        <small>주소: {{ doc.analysis_result.request.address }}</small><br>
+                        <small>분석일: {{ doc.analysis_result.created_at|date:"Y-m-d H:i" }}</small><br>
+                        <small>생존 확률: {{ doc.analysis_result.survival_percentage }}%</small>
+                  </div>
+                      <button class="btn btn-sm btn-outline-primary" data-analysis-id="{{ doc.analysis_result.id }}" data-session-id="{{ doc.id }}" onclick="loadAnalysisAndChatSession(this.dataset.analysisId, this.dataset.sessionId)">결과보기</button>
+                </li>
+              {% endfor %}
+            </ul>
+                <!-- 페이지네이션 컨트롤 -->
+                <nav aria-label="Page navigation example" class="mt-3">
+                  <ul class="pagination justify-content-center">
+                    {% if previous_docs.has_previous %}
+                      <li class="page-item"><a class="page-link" href="?page={{ previous_docs.previous_page_number }}">이전</a></li>
+                    {% endif %}
+                    {% for i in previous_docs.paginator.page_range %}
+                      {% if previous_docs.number == i %}
+                        <li class="page-item active"><a class="page-link" href="#">{{ i }}</a></li>
+          {% else %}
+                        <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+          {% endif %}
+                    {% endfor %}
+                    {% if previous_docs.has_next %}
+                      <li class="page-item"><a class="page-link" href="?page={{ previous_docs.next_page_number }}">다음</a></li>
+                    {% endif %}
+                  </ul>
+                </nav>
+                <div class="d-grid gap-2 mt-3">
+                  <button class="btn btn-primary" id="startNewAnalysisBtn" onclick="startNewAnalysisRoutine()">새로운 상권 분석 시작하기</button>
+        </div>
+              {% else %}
+                <div class="alert alert-info text-center" role="alert">
+                  아직 분석 기록이 없습니다. 새로운 상권 분석을 시작해보세요!
+      </div>
+                <div class="d-grid gap-2 mt-3">
+                  <button class="btn btn-primary" id="startAnalysisChatBtn">새 상권 분석 시작하기</button>
+    </div>
+              {% endif %}
+                  </div>
+              </div>
+            </div>
+          </div>
+          
+      <!-- 챗봇과 분석 리포트 섹션 (기존 분석 로드 또는 신규 분석 완료 후 표시) -->
+      <div id="analysisReportAndChatSection" style="display: none;">
+        <div class="row mt-5">
+          <!-- 분석 결과 로딩/대기 상태 -->
+          <div id="analysisWaiting" class="col-lg-12 text-center" style="display: none;">
+            <div class="card p-4 shadow-sm">
+              <h4 class="mb-3">📈 상권 분석 결과 대기 중...</h4>
+              <p>좌측에서 기존 분석 기록을 선택하거나, 새로운 분석을 시작하여 결과를 확인하세요.</p>
+            </div>
+          </div>
+          
+          <!-- 분석 진행 상황 (기존 분석 로드 시) -->
+          <div id="analysisProgress" class="col-lg-12 analysis-progress" style="display: none;">
+            <h5 class="mb-4 text-center">📊 상권 분석 진행 중...</h5>
+            <div class="overall-progress mb-3">
+              <div class="progress" role="progressbar" aria-label="Overall Progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="height: 8px;">
+                <div id="overallProgressBar" class="progress-bar" style="width: 0%"></div>
+              </div>
+              <p class="text-end mt-2"><span id="overallPercent">0%</span> 완료</p>
+              </div>
+            <div class="progress-steps">
+              <div id="step-population" class="progress-step">
+                <div class="progress-icon"><i class="bi bi-people"></i></div>
+                <div class="progress-text">
+                  <div class="progress-title">생활인구 분석</div>
+                  <div class="progress-detail">준비 중...</div>
+                </div>
+              </div>
+              <div id="step-working" class="progress-step">
+                <div class="progress-icon"><i class="bi bi-person-workspace"></i></div>
+                <div class="progress-text">
+                  <div class="progress-title">직장인구 분석</div>
+                  <div class="progress-detail">준비 중...</div>
+                </div>
+              </div>
+              <div id="step-foreign" class="progress-step">
+                <div class="progress-icon"><i class="bi bi-globe"></i></div>
+                <div class="progress-text">
+                  <div class="progress-title">외국인 분석</div>
+                  <div class="progress-detail">준비 중...</div>
+                </div>
+              </div>
+              <div id="step-facilities" class="progress-step">
+                <div class="progress-icon"><i class="bi bi-building"></i></div>
+                <div class="progress-text">
+                  <div class="progress-title">주변시설 분석</div>
+                  <div class="progress-detail">준비 중...</div>
+                </div>
+              </div>
+              <div id="step-competition" class="progress-step">
+                <div class="progress-icon"><i class="bi bi-shop"></i></div>
+                <div class="progress-text">
+                  <div class="progress-title">경쟁업체 분석</div>
+                  <div class="progress-detail">준비 중...</div>
+                </div>
+              </div>
+              <div id="step-land" class="progress-step">
+                <div class="progress-icon"><i class="bi bi-cash-stack"></i></div>
+                <div class="progress-text">
+                  <div class="progress-title">공시지가 분석</div>
+                  <div class="progress-detail">준비 중...</div>
+                </div>
+              </div>
+              <div id="step-ai" class="progress-step">
+                <div class="progress-icon"><i class="bi bi-robot"></i></div>
+                <div class="progress-text">
+                  <div class="progress-title">AI 예측 분석</div>
+                  <div class="progress-detail">준비 중...</div>
+                </div>
+              </div>
+              <div id="step-complete" class="progress-step">
+                <div class="progress-icon"><i class="bi bi-check-circle"></i></div>
+                <div class="progress-text">
+                  <div class="progress-title">분석 완료</div>
+                  <div class="progress-detail">준비 중...</div>
+                </div>
+              </div>
+            </div>
+            <div class="alert alert-danger mt-3" id="analysisError" style="display: none;">
+              <h5><i class="bi bi-exclamation-triangle me-2"></i>분석 중 오류가 발생했습니다</h5>
+              <p id="analysisErrorMessage"></p>
+              <button class="btn btn-primary" onclick="retryAnalysis(currentRequestId, false)"><i class="bi bi-arrow-clockwise me-1"></i>다시 시도</button>
+            </div>
+          </div>
+          
+          <!-- 분석 결과 리포트 -->
+          <div id="analysisResults" class="col-lg-6 mb-4" style="display: none;">
+            <div class="card shadow-sm p-4 h-100">
+              <h4 class="mb-4">📊 상권 분석 결과 리포트</h4>
+
+              <div class="mb-3">
+                <h5>요청 정보</h5>
+                <p><strong>주소:</strong> <span id="resultAddress"></span></p>
+                <p><strong>업종:</strong> <span id="resultBusinessType"></span></p>
+                <p><strong>면적:</strong> <span id="resultArea"></span>m²</p>
+                <p><strong>서비스 유형:</strong> <span id="resultServiceType"></span></p>
+            </div>
+
+              <hr>
+
+              <div class="mb-3">
+                <h5>핵심 지표 (반경 300m)</h5>
+                <div class="row">
+                <div class="col-md-6">
+                    <p><strong>생활인구:</strong> <span id="lifePop300"></span>명</p>
+                    </div>
+                  <div class="col-md-6">
+                    <p><strong>직장인구:</strong> <span id="workingPop300"></span>명</p>
+                  </div>
+                  <div class="col-md-6">
+                    <p><strong>경쟁업체:</strong> <span id="competitor300"></span>개</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>공시지가:</strong> <span id="totalLandValue"></span></p>
+                    </div>
+                  </div>
+                </div>
+
+              <hr>
+
+              <div class="mb-3">
+                <h5>AI 예측 생존 확률</h5>
+                <h2 class="display-4 text-center mb-3"><span id="survivalPercentage"></span></h2>
+                <div class="progress mb-2" role="progressbar" aria-label="Survival Progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="height: 20px;">
+                  <div id="survivalBar" class="progress-bar" style="width: 0%"></div>
+              </div>
+                <div id="survivalAnalysis" class="alert mt-3 text-center"></div>
+            </div>
+
+              <hr>
+
+              <div class="mb-3">
+                <h5>경쟁 분석</h5>
+                <p><strong>동일 업종 경쟁 점포 수 (300m):</strong> <span id="competitorCount"></span>개</p>
+                <p><strong>인근 업종 점포 수 (300m):</strong> <span id="adjacentBiz"></span>개</p>
+                <p><strong>경쟁 업체 비율 (300m):</strong> <span id="competitorRatio"></span></p>
+                <div class="progress mb-2" role="progressbar" aria-label="Competition Progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="height: 20px;">
+                  <div id="competitionBar" class="progress-bar" style="width: 0%"></div>
+                </div>
+                <div class="text-center mt-2">경쟁 수준: <span id="competitionLevel"></span></div>
+                <p class="mt-3"><strong>업종 다양성 (300m):</strong> <span id="businessDiversity"></span></p>
+                </div>
+
+              <hr>
+
+              <div class="mb-3">
+                <h5>강점 및 유의사항</h5>
+                <h6><i class="bi bi-check-circle-fill text-success me-2"></i>강점</h6>
+                <ul id="strengthsList" class="list-unstyled"></ul>
+                <h6><i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>유의사항</h6>
+                <ul id="cautionsList" class="list-unstyled"></ul>
+              </div>
+              
+              <div class="d-grid gap-2 mt-4">
+                <button class="btn btn-info" onclick="showPdfPreview(currentRequestId)"><i class="bi bi-file-earmark-pdf me-2"></i>상권 분석 보고서 (미리보기)</button>
+                  </div>
+              </div>
+            </div>
+
+          <!-- 챗봇 인터페이스 -->
+          <div class="col-lg-6 mb-4" id="chatInterfaceContainer" style="display: none;">
+            <div class="card shadow-sm p-4 h-100 d-flex flex-column">
+              <h4 class="mb-4">💬 상권 분석 챗봇</h4>
+              <div id="chatMessagesArea" class="chat-messages-area flex-grow-1 mb-3">
+                <!-- Chat messages will be appended here -->
+                <div class="chat-welcome-message bot-message">
+                  <div class="message-bubble">
+                    상권 분석 결과에 대해 궁금한 점을 저에게 물어보세요!
+                    <br><br>
+                    예시 질문:
+                    <ul>
+                      <li>이 상권의 유동 인구 특징은 어떤가요?</li>
+                      <li>주변 경쟁 업체는 몇 개인가요?</li>
+                      <li>이 업종의 생존 확률이 의미하는 것은 무엇인가요?</li>
+                  </ul>
+                </div>
+                </div>
+              </div>
+              <div id="typingIndicator" class="typing-indicator-message mb-2" style="display: none;">
+                <div class="message-bubble">
+                  AI가 답변을 생성 중입니다... <span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>
+            </div>
+            </div>
+              <div class="chat-input-area d-flex">
+                <input type="text" id="messageInput" class="form-control flex-grow-1" placeholder="질문을 입력하세요..." onkeypress="handleKeyPress(event)">
+                <button class="btn btn-primary" id="sendButton">보내기</button>
+          </div>
+        </div>
+      </div>
+          </div>
+          </div>
+
+    {% else %}
+      <!-- 🚀 새로운 분석 시작 섹션 (로그인 안 된 사용자 또는 기존 분석 기록 없는 로그인된 사용자) -->
+      <div id="newAnalysisSection">
+        <div class="row mt-5">
+          <div class="col-lg-12">
+            <div class="card p-4 shadow-sm mb-4">
+              <h4 class="mb-3">🚀 새로운 상권 분석 시작하기</h4>
+              <p class="text-center lead">챗봇과 대화하며 상권 분석에 필요한 정보를 입력해주세요.</p>
+
+              <div id="initialChatMessagesArea" class="chat-messages-area mb-3" style="height: 300px;">
+                <div class="chat-welcome-message bot-message">
+                  <div class="message-bubble">
+                    안녕하세요! 상권 분석을 시작하기 위해 필요한 정보를 알려주세요.
+        </div>
+      </div>
+    </div>
+              
+              <div id="analysisInputForm" style="display: block;">
+                <!-- 1. 업종 입력 -->
+                <div id="businessTypeStep" class="chat-step mb-3">
+                  <label for="business_type_id" class="form-label">📊 어떤 업종의 상권이 궁금하신가요?</label>
+                  <select class="form-select" id="business_type_id">
+                    <option value="">업종을 선택해주세요</option>
+                    <option value="35">한식</option>
+                    <option value="16">식육(숯불구이)</option>
+                    <option value="24">중국식</option>
+                    <option value="21">일식</option>
+                    <option value="14">분식</option>
+                    <option value="6">김밥(도시락)</option>
+                    <option value="30">통닭(치킨)</option>
+                    <option value="36">호프/통닭</option>
+                    <option value="7">까페</option>
+                    <option value="27">커피숍</option>
+                    <option value="10">떡카페</option>
+                    <option value="22">전통찻집</option>
+                    <option value="9">다방</option>
+                    <option value="15">뷔페식</option>
+                    <option value="1">경양식</option>
+                    <option value="18">외국음식전문점(인도, 태국 등)</option>
+                    <option value="31">패밀리레스토랑</option>
+                    <option value="32">패스트푸드</option>
+                    <option value="17">아이스크림</option>
+                    <option value="8">냉면집</option>
+                    <option value="13">복어취급</option>
+                    <option value="29">탕류(보신용)</option>
+                    <option value="5">기타 휴게음식점</option>
+                    <option value="20">일반조리판매</option>
+                    <option value="23">정종/대포집/소주방</option>
+                    <option value="0">감성주점</option>
+                    <option value="11">라이브카페</option>
+                    <option value="2">관광호텔</option>
+                    <option value="3">극장</option>
+                    <option value="19">유원지</option>
+                    <option value="12">백화점</option>
+                    <option value="25">철도역구내</option>
+                    <option value="26">출장조리</option>
+                    <option value="28">키즈카페</option>
+                    <option value="33">편의점</option>
+                    <option value="34">푸드트럭</option>
+                    <option value="4">기타</option>
+                  </select>
+                  <button class="btn btn-primary mt-2" onclick="proceedToAddressStep()">다음</button>
+</div>
+
+                <!-- 2. 주소 입력 -->
+                <div id="addressStep" class="chat-step mb-3" style="display: none;">
+                  <label for="address" class="form-label">📍 분석할 상권의 주소를 알려주세요.</label>
+                  <div class="input-group">
+                    <input type="text" class="form-control" id="address" placeholder="주소를 검색해주세요" readonly>
+                    <input type="hidden" id="latitude">
+                    <input type="hidden" id="longitude">
+                    <input type="hidden" id="x_coord">
+                    <input type="hidden" id="y_coord">
+                    <button class="btn btn-outline-secondary" type="button" onclick="openAddressSearch()"><i class="bi bi-search"></i> 주소 검색</button>
+        </div>
+                  <button class="btn btn-primary mt-2" id="nextAddressStepBtn" onclick="proceedToAreaStep()" disabled>다음</button>
+          </div>
+          
+                <!-- 3. 점포 면적 입력 -->
+                <div id="areaStep" class="chat-step mb-3" style="display: none;">
+                  <label for="area" class="form-label">📏 점포 면적을 입력해주세요 (단위: m²).</label>
+                  <input type="number" class="form-control" id="area" placeholder="예: 50">
+                  <button class="btn btn-primary mt-2" onclick="proceedToServiceTypeStep()">다음</button>
+          </div>
+          
+                <!-- 4. 주류 판매 여부 -->
+                <div id="serviceTypeStep" class="chat-step mb-3" style="display: none;">
+                  <label for="service_type" class="form-label">🍻 주류 판매 여부를 선택해주세요.</label>
+                  <select class="form-select" id="service_type">
+                    <option value="">선택해주세요</option>
+                    <option value="1">판매함 (일반음식점)</option>
+                    <option value="0">판매 안함 (휴게음식점)</option>
+                  </select>
+                  <button class="btn btn-primary mt-2" onclick="proceedToConfirmStep()">다음</button>
+            </div>
+            
+                <!-- 5. 최종 확인 및 분석 시작 -->
+                <div id="confirmStep" class="chat-step mb-3" style="display: none;">
+                  <div class="alert alert-info" role="alert">
+                    입력하신 정보로 상권 분석을 시작하시겠습니까?
+                </div>
+                  <div class="d-grid gap-2">
+                    <button class="btn btn-success" onclick="getFormData()">📈 상권 분석하기</button>
+                </div>
+              </div>
+            </div>
+            
+              <!-- 신규 분석 진행 상황 -->
+              <div id="newAnalysisProgress" class="analysis-progress" style="display: none;">
+                <h5 class="mb-4 text-center">📊 상권 분석 진행 중...</h5>
+                <div class="overall-progress mb-3">
+                  <div class="progress" role="progressbar" aria-label="Overall Progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="height: 8px;">
+                    <div id="newOverallProgressBar" class="progress-bar" style="width: 0%"></div>
+              </div>
+                  <p class="text-end mt-2"><span id="newOverallPercent">0%</span> 완료</p>
+            </div>
+                <div class="progress-steps">
+                  <div id="new-step-population" class="progress-step">
+                    <div class="progress-icon"><i class="bi bi-people"></i></div>
+                    <div class="progress-text">
+                      <div class="progress-title">생활인구 분석</div>
+                      <div class="progress-detail">준비 중...</div>
+                    </div>
+                  </div>
+                  <div id="new-step-working" class="progress-step">
+                    <div class="progress-icon"><i class="bi bi-person-workspace"></i></div>
+                    <div class="progress-text">
+                      <div class="progress-title">직장인구 분석</div>
+                      <div class="progress-detail">준비 중...</div>
+                </div>
+                    </div>
+                  <div id="new-step-foreign" class="progress-step">
+                    <div class="progress-icon"><i class="bi bi-globe"></i></div>
+                    <div class="progress-text">
+                      <div class="progress-title">외국인 분석</div>
+                      <div class="progress-detail">준비 중...</div>
+                  </div>
+                </div>
+                  <div id="new-step-facilities" class="progress-step">
+                    <div class="progress-icon"><i class="bi bi-building"></i></div>
+                    <div class="progress-text">
+                      <div class="progress-title">주변시설 분석</div>
+                      <div class="progress-detail">준비 중...</div>
+                    </div>
+                  </div>
+                  <div id="new-step-competition" class="progress-step">
+                    <div class="progress-icon"><i class="bi bi-shop"></i></div>
+                    <div class="progress-text">
+                      <div class="progress-title">경쟁업체 분석</div>
+                      <div class="progress-detail">준비 중...</div>
+                </div>
+                    </div>
+                  <div id="new-step-land" class="progress-step">
+                    <div class="progress-icon"><i class="bi bi-cash-stack"></i></div>
+                    <div class="progress-text">
+                      <div class="progress-title">공시지가 분석</div>
+                      <div class="progress-detail">준비 중...</div>
+                  </div>
+                </div>
+                  <div id="new-step-ai" class="progress-step">
+                    <div class="progress-icon"><i class="bi bi-robot"></i></div>
+                    <div class="progress-text">
+                      <div class="progress-title">AI 예측 분석</div>
+                      <div class="progress-detail">준비 중...</div>
+              </div>
+            </div>
+                  <div id="new-step-complete" class="progress-step">
+                    <div class="progress-icon"><i class="bi bi-check-circle"></i></div>
+                    <div class="progress-text">
+                      <div class="progress-title">분석 완료</div>
+                      <div class="progress-detail">준비 중...</div>
+                  </div>
+                  </div>
+                </div>
+                <div class="alert alert-danger mt-3" id="newAnalysisError" style="display: none;">
+                  <h5><i class="bi bi-exclamation-triangle me-2"></i>분석 중 오류가 발생했습니다</h5>
+                  <p id="newAnalysisErrorMessage"></p>
+                  <button class="btn btn-primary" onclick="retryAnalysis(currentRequestId, true)"><i class="bi bi-arrow-clockwise me-1"></i>다시 시도</button>
+              </div>
+                  </div>
+
+              <!-- 신규 분석 챗봇 입력 영역 -->
+              <div id="newAnalysisChatInputArea" class="chat-input-area mt-3" style="display: none;">
+                <input type="text" id="newMessageInput" class="form-control flex-grow-1" placeholder="챗봇에게 질문하거나 다음 단계로 진행하세요..." onkeypress="handleKeyPress(event)">
+                <button class="btn btn-primary" id="newSendButton">보내기</button>
+                  </div>
+              <div id="newAnalysisTypingIndicator" class="typing-indicator-message mb-2" style="display: none;">
+                <div class="message-bubble">
+                  AI가 답변을 생성 중입니다... <span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>
+              </div>
+            </div>
+            
+            </div>
+          </div>
+        </div>
+          </div>
+    {% endif %}
+
+  </div> <!-- /container -->
+
+  <!-- PDF 미리보기 모달 -->
+  <div class="modal fade" id="pdfPreviewModal" tabindex="-1" aria-labelledby="pdfPreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="pdfPreviewModalLabel">상권 분석 보고서 미리보기</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div id="previewLoading" class="text-center p-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3">보고서 미리보기를 불러오는 중...</p>
+          </div>
+          <div id="previewError" class="alert alert-danger text-center" style="display: none;">
+            <h5><i class="bi bi-exclamation-triangle-fill me-2"></i>오류 발생</h5>
+            <p id="previewErrorMessage"></p>
+            <button class="btn btn-primary mt-3" onclick="showPdfPreview(currentPreviewRequestId)">다시 시도</button>
+          </div>
+          <div id="previewContent" style="display: none; background-color: #ffffff; padding: 20px; border-radius: 8px;">
+            <div class="text-center mb-4">
+              <h2 class="fw-bold text-primary">AI 상권 분석 보고서</h2>
+              <p class="text-muted">AI 기반 상권 분석 결과</p>
+            </div>
+            <hr class="mb-4">
+            
+            <div class="row mb-4">
+                      <div class="col-md-6">
+                <h6>기본 정보</h6>
+                <p><strong>주소:</strong> <span id="previewAddr"></span></p>
+                <p><strong>업종:</strong> <span id="previewBizType"></span></p>
+                <p><strong>면적:</strong> <span id="previewAreaSize"></span> m²</p>
+                <p><strong>분석일:</strong> <span id="previewAnalysisDate"></span></p>
+                      </div>
+              <div class="col-md-6 text-end">
+                <h6>생존 확률 예측</h6>
+                <h1 class="text-primary"><span id="previewSurvivalRate"></span></h1>
+                <div class="progress mb-2" style="height: 15px;">
+                  <div id="previewSurvivalProgressBar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                      </div>
+                <p id="previewSurvivalComment" class="text-muted mb-0"></p>
+              </div>
+            </div>
+            
+            <div class="card mb-4 bg-light">
+              <div class="card-body">
+                <h6 class="card-title text-primary">핵심 지표 (반경 300m)</h6>
+                <div class="row">
+                  <div class="col-md-6"><p>생활인구: <strong id="previewLifePopulation"></strong></p></div>
+                  <div class="col-md-6"><p>직장인구: <strong id="previewWorkingPopulation"></strong></p></div>
+                  <div class="col-md-6"><p>경쟁업체: <strong id="previewCompetitors"></strong></p></div>
+                  <div class="col-md-6"><p>공시지가: <strong id="previewLandPrice"></strong></p></div>
+                  </div>
+              </div>
+            </div>
+            
+            <div class="row mb-4">
+              <div class="col-md-6" id="previewStrengthsList">
+                <h6><i class="bi bi-check-circle-fill text-success me-2"></i>강점</h6>
+                <ul class="list-unstyled"></ul>
+                  </div>
+              <div class="col-md-6" id="previewCautionsList">
+                <h6><i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>유의사항</h6>
+                <ul class="list-unstyled"></ul>
+              </div>
+            </div>
+            
+            <hr class="mt-5 mb-3">
+            <p class="text-muted text-center" style="font-size: 0.85em;">본 보고서는 AI 분석 결과를 기반으로 하며, 실제 시장 상황과 다를 수 있습니다. 투자 결정 시 전문가와 상담하시기 바랍니다. <br>보고서 생성일: <span id="previewReportGeneratedDate"></span></p>
+
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+          <button type="button" class="btn btn-primary" id="previewDownloadPdfBtn" onclick="downloadPreviewPDF()"><i class="bi bi-download me-2"></i>고품질 PDF (이미지)</button>
+          <button type="button" class="btn btn-info" id="previewDownloadLightPdfBtn" onclick="downloadPreviewLightweightPDF()"><i class="bi bi-file-text me-2"></i>경량 PDF (텍스트)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
+{% endblock content %}  
+
+{% block extra_js %}
+  <!-- chat_main.js와 chat_list.js 로드 -->
+  <script src="{% static 'js/chat_list.js' %}"></script>
+  <script src="{% static 'js/chat_main.js' %}"></script>
+  <!-- analyze_main.js 로드 -->
+  <script src="{% static 'js/analyze_main.js' %}"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // analyze_main.js의 _eventBind 함수가 모든 초기화 로직을 처리하므로,
+      // 여기서 DOMContentLoaded 리스너 내에서 직접 초기화 함수를 호출하지 않습니다.
+      // PDF 미리보기 버튼 이벤트 리스너 추가 (모달 내부에 있음)
+      const pdfPreviewModal = document.getElementById('pdfPreviewModal');
+      if (pdfPreviewModal) {
+        pdfPreviewModal.addEventListener('hidden.bs.modal', function () {
+          // 모달이 닫힐 때 초기화 또는 정리 작업 (필요시)
+        });
+      }
+    });
+  </script>
+{% endblock extra_js %}

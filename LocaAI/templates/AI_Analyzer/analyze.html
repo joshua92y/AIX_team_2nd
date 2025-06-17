@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}상권분석 LocaAI{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/chat_styles.css' %}">
+{% endblock css %}
+
+{% block header %}
+{% include 'includes/header.html' %}
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-customfonts@0.0.4/dist/jspdf-customfonts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-customfonts@0.0.4/dist/customfonts.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.0/marked.min.js"></script>
+{% endblock header %}
+
+{% block analyzes_list %}
+<div class="container-fluid mt-3 mb-3">
+  <h3 class="text-center mb-3">LocaAI 상권분석</h3>
+  <div id="main-analysis-container">
+    <div id="user-check-section" style="display: none">
+      <div id="analysis-list-section" style="display: none">
+        <h5 class="mb-3">📊 최근 분석 목록</h5>
+        <ul id="analysisList" class="list-group mb-3"></ul>
+        <nav id="analysisPagination" aria-label="분석 리스트 페이지네이션"></nav>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock analyzes_list %}
+
+{% block analysis_report %}
+<div id="analysis-report-section" style="display: none">
+  <h5 class="mb-3">📑 상권 분석 결과</h5>
+  <div id="analysisReportContainer" class="card p-3"></div>
+</div>
+{% endblock analysis_report %}
+
+{% block chat_history %}
+<div id="analysis-chat-section" style="display: none">
+  <h6 class="mt-4">💬 관련 대화 내용</h6>
+  <div id="chatHistoryContainer" class="chat-messages-area"></div>
+</div>
+{% endblock chat_history %}
+
+{% block new_analysis %}
+<div id="new-analysis-sequence" style="display: none">
+  <!-- 입력 폼: 업종/주소/면적/주류 여부/시작 버튼 -->
+</div>
+{% endblock new_analysis %}
+
+{% block chatbot %}
+<div class="chat-interface-container">
+  <div class="chat-messages-area" id="chatMessagesArea"></div>
+  <div id="typingIndicator" class="message-entry typing-indicator-message" style="display: none;">
+    <div class="message-bubble">
+      답변을 생성 중입니다...
+      <span class="spinner-border spinner-border-sm ms-1" role="status" aria-hidden="true"></span>
+    </div>
+  </div>
+  <div class="chat-input-area">
+    <textarea id="messageInput" class="form-control" placeholder="메시지를 입력하세요..." rows="1"></textarea>
+    <button id="sendButton" class="btn btn-primary" type="button">
+      <i class="fas fa-paper-plane"></i>
+    </button>
+  </div>
+</div>
+{% endblock chatbot %}
+
+{% block footer %}
+{% csrf_token %}
+<script type="application/json" id="user-info-data">{{ user_info_json|safe }}</script>
+<script type="application/json" id="previous-docs-data">{{ previous_docs_json|safe }}</script>
+{% endblock footer %}
