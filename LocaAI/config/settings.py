@@ -35,6 +35,7 @@ load_dotenv(dotenv_path=BASE_DIR / ".env")
 
 # 비밀 키 (환경변수에서 로드, 프로덕션에서는 반드시 설정)
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-your-secret-key")
+FERNET_KEY = os.getenv("FERNET_KEY")
 
 # 디버그 모드 (프로덕션에서는 반드시 False)
 DEBUG = os.getenv("DEBUG", "True").lower() in ("true", "1", "yes", "on")

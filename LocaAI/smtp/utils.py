@@ -2,7 +2,18 @@ from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 import os
+from cryptography.fernet import Fernet
+from django.conf import settings
 
+fernet = Fernet(settings.FERNET_KEY.encode())
+
+def encrypt_email(email: str) -> str:
+    """이메일을 암호화해서 토큰으로 반환"""
+    return fernet.encrypt(email.encode()).decode()
+
+def decrypt_email(token: str) -> str:
+    """암호화된 토큰에서 이메일 복호화"""
+    return fernet.decrypt(token.encode()).decode()
 
 def send_subscription_email(subscriber):
     """
@@ -10,9 +21,9 @@ def send_subscription_email(subscriber):
     """
     # 도메인은 settings 없을 경우 대비
     site_domain = getattr(settings, 'SITE_DOMAIN', os.environ.get("DEFAULT_SITE_DOMAIN", "http://localhost:8000"))
-
+    token = encrypt_email(subscriber.email)
     # 구독 해지 URL 생성 (실제 POST 처리는 나중에 템플릿에서 폼으로 처리해야 함)
-    unsubscribe_url = f"{site_domain}/newsletter/unsubscribe-auto?email={subscriber.email}"
+    unsubscribe_url = f"{site_domain}/newsletter/unsubscribe?token={token}"
 
     # 템플릿 렌더링
     html_content = render_to_string("newsletter/email_welcome.html", {

@@ -11,13 +11,32 @@ document.addEventListener("DOMContentLoaded", function () {
     const userInfoDataElement = document.getElementById("user-info-data");
     if (userInfoDataElement) {
       currentUserInfo = JSON.parse(userInfoDataElement.textContent);
+      console.log("User info loaded in chat_main.js:", currentUserInfo);  // 디버깅용 로그
     }
   } catch (e) {
-    console.error("Error parsing user info JSON:", e);
+    console.error("Error parsing user info JSON in chat_main.js:", e);
   }
 
   const userId = currentUserInfo.user_id || 'anonymous_' + generateUUID();
   let currentSessionId = currentUserInfo.initial_session_id || null;
+
+  // 세션 ID가 없으면 새 세션 생성
+  if (!currentSessionId) {
+    fetch(`/chatbot/sessions/${userId}/create/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+      },
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === 'ok') {
+        currentSessionId = data.session_id;
+        console.log("New session created in chat_main.js:", currentSessionId);  // 디버깅용 로그
+      }
+    })
+    .catch(error => console.error("Error creating session in chat_main.js:", error));
+  }
 
   let websocket = null;
   let currentStreamingMessageElement = null;
@@ -230,4 +249,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   setupWebSocket();
   messageInput.focus();
+
+  // ChatListManager 초기화를 여기서 수행하고 currentUserInfo 전달
+  window.chatListManager = new ChatListManager(currentUserInfo);
 });

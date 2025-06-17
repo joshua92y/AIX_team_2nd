@@ -80,9 +80,17 @@ class NewsletterSubscribeView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class NewsletterUnsubscribeView(APIView):
-    """뉴스레터 구독 해지"""
+    """GET/POST 구독 해지 통합 뷰"""
+
+    def get(self, request):
+        return self._handle_unsubscribe(request, method="GET")
+
     def post(self, request):
-        serializer = NewsletterUnsubscribeSerializer(data=request.data)
+        return self._handle_unsubscribe(request, method="POST")
+
+    def _handle_unsubscribe(self, request, method):
+        data = request.query_params if method == "GET" else request.data
+        serializer = NewsletterUnsubscribeSerializer(data=data, context={"method": method})
         if serializer.is_valid():
             subscriber = serializer.save()
             return Response(
