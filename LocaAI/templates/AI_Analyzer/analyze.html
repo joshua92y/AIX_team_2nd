@@ -1512,14 +1512,23 @@
     <div class="row">
       <div class="col-lg-12 mb-4">
         <div class="card p-4 shadow-sm">
-          <h3 class="mb-3">상권 정보입력</h3>
+          <h3 class="mb-3">
+            <span data-lang="KOR">상권 정보입력</span>
+            <span data-lang="ENG">Enter Commercial Area Info</span>
+            <span data-lang="ESP">Ingresar Información del Área Comercial</span>
+          </h3>
 
           <form>
             <div class="row g-3">
               <!-- 업종 선택 -->
               <div class="col-md-3">
-                <label for="business_type_id" class="form-label">업종</label>
-                <select class="form-select" id="business_type_id" name="business_type_id" required>
+                <label for="industry" class="form-label">
+                  <span data-lang="KOR">업종</span>
+                  <span data-lang="ENG">Industry</span>
+                  <span data-lang="ESP">Industria</span>
+                </label>
+                <!-- 한국어 업종 선택 -->
+                <select class="form-select" id="industryKor" name="industry" data-lang="KOR" required>
                   <option selected disabled>업종을 선택해주세요</option>
                   <option value="0">감성주점</option>
                   <option value="1">경양식</option>
@@ -1560,41 +1569,168 @@
                   <option value="36">호프/통닭</option>
                   <option value="37">횟집</option>
                 </select>
+
+                <!-- 영어 업종 선택 -->
+                <select class="form-select" id="industryEng" name="industry" data-lang="ENG" style="display: none;" required>
+                  <option selected disabled>Please select industry</option>
+                  <option value="0">Emotional Pub</option>
+                  <option value="1">Western-style</option>
+                  <option value="2">Tourist Hotel</option>
+                  <option value="3">Theater</option>
+                  <option value="4">Other</option>
+                  <option value="5">Other Snack Bar</option>
+                  <option value="6">Gimbap (Lunchbox)</option>
+                  <option value="7">Café</option>
+                  <option value="8">Naengmyeon House</option>
+                  <option value="9">Coffeehouse</option>
+                  <option value="10">Rice Cake Café</option>
+                  <option value="11">Live Café</option>
+                  <option value="12">Department Store</option>
+                  <option value="13">Blowfish Cuisine</option>
+                  <option value="14">Snack Bar</option>
+                  <option value="15">Buffet</option>
+                  <option value="16">Meat Grill (Charcoal)</option>
+                  <option value="17">Ice Cream</option>
+                  <option value="18">Foreign Cuisine (India, Thailand, etc.)</option>
+                  <option value="19">Amusement Area</option>
+                  <option value="20">General Food Sale</option>
+                  <option value="21">Japanese</option>
+                  <option value="22">Traditional Tea House</option>
+                  <option value="23">Soju Pub</option>
+                  <option value="24">Chinese</option>
+                  <option value="25">Train Station Interior</option>
+                  <option value="26">Catering</option>
+                  <option value="27">Coffee Shop</option>
+                  <option value="28">Kids Café</option>
+                  <option value="29">Health Soup</option>
+                  <option value="30">Fried Chicken</option>
+                  <option value="31">Family Restaurant</option>
+                  <option value="32">Fast Food</option>
+                  <option value="33">Convenience Store</option>
+                  <option value="34">Food Truck</option>
+                  <option value="35">Korean</option>
+                  <option value="36">Pub/Chicken</option>
+                  <option value="37">Sashimi House</option>
+                </select>
+
+                <!-- 스페인어 업종 선택 -->
+                <select class="form-select" id="industryEsp" name="industry" data-lang="ESP" style="display: none;" required>
+                  <option selected disabled>Seleccione una industria</option>
+                  <option value="0">Pub Emocional</option>
+                  <option value="1">Estilo Occidental</option>
+                  <option value="2">Hotel Turístico</option>
+                  <option value="3">Teatro</option>
+                  <option value="4">Otro</option>
+                  <option value="5">Otros Bares de Refrigerios</option>
+                  <option value="6">Gimbap (Lonchera)</option>
+                  <option value="7">Café</option>
+                  <option value="8">Restaurante de Naengmyeon</option>
+                  <option value="9">Casa de Café</option>
+                  <option value="10">Café de Pastel de Arroz</option>
+                  <option value="11">Café en Vivo</option>
+                  <option value="12">Grandes Almacenes</option>
+                  <option value="13">Comida de Pez Globo</option>
+                  <option value="14">Comida Rápida Coreana</option>
+                  <option value="15">Buffet</option>
+                  <option value="16">Carne a la Parrilla (Carbón)</option>
+                  <option value="17">Helado</option>
+                  <option value="18">Comida Extranjera (India, Tailandia, etc.)</option>
+                  <option value="19">Zona de Recreo</option>
+                  <option value="20">Venta General de Alimentos</option>
+                  <option value="21">Japonesa</option>
+                  <option value="22">Casa de Té Tradicional</option>
+                  <option value="23">Bar de Soju</option>
+                  <option value="24">China</option>
+                  <option value="25">Interior de Estación de Tren</option>
+                  <option value="26">Catering</option>
+                  <option value="27">Tienda de Café</option>
+                  <option value="28">Café Infantil</option>
+                  <option value="29">Sopa Medicinal</option>
+                  <option value="30">Pollo Frito</option>
+                  <option value="31">Restaurante Familiar</option>
+                  <option value="32">Comida Rápida</option>
+                  <option value="33">Tienda de Conveniencia</option>
+                  <option value="34">Camión de Comida</option>
+                  <option value="35">Coreana</option>
+                  <option value="36">Pub/Pollo</option>
+                  <option value="37">Restaurante de Pescado Crudo</option>
+                </select>
               </div>
 
               <!-- 주소 입력 -->
-              <div class="col-md-3">
+              <div class="col-md-5">
                 <input type="hidden" id="latitude" name="latitude">
                 <input type="hidden" id="longitude" name="longitude">
                 <input type="hidden" id="x_coord" name="x_coord">
                 <input type="hidden" id="y_coord" name="y_coord">
-                <label for="address" class="form-label">주소</label>
+                <!-- 한국어 주소 라벨 -->
+                <label for="address" class="form-label" data-lang="KOR">주소</label>
+
+                <!-- 영어 주소 라벨 -->
+                <label for="address" class="form-label" data-lang="ENG" style="display: none;">Address</label>
+
+                <!-- 스페인어 주소 라벨 -->
+                <label for="address" class="form-label" data-lang="ESP" style="display: none;">Dirección</label>
+
                 <div class="input-group">
-                  <input type="text" class="form-control" id="address" name="address" placeholder="주소를 입력해주세요" readonly>
-                  <button class="btn btn-outline-secondary" type="button" onclick="openAddressSearch()">검색</button>
+                  <!-- 한국어 -->
+                  <input type="text" class="form-control" id="address-kor" name="address" placeholder="주소를 입력해주세요" data-lang="KOR">
+                  <button class="btn btn-outline-secondary" type="button" onclick="openAddressSearch()" data-lang="KOR">검색</button>
+
+                  <!-- 영어 -->
+                  <input type="text" class="form-control" id="address-eng" name="address" placeholder="Please enter your address" data-lang="ENG" style="display: none;">
+                  <button class="btn btn-outline-secondary" type="button" onclick="openAddressSearch()" data-lang="ENG" style="display: none;">Search</button>
+
+                  <!-- 스페인어 -->
+                  <input type="text" class="form-control" id="address-esp" name="address" placeholder="Por favor ingrese la dirección" data-lang="ESP" style="display: none;">
+                  <button class="btn btn-outline-secondary" type="button" onclick="openAddressSearch()" data-lang="ESP" style="display: none;">Buscar</button>
                 </div>
               </div>
 
               <!-- 점포 면적 입력 -->
-              <div class="col-md-3">
-                <label for="area" class="form-label">점포 면적 (㎡)</label>
+              <div class="col-md-2">
+                  <!-- 라벨 (Label) -->
+                  <label for="area" class="form-label" data-lang="KOR">점포 면적 (㎡)</label>
+                  <label for="area" class="form-label" data-lang="ENG" style="display: none;">Store Area (㎡)</label>
+                  <label for="area" class="form-label" data-lang="ESP" style="display: none;">Área del local (㎡)</label>
                 <input type="number" class="form-control" id="area" name="area" placeholder="예: 33.2" required>
               </div>
 
               <!-- 주류 판매 여부 선택 -->
-              <div class="col-md-3">
-                <label for="service_type" class="form-label">주류 판매 여부</label>
-                <select class="form-select" id="service_type" name="service_type" required>
+              <div class="col-md-2">
+                <!-- 라벨 -->
+                <label for="service" class="form-label" data-lang="KOR">주류 판매 여부</label>
+                <label for="service" class="form-label" data-lang="ENG" style="display: none;">Alcohol Sale</label>
+                <label for="service" class="form-label" data-lang="ESP" style="display: none;">Venta de alcohol</label>
+
+                <!-- 셀렉트박스 -->
+                <select class="form-select" id="service" name="service" required data-lang="KOR">
                   <option selected disabled>선택</option>
                   <option value="1">판매함</option>
                   <option value="0">판매 안함</option>
+                </select>
+
+                <select class="form-select" name="service" required data-lang="ENG" style="display: none;">
+                  <option selected disabled>Choose</option>
+                  <option value="1">Yes</option>
+                  <option value="0">No</option>
+                </select>
+
+                <select class="form-select" name="service" required data-lang="ESP" style="display: none;">
+                  <option selected disabled>Seleccionar</option>
+                  <option value="1">Sí</option>
+                  <option value="0">No</option>
                 </select>
               </div>
             </div>
 
             <!-- 버튼 -->
             <div class="text-center mt-4">
-              <button type="button" class="btn btn-primary custom px-5" onclick="getFormData();">상권 분석하기</button>
+              <button type="button" class="btn btn-primary custom px-5" onclick="getFormData();">
+                <span data-lang="KOR">상권 분석하기</span>
+                <span data-lang="ENG" style="display: none;">Analyze Commercial Area</span>
+                <span data-lang="ESP" style="display: none;">Analizar Zona Comercial</span>
+              </button>
             </div>
           </form>
 
@@ -1606,23 +1742,61 @@
     <div class="row mt-5">
       <div class="col-lg-12">
         <div class="card p-4 shadow-sm mb-4">
-          <h4 class="mb-3">📁 내 최근 분석 기록</h4>
+          <h4 class="mb-3">
+            <span data-lang="KOR">📁 내 최근 분석 기록</span>
+            <span data-lang="ENG" style="display: none;">📁 My Recent Analyses</span>
+            <span data-lang="ESP" style="display: none;">📁 Mis análisis recientes</span>
+          </h4>
           {% if previous_docs %}
             <ul class="list-group">
               {% for doc in previous_docs %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                   <div>
-                    <strong>분석 ID: {{ doc.request.id }}</strong><br>
-                    <small>주소: {{ doc.request.address }}</small><br>
-                    <small>분석일: {{ doc.created_at|date:"Y-m-d H:i" }}</small><br>
-                    <small>생존 확률: {{ doc.survival_percentage }}%</small>
+                    <strong>
+                      <span data-lang="KOR">분석 ID: </span>
+                      <span data-lang="ENG" style="display: none;">Analysis ID: </span>
+                      <span data-lang="ESP" style="display: none;">ID de Análisis: </span>
+                      {{ doc.request.id }}
+                    </strong>
+                    <br>
+
+                    <small>
+                      <span data-lang="KOR">주소: </span>
+                      <span data-lang="ENG" style="display: none;">Address: </span>
+                      <span data-lang="ESP" style="display: none;">Dirección: </span>
+                      {{ doc.request.address }}
+                    </small>
+                    <br>
+
+                    <small>
+                      <span data-lang="KOR">분석일: </span>
+                      <span data-lang="ENG" style="display: none;">Date: </span>
+                      <span data-lang="ESP" style="display: none;">Fecha: </span>
+                      {{ doc.created_at|date:"Y-m-d H:i" }}
+                    </small>
+                    <br>
+
+                    <small>
+                      <span data-lang="KOR">생존 확률: </span>
+                      <span data-lang="ENG" style="display: none;">Survival Rate: </span>
+                      <span data-lang="ESP" style="display: none;">Probabilidad de Supervivencia: </span>
+                      {{ doc.survival_percentage }}%
+                    </small>
                   </div>
-                  <button class="btn btn-sm btn-outline-primary" onclick="showPdfPreview({{ doc.request.id }})">결과보기</button>
+                  <button class="btn btn-sm btn-outline-primary" onclick="showPdfPreview({{ doc.request.id }})">
+                    <span data-lang="KOR">결과보기</span>
+                    <span data-lang="ENG" style="display: none;">View Result</span>
+                    <span data-lang="ESP" style="display: none;">Ver Resultado</span>
+                  </button>
                 </li>
               {% endfor %}
             </ul>
           {% else %}
-            <p class="text-muted">아직 분석 결과가 없습니다.</p>
+            <p class="text-muted">
+              <span data-lang="KOR">아직 분석 결과가 없습니다.</span>
+              <span data-lang="ENG" style="display: none;">No analysis results yet.</span>
+              <span data-lang="ESP" style="display: none;">Aún no hay resultados de análisis.</span>
+            </p>
           {% endif %}
         </div>
       </div>
@@ -1635,40 +1809,106 @@
       <div class="col-lg-8 mb-4">
         <div class="card p-4 shadow-sm">
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <h4 class="mb-0">상권 분석 결과</h4>
+            <h4 class="mb-0">
+              <span data-lang="KOR">상권 분석 결과</span>
+              <span data-lang="ENG">Commercial Area Analysis Result</span>
+              <span data-lang="ESP">Resultado del Análisis Comercial</span>
+            </h4>
             <!-- 모달 버튼 -->
             <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#explanationModal">
-              상권 분석 도움말
+              <span data-lang="KOR">상권 분석 도움말</span>
+              <span data-lang="ENG" style="display: none;">Commercial Analysis Guide</span>
+              <span data-lang="ESP" style="display: none;">Guía de Análisis Comercial</span>
             </button>
-            
+                      
             <!-- Bootstrap 모달 -->
             <div class="modal fade" id="explanationModal" tabindex="-1" aria-labelledby="explanationModalLabel" aria-hidden="true">
               <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="explanationModalLabel">상권 분석이란 무엇인가?</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+
+                  <!-- 🇰🇷 한국어 -->
+                  <div data-lang="KOR">
+                    <div class="modal-header">
+                      <h5 class="modal-title">상권 분석이란 무엇인가?</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+                    </div>
+                    <div class="modal-body">
+                      상권분석은 특정 지역 내 점포나 사업장의 경제적 환경과 소비자 특성을 체계적으로 조사하여<br>
+                      사업 성공 가능성을 높이기 위한 중요한 과정입니다.<br><br>
+
+                      <strong>왜 상권분석이 필요한가요?</strong><br>
+                      - 상권의 소비 패턴과 유동 인구를 파악하여 효율적인 마케팅 전략을 세울 수 있습니다.<br>
+                      - 경쟁 업체 현황과 고객 수요를 분석해 적절한 입지와 서비스를 결정할 수 있습니다.<br>
+                      - 투자 위험을 최소화하고 안정적인 매출을 기대할 수 있습니다.<br><br>
+
+                      <strong>AI 기반 상권분석은 다음을 제공합니다:</strong><br>
+                      - 점포의 생존 확률 예측<br>
+                      - SHAP 요인 분석<br><br>
+
+                      성공적인 창업과 운영을 위해<br>
+                      정확한 정보를 바탕으로 전략을 세워보세요!
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                    </div>
                   </div>
-                  <div class="modal-body">
-                    상권분석은 특정 지역 내 점포나 사업장의 경제적 환경과 소비자 특성을 체계적으로 조사하여<br>
-                    사업 성공 가능성을 높이기 위한 중요한 과정입니다.<br><br>
-            
-                    <strong>왜 상권분석이 필요한가요?</strong><br>
-                    - 상권의 소비 패턴과 유동 인구를 파악하여 효율적인 마케팅 전략을 세울 수 있습니다.<br>
-                    - 경쟁 업체 현황과 고객 수요를 분석해 적절한 입지와 서비스를 결정할 수 있습니다.<br>
-                    - 투자 위험을 최소화하고 안정적인 매출을 기대할 수 있습니다.<br><br>
-            
-                    <strong>AI 기반 상권분석은 다음을 제공합니다:</strong><br>
-                    - 점포의 생존 확률 예측<br>
-                    - SHAP 요인 분석<br><br>
-            
-                    성공적인 창업과 운영을 위해<br>
-                    정확한 정보를 바탕으로 전략을 세워보세요!
+
+                  <!-- 🇺🇸 영어 -->
+                  <div data-lang="ENG" style="display: none;">
+                    <div class="modal-header">
+                      <h5 class="modal-title">What is Commercial Area Analysis?</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      Commercial area analysis systematically investigates the economic environment and consumer characteristics
+                      of a specific region to increase the success rate of businesses.<br><br>
+
+                      <strong>Why is commercial analysis necessary?</strong><br>
+                      - Understand consumption patterns and foot traffic for effective marketing strategies.<br>
+                      - Analyze competitors and demand to determine optimal location and services.<br>
+                      - Minimize investment risks and expect stable revenue.<br><br>
+
+                      <strong>AI-based commercial analysis offers:</strong><br>
+                      - Prediction of store survival rate<br>
+                      - SHAP factor analysis<br><br>
+
+                      For a successful business,<br>
+                      develop strategies based on accurate data!
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
                   </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+
+                  <!-- 🇪🇸 스페인어 -->
+                  <div data-lang="ESP" style="display: none;">
+                    <div class="modal-header">
+                      <h5 class="modal-title">¿Qué es el análisis comercial?</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                      El análisis comercial investiga sistemáticamente el entorno económico y las características del consumidor
+                      en una región específica para aumentar las posibilidades de éxito del negocio.<br><br>
+
+                      <strong>¿Por qué es necesario el análisis comercial?</strong><br>
+                      - Comprender los patrones de consumo y el flujo de personas para estrategias de marketing efectivas.<br>
+                      - Analizar la competencia y la demanda para determinar la ubicación y los servicios óptimos.<br>
+                      - Minimizar los riesgos de inversión y esperar ingresos estables.<br><br>
+
+                      <strong>El análisis comercial basado en IA ofrece:</strong><br>
+                      - Predicción de la tasa de supervivencia de la tienda<br>
+                      - Análisis de factores SHAP<br><br>
+
+                      ¡Para un negocio exitoso,<br>
+                      desarrolle estrategias basadas en datos precisos!
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
                   </div>
+
                 </div>
+
               </div>
             </div>
           </div>
@@ -1677,10 +1917,33 @@
           <div id="analysisWaiting">
             <div class="text-center p-4">
               <i class="bi bi-analytics text-muted" style="font-size: 3rem;"></i>
-              <h5 class="mt-3 text-muted">상권 분석을 시작하세요</h5>
-              <p class="text-muted">위의 정보를 입력하고 '상권 분석하기' 버튼을 클릭하면<br>이 영역에 분석 결과가 표시됩니다.</p>
+
+              <h5 class="mt-3 text-muted">
+                <span data-lang="KOR">상권 분석을 시작하세요</span>
+                <span data-lang="ENG" style="display: none;">Start Commercial Analysis</span>
+                <span data-lang="ESP" style="display: none;">Inicie el análisis comercial</span>
+              </h5>
+
+              <p class="text-muted">
+                <span data-lang="KOR">
+                  위의 정보를 입력하고 '상권 분석하기' 버튼을 클릭하면<br>
+                  이 영역에 분석 결과가 표시됩니다.
+                </span>
+                <span data-lang="ENG" style="display: none;">
+                  Enter the information above and click the "Analyze" button<br>
+                  to see the result here.
+                </span>
+                <span data-lang="ESP" style="display: none;">
+                  Ingrese la información arriba y haga clic en el botón "Analizar"<br>
+                  para ver el resultado aquí.
+                </span>
+              </p>
+
               <button class="btn btn-outline-secondary mt-3" disabled>
-                <i class="bi bi-file-earmark-pdf me-2"></i>PDF로 저장
+                <i class="bi bi-file-earmark-pdf me-2"></i>
+                <span data-lang="KOR">PDF로 저장</span>
+                <span data-lang="ENG" style="display: none;">Save as PDF</span>
+                <span data-lang="ESP" style="display: none;">Guardar como PDF</span>
               </button>
             </div>
           </div>
