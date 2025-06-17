@@ -1,19 +1,4 @@
-"""
-URL configuration for config project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
+#LocaAI/config/urls.py
 
 from django.contrib import admin
 from django.urls import path, include
@@ -37,6 +22,7 @@ urlpatterns = [
     path("geodb/", include("GeoDB.urls")),  # GeoDB 대시보드
     path("ai_analyzer/", include("AI_Analyzer.urls")),  # AI 상권분석
     path("shopdash/", include("shopdash.urls")),  # ShopDash 대시보드
+    path('api/smtp/', include('smtp.urls', namespace='smtp')),  # SMTP 이메일 API
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:

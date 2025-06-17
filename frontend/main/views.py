@@ -1,18 +1,11 @@
 import os
-<<<<<<< HEAD
-from django.conf import settings
-from django.shortcuts import render
-from django.http import JsonResponse
-
-# Create your views here.
-from django.shortcuts import render
-=======
 import json
+
+from django.conf import settings
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.template.loader import render_to_string
->>>>>>> mkchoi
 
 def index(request):
     return render(request, 'index.html')
@@ -23,27 +16,6 @@ def blog(request):
 def blog_detail(request):
     return render(request, 'blog-details.html')
 
-<<<<<<< HEAD
-def blog_api(request):
-    # check request parameters
-    if request.method == 'POST':
-        print("POST data:", request.POST)  # 딕셔너리 형태로 출력
-        
-        # 필요한 값들 뽑기
-        industry = request.POST.get('industry')
-        address = request.POST.get('address')
-        area = request.POST.get('area')
-        service = request.POST.get('service')
-        tm_x = request.POST.get('tm_x')  # 추가
-        tm_y = request.POST.get('tm_y')  # 추가
-        
-        print(f"industry: {industry}, address: {address}, area: {area}, service: {service}, tm_x: {tm_x}, tm_y: {tm_y}")
-        
-        # 정상 응답 예시
-        return JsonResponse({'message': '데이터 잘 받았습니다!'})
-    
-    # POST 아니면 그냥 blog.html 렌더링
-=======
 @csrf_exempt
 def blog_api(request):
     if request.method == 'POST':
@@ -92,8 +64,8 @@ def blog_api(request):
 
         # ✅ 5. 리포트 템플릿 조각 렌더링 후 반환
         rendered_html = render_to_string('report_partial.html', context)
+
         return JsonResponse({'html': rendered_html})
 
     # POST 아닌 경우: 페이지 자체 렌더링
->>>>>>> mkchoi
     return render(request, 'blog.html')

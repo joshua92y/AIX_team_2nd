@@ -22,7 +22,16 @@
             <li><a href="{% url 'border:inquiry_list' %}">customer board</a></li>
           </ul>
         </li>
+        <li class="dropdown">
+          <a href="#"><span>Language</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+          <ul> 
+            <li><a href="#" onclick="setSelectedLangValue('KOR'); return false;">🇰🇷 한국어</a></li>
+            <li><a href="#" onclick="setSelectedLangValue('ENG'); return false;">🇺🇸 영어</a></li>
+            <li><a href="#" onclick="setSelectedLangValue('ESP'); return false;">🇪🇸 스페인어</a></li>
+          </ul>
+        </li>
       </ul>
+      
       <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
     </nav>
 
@@ -35,4 +44,46 @@
     {% endif %}
 
   </div>
+
+  <script>
+    const sessionLang = "{{ request.session.language|default:'KOR' }}";
+
+		$(window).ready(function() {
+		  funcChangeLang(sessionLang);
+		})
+    
+    // 선택한 언어를 세션에 저장하는 function
+    function setSelectedLangValue(lang) {
+      $.ajax({
+        type: 'POST',
+        url: '/set-lang/',
+        data: {
+          "lang": lang
+        },
+        headers: {
+          'X-CSRFToken': getCSRFToken()   // 토큰추가
+        },
+        success: function(res) {
+          funcChangeLang(lang);         // UI 전환
+          console.log(res.code, res.message, 'session lang changed to', lang)
+        },
+        error: function(xhr, status, error) {
+          console.log('session lang change error', lang)
+        }
+      });
+    }
+
+    // 언어 변경 함수
+    function funcChangeLang(lang) {
+      console.log("funcChangeLang 실행됨:", lang); // 콘솔에 출력 확인
+			$('[data-lang]').hide();
+			$('[data-lang="'+lang+'"]').show();
+		}
+        
+    // CSRF 토큰을 가져오는 function
+    function getCSRFToken() {
+      return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    }
+  </script>
+
 </header>
