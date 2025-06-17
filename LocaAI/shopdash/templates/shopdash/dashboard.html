@@ -1,0 +1,886 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}ShopDash - 상권 분석 대시보드{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<!-- D3.js 지도용 CSS는 인라인으로 처리 -->
+<style>
+    /* 기존 사이트 색상 변수 사용 */
+    :root {
+        --primary-color: #4154f1;
+        --heading-color: #012970;
+        --text-color: #444444;
+        --surface-color: #ffffff;
+        --light-bg: #f9f9f9;
+    }
+
+    /* 페이지 타이틀 섹션 */
+    .page-title {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--heading-color) 100%);
+        color: white;
+        padding: 80px 0 60px 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-title::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="rgba(255,255,255,0.1)"><polygon points="1000,100 1000,0 0,100"/></svg>');
+        background-size: cover;
+    }
+
+    .page-title h1 {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: white;
+        font-family: var(--heading-font);
+    }
+
+    .page-title p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-bottom: 0;
+    }
+
+    /* 통계 카드 */
+    .stats-card {
+        background: var(--surface-color);
+        border-radius: 10px;
+        padding: 30px;
+        text-align: center;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+        border: 1px solid rgba(65, 84, 241, 0.1);
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(65, 84, 241, 0.15);
+        border-color: var(--primary-color);
+    }
+
+    .stats-card .icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 24px;
+        color: white;
+    }
+
+    .stats-card .icon.blue { background: var(--primary-color); }
+    .stats-card .icon.green { background: #059652; }
+    .stats-card .icon.orange { background: #ff6b35; }
+    .stats-card .icon.purple { background: #8e44ad; }
+
+    .stats-card h3 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--heading-color);
+        margin-bottom: 10px;
+        font-family: var(--heading-font);
+    }
+
+    .stats-card p {
+        color: var(--text-color);
+        margin: 0;
+        font-size: 1rem;
+    }
+
+    /* 차트 카드 */
+    .chart-card {
+        background: var(--surface-color);
+        border-radius: 10px;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+        border: 1px solid rgba(65, 84, 241, 0.1);
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .chart-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(65, 84, 241, 0.12);
+    }
+
+    .chart-card .card-header {
+        background: var(--light-bg);
+        border-bottom: 1px solid rgba(65, 84, 241, 0.1);
+        padding: 20px 25px;
+    }
+
+    .chart-card .card-title {
+        color: var(--heading-color);
+        font-weight: 600;
+        margin: 0;
+        font-family: var(--heading-font);
+        font-size: 1.1rem;
+    }
+
+    .chart-card .card-body {
+        padding: 25px;
+    }
+
+    /* 섹션 제목 */
+    .section-title {
+        text-align: center;
+        margin-bottom: 60px;
+    }
+
+    .section-title h2 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--heading-color);
+        margin-bottom: 20px;
+        font-family: var(--heading-font);
+        position: relative;
+        display: inline-block;
+    }
+
+    .section-title h2::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 3px;
+        background: var(--primary-color);
+        border-radius: 2px;
+    }
+
+    .section-title p {
+        color: var(--text-color);
+        font-size: 1.1rem;
+        margin: 0;
+    }
+
+    /* 지도 컨테이너 */
+    .map-container {
+        height: 500px;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+        border: 1px solid rgba(65, 84, 241, 0.1);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    /* D3.js 지도 스타일 */
+    .map-container svg {
+        max-width: 100%;
+        max-height: 100%;
+    }
+
+    /* 로딩 스피너 */
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(65, 84, 241, 0.3);
+        border-radius: 50%;
+        border-top-color: var(--primary-color);
+        animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* 차트 컨테이너 */
+    .chart-container {
+        position: relative;
+        height: 350px;
+        width: 100%;
+    }
+
+    /* 상위 업종 통계 */
+    .top-business-stats {
+        padding: 20px;
+        background: var(--light-bg);
+        border-radius: 8px;
+        height: 100%;
+    }
+
+    .business-detail-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(65, 84, 241, 0.1);
+    }
+
+    .business-detail-item:last-child {
+        border-bottom: none;
+    }
+
+    .business-rank {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: white;
+        margin-right: 10px;
+    }
+
+    .business-rank.rank-1 { background: var(--primary-color); }
+    .business-rank.rank-2 { background: #059652; }
+    .business-rank.rank-3 { background: #ff6b35; }
+
+    .business-name {
+        font-weight: 600;
+        color: var(--heading-color);
+        flex: 1;
+    }
+
+    .business-rate {
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    .business-stats-small {
+        font-size: 0.85rem;
+        color: var(--text-color);
+        margin-top: 4px;
+    }
+
+    /* 반응형 */
+    @media (max-width: 768px) {
+        .page-title h1 {
+            font-size: 2rem;
+        }
+        
+        .page-title p {
+            font-size: 1rem;
+        }
+        
+        .section-title h2 {
+            font-size: 2rem;
+        }
+        
+        .stats-card {
+            margin-bottom: 30px;
+        }
+    }
+
+    /* 메인 컨텐츠 영역 */
+    .main-content {
+        background: var(--light-bg);
+        min-height: 100vh;
+        padding: 0;
+    }
+
+    .content-section {
+        background: var(--surface-color);
+        margin: 0;
+        padding: 60px 0;
+    }
+
+    .content-section:nth-child(even) {
+        background: var(--light-bg);
+    }
+
+    /* 아이콘 색상 */
+    .text-primary { color: var(--primary-color) !important; }
+    .text-success { color: #059652 !important; }
+    .text-warning { color: #ff6b35 !important; }
+    .text-info { color: #17a2b8 !important; }
+    .text-danger { color: #dc3545 !important; }
+    .text-purple { color: #8e44ad !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <!-- 페이지 타이틀 -->
+    <div class="page-title" data-aos="fade-down">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1>
+                        <i class="bi bi-graph-up-arrow me-3"></i>
+                        ShopDash
+                    </h1>
+                    <p>서울시 상권 분석 및 창업 지원 대시보드 - 실시간 데이터 기반 인사이트 제공</p>
+                </div>
+                <div class="col-lg-4 text-end">
+                    <i class="bi bi-shop" style="font-size: 6rem; opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 통계 카드 섹션 -->
+    <div class="content-section">
+        <div class="container">
+            <div class="section-title" data-aos="fade-up">
+                <h2>핵심 지표</h2>
+                <p>서울시 상권 분석의 주요 통계 정보를 한눈에 확인하세요</p>
+            </div>
+            
+            <div class="row" data-aos="fade-up" data-aos-delay="100">
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="stats-card">
+                        <div class="icon blue">
+                            <i class="bi bi-clipboard-data"></i>
+                        </div>
+                        <h3 id="total-analysis">
+                            <span class="loading-spinner"></span>
+                        </h3>
+                        <p>총 분석 건수</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="stats-card">
+                        <div class="icon green">
+                            <i class="bi bi-percent"></i>
+                        </div>
+                        <h3 id="avg-survival-rate">
+                            <span class="loading-spinner"></span>
+                        </h3>
+                        <p>평균 생존률</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="stats-card">
+                        <div class="icon orange">
+                            <i class="bi bi-shop"></i>
+                        </div>
+                        <h3 id="total-businesses">
+                            <span class="loading-spinner"></span>
+                        </h3>
+                        <p>서울시 전체 업소 수</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="stats-card">
+                        <div class="icon purple">
+                            <i class="bi bi-geo-alt"></i>
+                        </div>
+                        <h3 id="active-districts">
+                            <span class="loading-spinner"></span>
+                        </h3>
+                        <p>분석 활발 지역</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 지역별 분석 현황 -->
+    <div class="content-section">
+        <div class="container">
+            <div class="section-title" data-aos="fade-up">
+                <h2>지역별 분석 현황</h2>
+                <p>행정동 단위로 세분화된 상권 분석 데이터</p>
+            </div>
+            
+            <div class="row">
+                <!-- 거주인구 상위지역 -->
+                <div class="col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h5 class="card-title">
+                                <i class="bi bi-people-fill text-primary me-2"></i>
+                                거주인구 상위지역 (행정동별)
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="populationChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 분석 활발지역 -->
+                <div class="col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h5 class="card-title">
+                                <i class="bi bi-activity text-success me-2"></i>
+                                분석 활발지역
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="businessActivityChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 직장인구 상위지역 -->
+                <div class="col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h5 class="card-title">
+                                <i class="bi bi-briefcase-fill text-warning me-2"></i>
+                                직장인구 상위지역 (행정동별)
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="workingPopulationChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 외국인 여행객 많은 지역 -->
+                <div class="col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="400">
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h5 class="card-title">
+                                <i class="bi bi-airplane text-info me-2"></i>
+                                외국인 여행객 많은 지역 (행정동별)
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="foreignVisitorChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 업종 분석 -->
+    <div class="content-section">
+        <div class="container">
+            <div class="section-title" data-aos="fade-up">
+                <h2>업종 분석</h2>
+                <p>서울시 업종별 분포와 생존률 분석</p>
+            </div>
+            
+            <div class="row">
+                <!-- 업종별 분포 -->
+                <div class="col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h5 class="card-title">
+                                <i class="bi bi-pie-chart-fill text-danger me-2"></i>
+                                업종별 분포
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="businessTypeChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 평균생존률 상위지역 -->
+                <div class="col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h5 class="card-title">
+                                <i class="bi bi-trophy-fill text-purple me-2"></i>
+                                평균생존률 상위지역 (행정동별)
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="survivalRateChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 평균 생존률 상위 업종 TOP3 -->
+            <div class="row">
+                <div class="col-12 mb-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h5 class="card-title">
+                                <i class="bi bi-star-fill text-warning me-2"></i>
+                                평균 생존률 상위 업종 TOP3
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-lg-8">
+                                    <div class="chart-container">
+                                        <canvas id="topBusinessSurvivalChart"></canvas>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4">
+                                    <div class="top-business-stats">
+                                        <h6 class="mb-3">상세 정보</h6>
+                                        <div id="topBusinessDetails">
+                                            <div class="d-flex justify-content-center align-items-center" style="height: 200px;">
+                                                <div class="loading-spinner"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 지도 섹션 -->
+    <div class="content-section">
+        <div class="container">
+            <div class="section-title" data-aos="fade-up">
+                <h2>서울시 상권 분석 지도</h2>
+                <p>구별 데이터를 확인하고, 클릭하여 행정동별 상세 정보를 확인하세요</p>
+            </div>
+            
+            <div class="row">
+                <div class="col-12" data-aos="fade-up" data-aos-delay="100">
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h5 class="card-title">
+                                <i class="bi bi-geo-alt-fill text-primary me-2"></i>
+                                대화형 서울시 지도
+                            </h5>
+                            <div class="card-subtitle text-muted mt-1">
+                                <small>
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    마우스 오버: 구별 정보 확인 | 클릭: 행정동 상세보기 | 마우스 휠: 확대/축소
+                                </small>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div id="map" class="map-container"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://unpkg.com/topojson@3"></script>
+<script src="{% static 'shopdash/js/d3-map/seoul-dashboard-map.js' %}"></script>
+
+<script>
+// AOS 초기화
+AOS.init({
+    duration: 800,
+    easing: 'ease-in-out',
+    once: true,
+    offset: 100
+});
+
+// 차트 기본 설정
+Chart.defaults.font.family = "'Nunito', sans-serif";
+Chart.defaults.font.size = 12;
+Chart.defaults.color = '#444444';
+
+// 전역 변수
+let charts = {};
+let map;
+
+// 페이지 로드 시 실행
+document.addEventListener('DOMContentLoaded', function() {
+    loadDashboardStats();
+    loadAllCharts();
+    initializeSeoulMap();
+});
+
+// 대시보드 통계 로드
+function loadDashboardStats() {
+    fetch('/shopdash/api/stats/')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('total-analysis').textContent = data.total_analysis.toLocaleString();
+            document.getElementById('avg-survival-rate').textContent = data.avg_survival_rate + '%';
+            document.getElementById('total-businesses').textContent = data.total_businesses.toLocaleString();
+            document.getElementById('active-districts').textContent = data.active_districts.toLocaleString();
+        })
+        .catch(error => {
+            console.error('통계 데이터 로드 실패:', error);
+            document.getElementById('total-analysis').textContent = '0';
+            document.getElementById('avg-survival-rate').textContent = '0%';
+            document.getElementById('total-businesses').textContent = '0';
+            document.getElementById('active-districts').textContent = '0';
+        });
+}
+
+// 모든 차트 로드
+function loadAllCharts() {
+    const chartConfigs = [
+        { id: 'populationChart', url: '/shopdash/api/population/', type: 'bar', color: '#4154f1' },
+        { id: 'businessActivityChart', url: '/shopdash/api/business-activity/', type: 'bar', color: '#059652' },
+        { id: 'workingPopulationChart', url: '/shopdash/api/working-population/', type: 'bar', color: '#ff6b35' },
+        { id: 'foreignVisitorChart', url: '/shopdash/api/foreign-visitors/', type: 'bar', color: '#17a2b8' },
+        { id: 'businessTypeChart', url: '/shopdash/api/business-types/', type: 'doughnut', color: null },
+        { id: 'survivalRateChart', url: '/shopdash/api/survival-rate/', type: 'bar', color: '#8e44ad' },
+        { id: 'topBusinessSurvivalChart', url: '/shopdash/api/top-business-survival/', type: 'bar', color: '#ffc107' }
+    ];
+
+    chartConfigs.forEach(config => {
+        loadChart(config.id, config.url, config.type, config.color);
+    });
+}
+
+// 개별 차트 로드
+function loadChart(chartId, apiUrl, chartType, primaryColor) {
+    // 평균 생존률 상위 업종 TOP3 차트는 별도 처리
+    if (chartId === 'topBusinessSurvivalChart') {
+        loadTopBusinessSurvivalChart();
+        return;
+    }
+
+    fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+            const ctx = document.getElementById(chartId).getContext('2d');
+            
+            // 기존 차트가 있으면 제거
+            if (charts[chartId]) {
+                charts[chartId].destroy();
+            }
+            
+            // 색상 설정
+            if (chartType === 'doughnut') {
+                // 도넛 차트용 다양한 색상
+                data.datasets[0].backgroundColor = [
+                    '#4154f1', '#059652', '#ff6b35', '#17a2b8', '#8e44ad',
+                    '#dc3545', '#ffc107', '#6f42c1', '#20c997', '#fd7e14'
+                ];
+                data.datasets[0].borderWidth = 2;
+                data.datasets[0].borderColor = '#ffffff';
+            } else {
+                // 막대 차트용 단일 색상
+                data.datasets[0].backgroundColor = primaryColor + '20';
+                data.datasets[0].borderColor = primaryColor;
+                data.datasets[0].borderWidth = 2;
+            }
+            
+            const config = {
+                type: chartType,
+                data: data,
+                options: getChartOptions(chartType, chartId)
+            };
+            
+            charts[chartId] = new Chart(ctx, config);
+        })
+        .catch(error => {
+            console.error(`${chartId} 차트 로드 실패:`, error);
+        });
+}
+
+// 평균 생존률 상위 업종 TOP3 차트 전용 로드 함수
+function loadTopBusinessSurvivalChart() {
+    fetch('/shopdash/api/top-business-survival/')
+        .then(response => response.json())
+        .then(data => {
+            const ctx = document.getElementById('topBusinessSurvivalChart').getContext('2d');
+            
+            // 기존 차트가 있으면 제거
+            if (charts['topBusinessSurvivalChart']) {
+                charts['topBusinessSurvivalChart'].destroy();
+            }
+            
+            // 차트 생성
+            const config = {
+                type: 'bar',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(1, 41, 112, 0.9)',
+                            titleColor: '#ffffff',
+                            bodyColor: '#ffffff',
+                            borderColor: '#4154f1',
+                            borderWidth: 1,
+                            callbacks: {
+                                afterBody: function(context) {
+                                    const index = context[0].dataIndex;
+                                    const analysisCount = data.analysis_counts[index];
+                                    const avgArea = data.avg_area[index];
+                                    const storeCount = data.store_counts[index];
+                                    
+                                    return [
+                                        `분석 건수: ${analysisCount}건`,
+                                        `평균 면적: ${avgArea}㎡`,
+                                        `매장 수: ${storeCount.toLocaleString()}개`
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+            
+            charts['topBusinessSurvivalChart'] = new Chart(ctx, config);
+            
+            // 상세 정보 업데이트
+            updateTopBusinessDetails(data);
+        })
+        .catch(error => {
+            console.error('평균 생존률 상위 업종 차트 로드 실패:', error);
+            // 에러 발생 시 기본 상세 정보 표시
+            document.getElementById('topBusinessDetails').innerHTML = `
+                <div class="text-center text-muted">
+                    <i class="bi bi-exclamation-triangle mb-2"></i>
+                    <p>데이터를 불러올 수 없습니다.</p>
+                </div>
+            `;
+        });
+}
+
+// 상위 업종 상세 정보 업데이트
+function updateTopBusinessDetails(data) {
+    const detailsContainer = document.getElementById('topBusinessDetails');
+    
+    let detailsHtml = '';
+    data.labels.forEach((label, index) => {
+        const rank = index + 1;
+        const rate = data.datasets[0].data[index];
+        const analysisCount = data.analysis_counts[index];
+        const avgArea = data.avg_area[index];
+        const storeCount = data.store_counts[index];
+        
+        detailsHtml += `
+            <div class="business-detail-item">
+                <div class="d-flex align-items-center">
+                    <span class="business-rank rank-${rank}">${rank}</span>
+                    <div class="business-name">${label}</div>
+                </div>
+                <div class="text-end">
+                    <div class="business-rate">${rate}%</div>
+                    <div class="business-stats-small">
+                        ${analysisCount}건 분석 / 평균 ${avgArea}㎡<br>
+                        총 ${storeCount.toLocaleString()}개 매장
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    detailsContainer.innerHTML = detailsHtml;
+}
+
+// 차트 옵션 설정
+function getChartOptions(chartType, chartId) {
+    const baseOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: chartType === 'doughnut',
+                position: 'bottom',
+                labels: {
+                    padding: 20,
+                    usePointStyle: true,
+                    font: {
+                        family: "'Nunito', sans-serif",
+                        size: 12
+                    }
+                }
+            },
+            tooltip: {
+                backgroundColor: 'rgba(1, 41, 112, 0.9)',
+                titleColor: '#ffffff',
+                bodyColor: '#ffffff',
+                borderColor: '#4154f1',
+                borderWidth: 1,
+                cornerRadius: 8,
+                titleFont: {
+                    family: "'Nunito', sans-serif",
+                    weight: 'bold'
+                },
+                bodyFont: {
+                    family: "'Nunito', sans-serif"
+                }
+            }
+        }
+    };
+
+    if (chartType === 'bar') {
+        baseOptions.scales = {
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'rgba(65, 84, 241, 0.1)',
+                    borderColor: 'rgba(65, 84, 241, 0.2)'
+                },
+                ticks: {
+                    color: '#444444',
+                    font: {
+                        family: "'Nunito', sans-serif"
+                    }
+                }
+            },
+            x: {
+                grid: {
+                    display: false
+                },
+                ticks: {
+                    color: '#444444',
+                    font: {
+                        family: "'Nunito', sans-serif"
+                    },
+                    maxRotation: 45
+                }
+            }
+        };
+    }
+
+    return baseOptions;
+}
+
+// D3.js 지도는 seoul-dashboard-map.js에서 관리됩니다
+
+// 차트 새로고침
+function refreshCharts() {
+    loadAllCharts();
+    loadDashboardStats();
+    refreshSeoulMap();
+}
+
+// 에러 처리
+window.addEventListener('error', function(e) {
+    console.error('JavaScript 에러:', e.error);
+});
+</script>
+{% endblock %} 

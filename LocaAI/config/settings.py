@@ -61,7 +61,6 @@ DJANGO_APPS = [
 THIRD_PARTY_APPS = [
     "rest_framework",  # Django REST Framework
     "channels",  # WebSocket 지원
-    "leaflet",  # 지도 기능
     "taggit",  # 태그 기능
 ]
 
@@ -73,7 +72,8 @@ LOCAL_APPS = [  # 메인 웹사이트
     "chatbot",  # AI 챗봇
     "GeoDB",  # 지오메트리 데이터베이스 관리
     "AI_Analyzer",  # AI 상권분석 시스템
-    "smtp",
+    "shopdash",  # ShopDash 대시보드
+    "smtp",  # SMTP 이메일 기능
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -194,23 +194,7 @@ if platform.system() == "Windows":
     GDAL_LIBRARY_PATH = os.path.join(
         BASE_DIR, "venv", "Lib", "site-packages", "osgeo", "gdal.dll"
     )
-# Leaflet 지도 설정
-LEAFLET_CONFIG = {
-    "DEFAULT_CENTER": (37.5665, 126.9780),  # 서울 중심좌표
-    "DEFAULT_ZOOM": 10,
-    "MIN_ZOOM": 3,
-    "MAX_ZOOM": 18,
-    "DEFAULT_PRECISION": 6,
-    "TILES": [
-        (
-            "OpenStreetMap",
-            "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-            {
-                "attribution": '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            },
-        ),
-    ],
-}
+# 지도 설정 (Leaflet.js 직접 사용)
 
 # ============================================================================
 # 정적 파일 및 미디어 설정
