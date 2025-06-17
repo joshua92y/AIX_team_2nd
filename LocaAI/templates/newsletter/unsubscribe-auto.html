@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>뉴스레터 구독 해지</title>
+  <script>
+    async function autoUnsubscribe(email) {
+      try {
+        const res = await fetch("/api/smtp/newsletter/unsubscribe/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: email })
+        });
+        const data = await res.json();
+        document.getElementById("message").innerText = data.message || "해지 완료!";
+      } catch {
+        document.getElementById("message").innerText = "해지 요청에 실패했습니다.";
+      }
+    }
+
+    window.onload = () => {
+      const params = new URLSearchParams(window.location.search);
+      const email = params.get("email");
+      if (email) autoUnsubscribe(email);
+      else document.getElementById("message").innerText = "이메일 정보가 없습니다.";
+    };
+  </script>
+</head>
+<body style="font-family: sans-serif; text-align: center; padding: 3rem;">
+  <h2 id="message">구독 해지 요청 중...</h2>
+</body>
+</html>

@@ -2,6 +2,7 @@
 from rest_framework import serializers
 from .models import EmailMessage,NewsletterSubscriber
 from django.contrib.auth import get_user_model
+from .utils import send_subscription_email  # ⬅ 추가
 
 class EmailMessageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -80,6 +81,9 @@ class NewsletterSubscribeSerializer(serializers.ModelSerializer):
             subscriber.name = name or subscriber.name
             subscriber.subscribe()
             subscriber.save()
+            
+            send_subscription_email(subscriber)  # ✅ 자동 메일 발송
+            
             return subscriber
         except NewsletterSubscriber.DoesNotExist:
             return NewsletterSubscriber.objects.create(

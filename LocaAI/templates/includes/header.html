@@ -12,10 +12,10 @@
         <li><a href="{% url 'index' %}" class="active">Home</a></li>
         <li><a href="/#about">About</a></li>
         <li><a href="{% url 'AI_Analyzer:analyze_page' %}">Services</a></li>
-        <li><a href="#">Data</a></li>
+        <li><a href="{% url 'shopdash:dashboard' %}">Data</a></li>
         <li><a href="{% url 'border:portfolio_list' %}">Portfolio</a></li>
         <li><a href="/#contact">Contact Us</a></li>
-        <li class="dropdown"><a href="#"><span>Surpport</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+        <li class="dropdown"><span>Support</span> <i class="bi bi-chevron-down toggle-dropdown"></i>
           <ul>
             <li><a href="#">guide book</a></li>
             <li><a href="{% url 'border:notice_list' %}">notice</a></li>
