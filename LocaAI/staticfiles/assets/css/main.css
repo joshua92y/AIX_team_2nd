@@ -2765,3 +2765,13 @@ section,
   color: color-mix(in srgb, var(--default-color), transparent 60%);
   font-size: 14px;
 }
+
+#newsletter-feedback .sent-message {
+  color: #059652 !important;
+  background: transparent !important;
+}
+
+#newsletter-feedback .error-message {
+  color: #df1529 !important;
+  background: transparent !important;
+}
