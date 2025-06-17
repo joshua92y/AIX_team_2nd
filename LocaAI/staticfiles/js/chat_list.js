@@ -4,36 +4,25 @@
  */
 
 class ChatListManager {
-  constructor() {
+  constructor(userInfo) {
     this.currentChatId = null;
     this.chatList = [];
     this.userId = null;
     this.apiBaseUrl = '/chatbot/sessions';
-    this.init();
+    this.init(userInfo);
   }
 
-  init() {
-    // 사용자 정보 가져오기
-    this.getUserInfo();
+  init(userInfo) {
+    // 사용자 정보 설정
+    if (userInfo) {
+      this.userId = userInfo.user_id;
+      this.currentChatId = userInfo.initial_session_id || null;
+      console.log('사용자 정보 ChatListManager에 설정됨:', userInfo);
+    } else {
+      console.error('ChatListManager에 사용자 정보가 제공되지 않았습니다.');
+    }
     this.bindEvents();
     this.loadChatListFromAPI();
-  }
-
-  getUserInfo() {
-    // HTML에서 사용자 정보 추출
-    const userInfoElement = document.getElementById('user-info-data');
-    if (userInfoElement) {
-      try {
-        const userInfo = JSON.parse(userInfoElement.textContent);
-        this.userId = userInfo.user_id;
-        this.currentChatId = userInfo.initial_session_id || null;
-        console.log('사용자 정보 로드됨:', userInfo);
-      } catch (error) {
-        console.error('사용자 정보 파싱 오류:', error);
-      }
-    } else {
-      console.error('사용자 정보 요소를 찾을 수 없습니다.');
-    }
   }
 
   bindEvents() {

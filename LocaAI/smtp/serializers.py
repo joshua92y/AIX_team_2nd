@@ -2,6 +2,7 @@
 from rest_framework import serializers
 from .models import EmailMessage,NewsletterSubscriber
 from django.contrib.auth import get_user_model
+from .utils import send_subscription_email, decrypt_email # ⬅ 추가
 
 class EmailMessageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -67,20 +68,44 @@ class NewsletterSubscribeSerializer(serializers.ModelSerializer):
 
         User = get_user_model()
         matching_user = None
+
+        print(f"📩 [START] 구독 프로세스 시작 for {email}")
+
         try:
             matching_user = User.objects.get(email=email)
+            print(f"🔗 기존 유저와 연결됨: {matching_user}")
         except User.DoesNotExist:
-            pass
+            print(f"👤 해당 이메일로 등록된 유저 없음: {email}")
 
         try:
             subscriber = NewsletterSubscriber.objects.get(email=email)
+            print("♻️ 기존 구독자 정보 있음, 재구독 처리 중")
+
             if matching_user:
                 subscriber.user = matching_user
-                
+
             subscriber.name = name or subscriber.name
             subscriber.subscribe()
             subscriber.save()
+
+            print("✅ 재구독 정보 저장 완료")
+
+            send_subscription_email(subscriber)
+            print("📬 환영 메일 전송 시도 완료")
+
             return subscriber
+        except NewsletterSubscriber.DoesNotExist:
+            print("🆕 신규 구독자 생성 중")
+            new_subscriber = NewsletterSubscriber.objects.create(
+                email=email,
+                name=name,
+                user=matching_user
+            )
+            send_subscription_email(new_subscriber)
+            print("📬 환영 메일 전송 완료 (신규)")
+
+            return new_subscriber
+        
         except NewsletterSubscriber.DoesNotExist:
             return NewsletterSubscriber.objects.create(
                 email=email,
@@ -89,18 +114,41 @@ class NewsletterSubscribeSerializer(serializers.ModelSerializer):
             )
 
 
-class NewsletterUnsubscribeSerializer(serializers.Serializer):
-    email = serializers.EmailField()
 
-    def validate_email(self, value):
+class NewsletterUnsubscribeSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=False)
+    token = serializers.CharField(write_only=True, required=False)
+
+    def validate(self, attrs):
+        # 1. POST 요청일 경우: email 기반
+        if self.context.get("method") == "POST":
+            email = attrs.get("email")
+            if not email:
+                raise serializers.ValidationError("이메일을 입력해 주세요.")
+        # 2. GET 요청일 경우: token 복호화 → email 추출
+        elif self.context.get("method") == "GET":
+            token = attrs.get("token")
+            if not token:
+                raise serializers.ValidationError("토큰이 없습니다.")
+            try:
+                email = decrypt_email(token)
+                attrs['email'] = email  # 내부 email 필드에 설정
+            except Exception:
+                raise serializers.ValidationError("유효하지 않은 토큰입니다.")
+        else:
+            raise serializers.ValidationError("지원되지 않는 요청 방식입니다.")
+
+        # 3. 구독자 조회
         try:
-            subscriber = NewsletterSubscriber.objects.get(email=value)
-            self.subscriber = subscriber
+            subscriber = NewsletterSubscriber.objects.get(email=email)
         except NewsletterSubscriber.DoesNotExist:
             raise serializers.ValidationError("해당 이메일은 구독되어 있지 않습니다.")
-        return value
+
+        self.subscriber = subscriber
+        attrs['email'] = email  # 최종적으로 email 세팅
+
+        return attrs
 
     def save(self, **kwargs):
-        subscriber = self.subscriber
-        subscriber.unsubscribe()
-        return subscriber
+        self.subscriber.unsubscribe()  # 또는 self.subscriber.delete()
+        return self.subscriber

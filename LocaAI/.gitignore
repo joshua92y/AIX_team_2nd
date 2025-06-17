@@ -41,7 +41,6 @@ venv.bak/
 
 # Static files (Django collectstatic)
 staticfiles/
-static/
 
 # IDE
 .vscode/

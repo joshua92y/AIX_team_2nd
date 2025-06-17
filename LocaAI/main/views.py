@@ -11,14 +11,18 @@ def getSessionLang(request):
     return request.session.get('language', 'KOR')
 
 # 언어 설정을 세션에 저장하는 함수
-def set_language(request) :
-	selected_lang = request.POST.get('lang')
-	
-	if selected_lang :
-		request.session['language'] = selected_lang
-		return JsonResponse({"code":"0000", "message":"언어변환성공"})
-		
-	return JsonResponse({"code":"9999", "message":"언어변환실패"})
+def set_language(request):
+    selected_lang = request.POST.get('lang')
+
+    print(f"[set_language] 요청된 언어: {selected_lang}")  # 디버깅용
+
+    if selected_lang:
+        request.session['language'] = selected_lang
+        print(f"[set_language] 세션에 저장된 언어: {request.session.get('language')}")  # 디버깅용
+        return JsonResponse({"code": "0000", "message": "언어변환성공"})
+
+    print("[set_language] 언어 선택 실패")  # 디버깅용
+    return JsonResponse({"code": "9999", "message": "언어변환실패"})
 
 def index(request):
     lang = getSessionLang(request)
