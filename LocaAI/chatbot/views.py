@@ -8,6 +8,8 @@ from rest_framework.decorators import api_view
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.utils.crypto import get_random_string
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 
 @login_required
@@ -43,6 +45,7 @@ def chatbot_view(request):
 
 
 # 새 채팅 세션 생성 API
+@csrf_exempt
 @api_view(["POST"])
 def create_session(request, user_id):
     try:
@@ -74,6 +77,7 @@ def create_session(request, user_id):
 
 
 # 세션 제목 업데이트 API
+@csrf_exempt
 @api_view(["PATCH"])
 def update_session_title(request, user_id, session_id):
     try:
@@ -106,6 +110,7 @@ def update_session_title(request, user_id, session_id):
         )
 
 
+@csrf_exempt
 @api_view(["DELETE"])
 def delete_session(request, user_id, session_id):
     try:
@@ -119,6 +124,7 @@ def delete_session(request, user_id, session_id):
         )
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class ChatLogView(APIView):
     def get(self, request, user_id, session_id):
         try:
@@ -133,13 +139,22 @@ class ChatLogView(APIView):
                         "status": "ok",
                         "session_id": session.session_id,
                         "title": session.title,
-                        "log": chatlog.log,
+                        "chat_log": chatlog.log,
+                        "log": chatlog.log,  # 호환성을 위해 두 필드 모두 제공
                         "created_at": session.created_at,
                     }
                 )
             except ChatLog.DoesNotExist:
                 return Response(
-                    {"status": "ok", "log": [], "message": "아직 대화 로그가 없습니다."}
+                    {
+                        "status": "ok", 
+                        "session_id": session.session_id,
+                        "title": session.title,
+                        "chat_log": [], 
+                        "log": [], 
+                        "message": "아직 대화 로그가 없습니다.",
+                        "created_at": session.created_at,
+                    }
                 )
 
         except ChatSession.DoesNotExist:
@@ -149,6 +164,7 @@ class ChatLogView(APIView):
             )
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class SessionListView(APIView):
     def get(self, request, user_id):
         try:

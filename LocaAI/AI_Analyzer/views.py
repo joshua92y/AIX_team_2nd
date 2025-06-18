@@ -12,12 +12,22 @@ from django.template.loader import render_to_string
 import json
 import requests
 from pyproj import Proj, Transformer
-from .models import BusinessType, AnalysisRequest, AnalysisResult
+from .models import BusinessType, AnalysisRequest, AnalysisResult, AnalysisSession, AnalysisSessionLog
 import time
 import pickle
 import numpy as np
 import os
+import math
+import logging
+from datetime import datetime, timezone
+import random
 from django.utils.crypto import get_random_string
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.decorators import api_view
 from chatbot.models import ChatSession
 
 # PDF 생성은 클라이언트 사이드에서 jsPDF로 처리
@@ -204,10 +214,9 @@ def index(request):
         request, "AI_Analyzer/analyze.html", {"business_types": business_types}
     )
 
-@login_required
 def analyze_page(request):
     """
-    상권 분석 페이지 뷰
+    상권 분석 페이지 뷰 (비회원도 접근 가능, 일부 기능 제한)
 
     Args:
         request: HTTP 요청 객체
@@ -216,7 +225,7 @@ def analyze_page(request):
         HttpResponse: 분석 페이지 렌더링 결과
     """
     
-    """상권 분석 메인 페이지 - 사용자별 이전 분석 목록 포함"""
+    """상권 분석 메인 페이지 - 회원은 이전 분석 목록 포함, 비회원은 분석만 가능"""
     
     user = request.user # 사용자 정보 추가
 
@@ -248,10 +257,26 @@ def analyze_page(request):
     print(f"DEBUG: session.session_id in view: {session.session_id}") # 디버깅 로그 추가
     print(f"DEBUG: user_info dict in view: {user_info}") # 디버깅 로그 추가
 
-    # 이전 분석 결과를 사용자별로 조회 mk추가
-    previous_docs = AnalysisResult.objects.filter(
-        request__user=request.user
-    ).order_by('-created_at')
+    # 로그인한 사용자만 이전 분석 결과 조회 (최근 10개만) - 개인화 개선
+    previous_docs = []
+    user_stats = {}
+    if request.user.is_authenticated:
+        previous_docs = AnalysisResult.objects.filter(
+            user=request.user  # request__user 대신 user 필드 직접 사용
+        ).select_related('request').order_by('-created_at')[:10]
+        
+        # 사용자 분석 통계 추가
+        total_analyses = AnalysisResult.objects.filter(user=request.user).count()
+        if total_analyses > 0:
+            from django.db.models import Avg
+            avg_survival_rate = AnalysisResult.objects.filter(
+                user=request.user
+            ).aggregate(avg_rate=Avg('survival_percentage'))['avg_rate'] or 0
+            
+            user_stats = {
+                'total_analyses': total_analyses,
+                'avg_survival_rate': round(avg_survival_rate, 1)
+            }
 
     business_types = BusinessType.objects.all().order_by('id')
 
@@ -259,6 +284,7 @@ def analyze_page(request):
         'business_types': business_types,
         'previous_docs': previous_docs,
         'user_info': user_info, # user_info 추가
+        'user_stats': user_stats  # 사용자 통계 추가
     })
 
 
@@ -334,7 +360,6 @@ def get_coordinates(request):
         )
 
 
-@login_required
 @csrf_exempt
 @require_http_methods(["POST"])
 def analyze_location(request):
@@ -414,23 +439,49 @@ def analyze_location(request):
                 {"error": f"업종 ID {business_type_id}를 찾을 수 없습니다."}, status=404
             )
 
-        analysis_request = AnalysisRequest.objects.create(
-            user=request.user,  # 현재 로그인한 사용자로 설정 mk추가
-            address=address,
-            area=float(area),
-            business_type=business_type,
-            service_type=int(service_type),
-            longitude=float(longitude),
-            latitude=float(latitude),
-            x_coord=float(x_coord),
-            y_coord=float(y_coord),
-        )
+        # 회원과 비회원 구분 처리
+        if request.user.is_authenticated:
+            # 회원: 데이터베이스에 저장하고 분석 수행
+            analysis_request = AnalysisRequest.objects.create(
+                user=request.user,
+                address=address,
+                area=float(area),
+                business_type=business_type,
+                service_type=int(service_type),
+                longitude=float(longitude),
+                latitude=float(latitude),
+                x_coord=float(x_coord),
+                y_coord=float(y_coord),
+            )
 
-        # 공간 분석 수행
-        result = perform_spatial_analysis(analysis_request)
+            # 공간 분석 수행
+            result = perform_spatial_analysis(analysis_request)
 
-        return JsonResponse(
-            {"success": True, "request_id": analysis_request.id, "result": result}
+            return JsonResponse(
+                {"success": True, "request_id": analysis_request.id, "result": result, "is_guest": False}
+            )
+        else:
+            # 비회원: 임시 분석 요청 객체 생성 (데이터베이스에 저장하지 않음)
+            from types import SimpleNamespace
+            temp_request = SimpleNamespace(
+                id=0,  # 임시 ID
+                user=None,
+                address=address,
+                area=float(area),
+                business_type=business_type,  # BusinessType 객체
+                business_type_id=business_type.id,  # ID 추가
+                service_type=int(service_type),
+                longitude=float(longitude),
+                latitude=float(latitude),
+                x_coord=float(x_coord),
+                y_coord=float(y_coord),
+            )
+
+            # 공간 분석 수행 (저장하지 않는 버전)
+            result = perform_spatial_analysis_guest(temp_request)
+
+            return JsonResponse(
+                {"success": True, "request_id": 0, "result": result, "is_guest": True}
         )
 
     except json.JSONDecodeError:
@@ -450,6 +501,379 @@ def analyze_location(request):
             {"error": f"분석 요청 중 오류가 발생했습니다: {str(e)}"}, status=500
         )
 
+
+@transaction.atomic
+def perform_spatial_analysis_guest(temp_request):
+    """
+    비회원용 공간 분석 (데이터베이스에 저장하지 않음)
+    
+    Args:
+        temp_request: 임시 분석 요청 객체
+        
+    Returns:
+        dict: 분석 결과 딕셔너리
+    """
+    import time
+
+    print(f"\n🚀 === 비회원 상권분석 시작 ===")
+    print(f"📍 좌표: ({temp_request.x_coord}, {temp_request.y_coord})")
+    print(f"📍 주소: {temp_request.address}")
+    print(f"📏 면적: {temp_request.area}㎡, 업종: {temp_request.business_type.name}")
+
+    x_coord = temp_request.x_coord
+    y_coord = temp_request.y_coord
+    area = temp_request.area
+    business_type_id = temp_request.business_type_id
+    service_type = temp_request.service_type
+
+    try:
+        with connection.cursor() as cursor:
+            results = {}
+
+            print("\n📊 [1/6] 생활인구 분석 시작...")
+            # 1. 생활인구 분석 (300m)
+            try:
+                cursor.execute(
+                    f"""
+                    SELECT 
+                        COALESCE(SUM("총생활인구수"), 0) as total_pop,
+                        COALESCE(SUM("20대"), 0) as pop_20,
+                        COALESCE(SUM("30대"), 0) as pop_30,
+                        COALESCE(SUM("40대"), 0) as pop_40,
+                        COALESCE(SUM("50대"), 0) as pop_50,
+                        COALESCE(SUM("60대"), 0) as pop_60
+                    FROM life_pop_grid_10m_5186 
+                    WHERE ST_Intersects(geom, ST_Buffer(ST_GeomFromText('POINT({x_coord} {y_coord})', 5186), 300))
+                """
+                )
+
+                row = cursor.fetchone()
+                total_pop_300m = row[0] if row[0] else 0
+
+                results.update(
+                    {
+                        "life_pop_300m": int(total_pop_300m),
+                        "life_pop_20_300m": round(
+                            (
+                                (row[1] / total_pop_300m * 100)
+                                if total_pop_300m > 0
+                                else 0
+                            ),
+                            2,
+                        ),
+                        "life_pop_30_300m": round(
+                            (
+                                (row[2] / total_pop_300m * 100)
+                                if total_pop_300m > 0
+                                else 0
+                            ),
+                            2,
+                        ),
+                        "life_pop_40_300m": round(
+                            (
+                                (row[3] / total_pop_300m * 100)
+                                if total_pop_300m > 0
+                                else 0
+                            ),
+                            2,
+                        ),
+                        "life_pop_50_300m": round(
+                            (
+                                (row[4] / total_pop_300m * 100)
+                                if total_pop_300m > 0
+                                else 0
+                            ),
+                            2,
+                        ),
+                        "life_pop_60_300m": round(
+                            (
+                                (row[5] / total_pop_300m * 100)
+                                if total_pop_300m > 0
+                                else 0
+                            ),
+                            2,
+                        ),
+                    }
+                )
+                print(f"   ✅ 300m 생활인구: {int(total_pop_300m):,}명")
+            except Exception as e:
+                print(f"   ❌ 생활인구 300m 분석 중 데이터베이스 오류: {e}")
+                results.update(
+                    {
+                        "life_pop_300m": 0,
+                        "life_pop_20_300m": 0,
+                        "life_pop_30_300m": 0,
+                        "life_pop_40_300m": 0,
+                        "life_pop_50_300m": 0,
+                        "life_pop_60_300m": 0,
+                    }
+                )
+
+            time.sleep(0.1)
+
+            # 2. 생활인구 분석 (1000m) - 연령대별 비율 포함
+            try:
+                cursor.execute(
+                    f"""
+                    SELECT 
+                        COALESCE(SUM("총생활인구수"), 0) as total_pop,
+                        COALESCE(SUM("20대"), 0) as pop_20,
+                        COALESCE(SUM("30대"), 0) as pop_30,
+                        COALESCE(SUM("40대"), 0) as pop_40,
+                        COALESCE(SUM("50대"), 0) as pop_50,
+                        COALESCE(SUM("60대"), 0) as pop_60
+                    FROM life_pop_grid_10m_5186 
+                    WHERE ST_Intersects(geom, ST_Buffer(ST_GeomFromText('POINT({x_coord} {y_coord})', 5186), 1000))
+                """
+                )
+
+                row = cursor.fetchone()
+                total_pop_1000m = row[0] if row[0] else 0
+
+                results.update(
+                    {
+                        "life_pop_20_1000m": round(
+                            (
+                                (row[1] / total_pop_1000m * 100)
+                                if total_pop_1000m > 0
+                                else 0
+                            ),
+                            2,
+                        ),
+                        "life_pop_30_1000m": round(
+                            (
+                                (row[2] / total_pop_1000m * 100)
+                                if total_pop_1000m > 0
+                                else 0
+                            ),
+                            2,
+                        ),
+                        "life_pop_40_1000m": round(
+                            (
+                                (row[3] / total_pop_1000m * 100)
+                                if total_pop_1000m > 0
+                                else 0
+                            ),
+                            2,
+                        ),
+                        "life_pop_50_1000m": round(
+                            (
+                                (row[4] / total_pop_1000m * 100)
+                                if total_pop_1000m > 0
+                                else 0
+                            ),
+                            2,
+                        ),
+                        "life_pop_60_1000m": round(
+                            (
+                                (row[5] / total_pop_1000m * 100)
+                                if total_pop_1000m > 0
+                                else 0
+                            ),
+                            2,
+                        ),
+                    }
+                )
+                print(f"   ✅ 1000m 생활인구 연령대별 비율 분석 완료")
+            except Exception as e:
+                print(f"   ❌ 생활인구 1000m 분석 중 데이터베이스 오류: {e}")
+                results.update(
+                    {
+                        "life_pop_20_1000m": 0,
+                        "life_pop_30_1000m": 0,
+                        "life_pop_40_1000m": 0,
+                        "life_pop_50_1000m": 0,
+                        "life_pop_60_1000m": 0,
+                    }
+                )
+
+            time.sleep(0.1)
+
+            # 3. 직장인구 분석 (300m)
+            try:
+                cursor.execute(
+                    f"""
+                    SELECT COALESCE(SUM("총직장인구수"), 0) as working_pop
+                    FROM working_pop_grid_10m_5186 
+                    WHERE ST_Intersects(geom, ST_Buffer(ST_GeomFromText('POINT({x_coord} {y_coord})', 5186), 300))
+                """
+                )
+                row = cursor.fetchone()
+                working_pop_300m = int(row[0]) if row[0] else 0
+                results["working_pop_300m"] = working_pop_300m
+                print(f"   ✅ 300m 직장인구: {working_pop_300m:,}명")
+            except Exception as e:
+                print(f"   ❌ 직장인구 분석 오류: {e}")
+                results["working_pop_300m"] = 0
+
+            time.sleep(0.1)
+
+            # 3. 외국인 분석 (간소화)
+            try:
+                cursor.execute(
+                    f"""
+                    SELECT 
+                        COALESCE(SUM("단기체류외국인"), 0) as temp_foreign,
+                        COALESCE(SUM("중국"), 0) as temp_cn
+                    FROM foreign_pop_grid_10m_5186 
+                    WHERE ST_Intersects(geom, ST_Buffer(ST_GeomFromText('POINT({x_coord} {y_coord})', 5186), 1000))
+                """
+                )
+                row = cursor.fetchone()
+                temp_foreign_1000m = int(row[0]) if row[0] else 0
+                temp_cn_1000m = int(row[1]) if row[1] else 0
+
+                results.update({
+                    "temp_foreign_1000m": temp_foreign_1000m,
+                    "temp_foreign_cn_1000m": round((temp_cn_1000m / temp_foreign_1000m * 100) if temp_foreign_1000m > 0 else 0, 2),
+                    "long_foreign_300m": 0,  # 비회원은 간소화
+                    "long_foreign_cn_1000m": 0,
+                })
+                print(f"   ✅ 1000m 단기체류외국인: {temp_foreign_1000m:,}명")
+            except Exception as e:
+                print(f"   ❌ 외국인 분석 오류: {e}")
+                results.update({
+                    "temp_foreign_1000m": 0,
+                    "temp_foreign_cn_1000m": 0,
+                    "long_foreign_300m": 0,
+                    "long_foreign_cn_1000m": 0,
+                })
+
+            time.sleep(0.1)
+
+            # 4. 경쟁업체 분석 (300m)
+            try:
+                business_type_name = temp_request.business_type.name
+                print(f"   검색 대상 업종: {business_type_name}")
+
+                cursor.execute(
+                    f"""
+                    SELECT COUNT(*) as competitor_count
+                    FROM store_point_5186 
+                    WHERE ST_Intersects(geom, ST_Buffer(ST_GeomFromText('POINT({x_coord} {y_coord})', 5186), 300))
+                      AND uptaenm = '{business_type_name}'
+                """
+                )
+                row = cursor.fetchone()
+                competitor_count = int(row[0]) if row[0] else 0
+
+                cursor.execute(
+                    f"""
+                    SELECT COUNT(*) as total_biz,
+                           COUNT(DISTINCT uptaenm) as diversity
+                    FROM store_point_5186 
+                    WHERE ST_Intersects(geom, ST_Buffer(ST_GeomFromText('POINT({x_coord} {y_coord})', 5186), 300))
+                """
+                )
+                row = cursor.fetchone()
+                total_biz = int(row[0]) if row[0] else 0
+                diversity = int(row[1]) if row[1] else 0
+
+                results.update(
+                    {
+                        "competitor_300m": competitor_count,
+                        "adjacent_biz_300m": total_biz,
+                        "competitor_ratio_300m": round(
+                            (
+                                (competitor_count / total_biz * 100)
+                                if total_biz > 0
+                                else 0
+                            ),
+                            2,
+                        ),
+                        "business_diversity_300m": diversity,
+                    }
+                )
+                print(f"   ✅ 300m 경쟁업체: {competitor_count}개 / 전체 {total_biz}개")
+            except Exception as e:
+                print(f"   ❌ 상권 분석 오류: {e}")
+                results.update(
+                    {
+                        "competitor_300m": 0,
+                        "adjacent_biz_300m": 0,
+                        "competitor_ratio_300m": 0,
+                        "business_diversity_300m": 0,
+                    }
+                )
+
+            time.sleep(0.1)
+
+            # 5. 공시지가 분석
+            try:
+                cursor.execute(
+                    f"""
+                    SELECT COALESCE("A9", 0) as land_price
+                    FROM ltv_5186
+                    WHERE ST_Intersects(
+                        ltv_5186.geom,
+                        ST_Buffer(
+                            ST_SetSRID(ST_GeomFromText('POINT({x_coord} {y_coord})'), 900914),
+                            300
+                        )
+                    )
+                    ORDER BY ST_Distance(
+                        ltv_5186.geom,
+                        ST_SetSRID(ST_GeomFromText('POINT({x_coord} {y_coord})'), 900914)
+                    )
+                    LIMIT 1
+                """
+                )
+                row = cursor.fetchone()
+                land_price = row[0] if row[0] else 0
+                total_land_value = land_price * area
+                results.update({
+                    "total_land_value": total_land_value,
+                })
+                print(f"   ✅ 총 공시지가: {total_land_value:,.0f}원")
+            except Exception as e:
+                print(f"   ❌ 공시지가 분석 오류: {e}")
+                results.update({
+                    "total_land_value": 0,
+                })
+
+            # 기본 정보 추가
+            results.update({
+                "area": area,
+                "service_type": service_type,
+                "public_building_250m": 0,  # 비회원은 간소화
+                "school_250m": 0,
+            })
+
+            # AI 모델용 변수들 추가 (2A_* 형식)
+            results.update({
+                "2A_20": results.get("life_pop_20_1000m", 0),
+                "2A_30": results.get("life_pop_30_1000m", 0), 
+                "2A_40": results.get("life_pop_40_1000m", 0),
+                "2A_50": results.get("life_pop_50_1000m", 0),
+                "2A_60": results.get("life_pop_60_1000m", 0),
+                "2A_Temp_Total": results.get("temp_foreign_1000m", 0),
+                "2A_Temp_CN": results.get("temp_foreign_cn_1000m", 0),
+                "2A_Long_CN": results.get("long_foreign_cn_1000m", 0),
+            })
+
+            # AI 예측 수행 (간소화된 데이터로)
+            try:
+                ai_prediction = predict_survival_probability({
+                    'life_pop_300m': results['life_pop_300m'],
+                    'working_pop_300m': results['working_pop_300m'],
+                    'competitor_300m': results['competitor_300m'],
+                    'total_land_value': results['total_land_value'],
+                    'area': area,
+                    'service_type': service_type,
+                })
+                results['survival_percentage'] = ai_prediction
+                print(f"   ✅ AI 생존 확률: {ai_prediction}%")
+            except Exception as e:
+                print(f"   ❌ AI 예측 오류: {e}")
+                results['survival_percentage'] = 50  # 기본값
+
+            print("✅ === 비회원 상권분석 완료 ===")
+            return results
+
+    except Exception as e:
+        logger.error(f"비회원 공간 분석 중 오류 발생: {str(e)}")
+        logger.error(traceback.format_exc())
+        raise e
 
 @transaction.atomic
 def perform_spatial_analysis(analysis_request):
@@ -822,6 +1246,7 @@ def perform_spatial_analysis(analysis_request):
                 # 5. 장기체류외국인 분석
                 try:
                     print(f"=== 장기체류외국인 분석 시작 ===")
+                    print(f"분석 좌표: ({x_coord}, {y_coord})")
 
                     # 새로운 테이블명을 우선순위로
                     long_tables = [
@@ -830,6 +1255,7 @@ def perform_spatial_analysis(analysis_request):
                         "_장기체류외국인_25m_5186",
                         "장기체류외국인_25m_5186",
                     ]
+                    print(f"확인할 테이블 목록: {long_tables}")
                     long_total_300m = 0
                     long_total_1000m = 0
                     long_cn_1000m = 0
@@ -863,17 +1289,17 @@ def perform_spatial_analysis(analysis_request):
                                 continue
 
                             # 300m 쿼리 - 총수 조회
-                            cursor.execute(
-                                f"""
+                            query_300m = f"""
                                 SELECT COALESCE(SUM("총생활인구수"), 0) as long_total
                                 FROM {table_name} 
                                 WHERE ST_Intersects(geom, ST_Buffer(ST_GeomFromText('POINT({x_coord} {y_coord})', 5186), 300))
                             """
-                            )
+                            print(f"300m 쿼리 실행: {query_300m}")
+                            cursor.execute(query_300m)
                             row = cursor.fetchone()
                             long_total_300m = row[0] if row[0] else 0
                             print(
-                                f"장기체류외국인 300m - 테이블 {table_name} 사용: {long_total_300m}명"
+                                f"장기체류외국인 300m - 테이블 {table_name} 사용: {long_total_300m}명 (raw result: {row})"
                             )
 
                             used_table = table_name
@@ -886,25 +1312,39 @@ def perform_spatial_analysis(analysis_request):
                         print(
                             "❌ 사용 가능한 장기체류외국인 테이블이 없습니다. 기본값 0 사용"
                         )
+                        print("📋 확인된 테이블 상태:")
+                        for table in long_tables:
+                            try:
+                                cursor.execute("""
+                                    SELECT EXISTS (
+                                        SELECT FROM pg_catalog.pg_tables 
+                                        WHERE schemaname = 'public' 
+                                        AND tablename = %s
+                                    )
+                                """, [table])
+                                exists = cursor.fetchone()[0]
+                                print(f"  - {table}: {'존재함' if exists else '존재하지 않음'}")
+                            except Exception as e:
+                                print(f"  - {table}: 확인 실패 ({e})")
 
                     time.sleep(0.1)
 
                     # 1000m 쿼리 (같은 테이블 사용) - 총수와 중국인수 조회
                     if used_table:
                         try:
-                            cursor.execute(
-                                f"""
+                            query_1000m = f"""
                                 SELECT COALESCE(SUM("총생활인구수"), 0) as long_total,
                                        COALESCE(SUM("중국인체류인구수"), 0) as long_cn
                                 FROM {used_table} 
                                 WHERE ST_Intersects(geom, ST_Buffer(ST_GeomFromText('POINT({x_coord} {y_coord})', 5186), 1000))
                             """
-                            )
+                            print(f"1000m 쿼리 실행: {query_1000m}")
+                            cursor.execute(query_1000m)
                             row = cursor.fetchone()
                             long_total_1000m = row[0] if row[0] else 0
                             long_cn_1000m = row[1] if row[1] else 0
                             print(
-                                f"장기체류외국인 1000m - 테이블 {used_table} 사용: 총 {long_total_1000m}명, 중국인 {long_cn_1000m}명"
+                                f"장기체류외국인 1000m - 테이블 {used_table} 사용: 총 {long_total_1000m}명, 중국인 {long_cn_1000m}명 (raw result: {row})"
                             )
                         except Exception as e:
                             print(f"장기체류외국인 1000m 쿼리 실패: {e}")
@@ -1226,8 +1666,12 @@ def perform_spatial_analysis(analysis_request):
                 )
 
                 print(f"\n💾 분석 결과 저장 중...")
-                # 분석 결과 저장 (AI 예측 결과 포함)
-                AnalysisResult.objects.create(request=analysis_request, **results)
+                # 분석 결과 저장 (AI 예측 결과 포함) - 사용자 정보도 함께 저장
+                AnalysisResult.objects.create(
+                    request=analysis_request, 
+                    user=analysis_request.user,  # 사용자 정보 명시적 저장
+                    **results
+                )
 
                 print(f"🎉 === 상권분석 완료 === 요청 ID: {analysis_request.id}")
                 print(f"📊 생활인구: {results['life_pop_300m']:,}명")
@@ -1325,12 +1769,14 @@ def result_detail(request, request_id):
     try:
         analysis_request = AnalysisRequest.objects.get(id=request_id)
 
-        # ✅ 접근 제한: 다른 사용자 결과 접근 방지
-        if analysis_request.user != request.user:
-            print(f"⚠️ 다른 사용자의 결과에 접근 시도: {request.user} → {analysis_request.user}")
+        # ✅ 접근 제한: 슈퍼유저이거나 해당 분석을 요청한 사용자만 접근 가능
+        if not (request.user.is_superuser or analysis_request.user == request.user):
+            print(f"⚠️ 권한 없는 접근 시도: 사용자 {request.user.username}가 분석 ID {request_id}에 접근 시도")
             return render(request, 'AI_Analyzer/error.html', {
-                'error': '해당 분석 결과에 접근할 수 없습니다.'
+                'error': '해당 분석 결과에 접근할 권한이 없습니다.'
             })
+        
+        print(f"✅ 페이지 접근 허용: 사용자 {request.user.username}가 분석 ID {request_id}에 접근")
 
         analysis_result = AnalysisResult.objects.get(request=analysis_request)
 
@@ -1351,7 +1797,7 @@ def result_detail(request, request_id):
 @csrf_exempt
 def get_analysis_result_api(request, request_id):
     """
-    분석 결과를 JSON으로 반환하는 API
+    분석 결과를 JSON으로 반환하는 API (개인화된 접근 권한)
 
     Args:
         request: HTTP 요청 객체
@@ -1361,12 +1807,23 @@ def get_analysis_result_api(request, request_id):
         JsonResponse: 분석 결과 데이터 또는 에러 메시지
 
     Raises:
+        403: 접근 권한이 없는 경우
         404: 분석 결과를 찾을 수 없는 경우
         500: 데이터 조회 중 오류 발생
     """
     try:
         analysis_request = AnalysisRequest.objects.get(id=request_id)
+        
+        # 접근 권한 확인: 슈퍼유저이거나 해당 분석을 요청한 사용자만 접근 가능
+        if not request.user.is_authenticated:
+            return JsonResponse({"error": "로그인이 필요합니다."}, status=401)
+        
+        if not (request.user.is_superuser or analysis_request.user == request.user):
+            print(f"❌ API 접근 거부: 사용자 {request.user.username}가 분석 ID {request_id}에 접근 시도")
+            return JsonResponse({"error": "이 분석 결과에 접근할 권한이 없습니다."}, status=403)
+        
         analysis_result = AnalysisResult.objects.get(request=analysis_request)
+        print(f"✅ API 접근 허용: 사용자 {request.user.username}가 분석 ID {request_id}에 접근")
 
         # 결과 데이터를 딕셔너리로 변환
         result_data = {
@@ -1378,6 +1835,7 @@ def get_analysis_result_api(request, request_id):
                 "created_at": analysis_request.created_at.isoformat(),
             },
             "result": {
+                # 기본 분석 결과
                 "life_pop_300m": float(analysis_result.life_pop_300m or 0),
                 "working_pop_300m": float(analysis_result.working_pop_300m or 0),
                 "competitor_300m": analysis_result.competitor_300m or 0,
@@ -1390,14 +1848,41 @@ def get_analysis_result_api(request, request_id):
                 "business_diversity_300m": analysis_result.business_diversity_300m or 0,
                 "public_building_250m": analysis_result.public_building_250m or 0,
                 "school_250m": analysis_result.school_250m or 0,
+                
+                # 외국인 관련 데이터
                 "temp_foreign_1000m": analysis_result.temp_foreign_1000m or 0,
+                "long_foreign_300m": analysis_result.long_foreign_300m or 0,
                 "long_foreign_1000m": analysis_result.long_foreign_1000m or 0,
                 "temp_foreign_cn_300m": float(
                     analysis_result.temp_foreign_cn_300m or 0
                 ),
+                "temp_foreign_cn_1000m": float(
+                    analysis_result.temp_foreign_cn_1000m or 0
+                ),
                 "long_foreign_cn_1000m": float(
                     analysis_result.long_foreign_cn_1000m or 0
                 ),
+                
+                # AI 모델용 변수들 (1A_*, 2A_* 형식)
+                "1A_Total": float(analysis_result.life_pop_300m or 0),
+                "1A_Long_Total": analysis_result.long_foreign_300m or 0,
+                "2A_Long_Total": analysis_result.long_foreign_1000m or 0,
+                "2A_Temp_Total": analysis_result.temp_foreign_1000m or 0,
+                "1A_Temp_CN": float(analysis_result.temp_foreign_cn_300m or 0),
+                "2A_Temp_CN": float(analysis_result.temp_foreign_cn_1000m or 0),
+                "2A_Long_CN": float(analysis_result.long_foreign_cn_1000m or 0),
+                
+                # 생활인구 연령대별 비율
+                "1A_20": float(analysis_result.life_pop_20_300m or 0),
+                "1A_30": float(analysis_result.life_pop_30_300m or 0),
+                "1A_40": float(analysis_result.life_pop_40_300m or 0),
+                "1A_50": float(analysis_result.life_pop_50_300m or 0),
+                "1A_60": float(analysis_result.life_pop_60_300m or 0),
+                "2A_20": float(analysis_result.life_pop_20_1000m or 0),
+                "2A_30": float(analysis_result.life_pop_30_1000m or 0),
+                "2A_40": float(analysis_result.life_pop_40_1000m or 0),
+                "2A_50": float(analysis_result.life_pop_50_1000m or 0),
+                "2A_60": float(analysis_result.life_pop_60_1000m or 0),
             },
         }
 
@@ -1543,7 +2028,7 @@ def database_info(request):
 @csrf_exempt
 def get_pdf_data(request, request_id):
     """
-    PDF 생성을 위한 분석 결과 데이터 제공 (jsPDF용)
+    PDF 생성을 위한 분석 결과 데이터 제공 (jsPDF용, 개인화된 접근 권한)
 
     Args:
         request: HTTP 요청 객체
@@ -1557,13 +2042,25 @@ def get_pdf_data(request, request_id):
         - 생존 확률에 따른 분석 텍스트 자동 생성
 
     Raises:
+        401: 로그인이 필요한 경우
+        403: 접근 권한이 없는 경우
         404: 분석 결과를 찾을 수 없는 경우
         500: 데이터 조회 중 오류 발생
     """
     try:
         # 분석 결과 조회
         analysis_request = AnalysisRequest.objects.get(id=request_id)
+        
+        # 접근 권한 확인: 슈퍼유저이거나 해당 분석을 요청한 사용자만 접근 가능
+        if not request.user.is_authenticated:
+            return JsonResponse({"error": "로그인이 필요합니다."}, status=401)
+        
+        if not (request.user.is_superuser or analysis_request.user == request.user):
+            print(f"❌ PDF 접근 거부: 사용자 {request.user.username}가 분석 ID {request_id}에 접근 시도")
+            return JsonResponse({"error": "이 분석 결과에 접근할 권한이 없습니다."}, status=403)
+        
         analysis_result = AnalysisResult.objects.get(request=analysis_request)
+        print(f"✅ PDF 접근 허용: 사용자 {request.user.username}가 분석 ID {request_id}에 접근")
 
         # 업종명 조회
         try:
@@ -1664,3 +2161,390 @@ def format_currency(value):
         return f"₩{value/10000:.0f}만"
     else:
         return f"₩{value:,.0f}"
+
+
+# =============================================================================
+# 분석 세션 관리 API (chatbot과 동일한 방식)
+# =============================================================================
+
+@csrf_exempt
+@api_view(["POST"])
+def create_analysis_session(request, user_id, request_id):
+    """
+    특정 분석 결과에 대한 새로운 채팅 세션 생성
+    
+    Args:
+        user_id: 사용자 ID
+        request_id: 분석 요청 ID
+        
+    Returns:
+        JsonResponse: 생성된 세션 정보
+    """
+    try:
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        
+        user = User.objects.get(id=user_id)
+        analysis_result = AnalysisResult.objects.get(request_id=request_id)
+        
+        # 권한 확인
+        if not (user.is_superuser or analysis_result.user == user):
+            return Response(
+                {"status": "error", "message": "접근 권한이 없습니다."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        
+        session = AnalysisSession.objects.create(
+            user=user,
+            analysis_result=analysis_result
+        )
+        
+        return Response({
+            "status": "ok",
+            "session_id": session.session_id,
+            "title": session.title,
+            "created_at": session.created_at.isoformat(),
+        })
+        
+    except User.DoesNotExist:
+        return Response(
+            {"status": "error", "message": "사용자를 찾을 수 없습니다."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+    except AnalysisResult.DoesNotExist:
+        return Response(
+            {"status": "error", "message": "분석 결과를 찾을 수 없습니다."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+    except Exception as e:
+        return Response(
+            {"status": "error", "message": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class AnalysisSessionLogView(APIView):
+    """
+    분석 세션별 채팅 로그 조회 (chatbot.ChatLogView와 동일한 구조)
+    """
+    def get(self, request, user_id, session_id):
+        try:
+            session = AnalysisSession.objects.select_related("log").get(
+                user__id=user_id, session_id=session_id
+            )
+            
+            # 권한 확인
+            if not (request.user.is_superuser or session.user == request.user):
+                return Response(
+                    {"status": "error", "message": "접근 권한이 없습니다."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            try:
+                chatlog = session.log
+                return Response({
+                    "status": "ok",
+                    "session_id": session.session_id,
+                    "title": session.title,
+                    "chat_log": chatlog.log,
+                    "log": chatlog.log,  # 호환성을 위해 두 필드 모두 제공
+                    "created_at": session.created_at,
+                    "analysis_result_id": session.analysis_result.id if session.analysis_result else None,
+                })
+            except AnalysisSessionLog.DoesNotExist:
+                return Response({
+                    "status": "ok", 
+                    "session_id": session.session_id,
+                    "title": session.title,
+                    "chat_log": [], 
+                    "log": [], 
+                    "message": "아직 대화 로그가 없습니다.",
+                    "created_at": session.created_at,
+                    "analysis_result_id": session.analysis_result.id if session.analysis_result else None,
+                })
+
+        except AnalysisSession.DoesNotExist:
+            return Response(
+                {"status": "error", "message": "세션을 찾을 수 없습니다."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class AnalysisSessionListView(APIView):
+    """
+    사용자의 분석 세션 목록 조회 (특정 분석 결과별)
+    """
+    def get(self, request, user_id, request_id):
+        try:
+            # 권한 확인: 분석 결과 소유자인지 확인
+            analysis_result = AnalysisResult.objects.get(request_id=request_id)
+            if not (request.user.is_superuser or analysis_result.user_id == user_id):
+                return Response(
+                    {"status": "error", "message": "접근 권한이 없습니다."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            
+            # 해당 분석 결과에 대한 세션들 조회
+            sessions = AnalysisSession.objects.filter(
+                user__id=user_id, 
+                analysis_result=analysis_result
+            ).order_by("-lastload_at", "-created_at")
+
+            result = []
+            for session in sessions:
+                # 최근 메시지 가져오기
+                try:
+                    chat_log = session.log
+                    latest_message = chat_log.log[-1] if chat_log.log else None
+                    preview = (
+                        latest_message["content"][:50] + "..."
+                        if latest_message
+                        else "새로운 대화를 시작해보세요..."
+                    )
+                except:
+                    preview = "새로운 대화를 시작해보세요..."
+
+                result.append({
+                    "session_id": session.session_id,
+                    "title": session.title or "새 채팅",
+                    "preview": preview,
+                    "created_at": session.created_at.isoformat(),
+                    "lastload_at": session.lastload_at.isoformat(),
+                    "analysis_result_id": session.analysis_result.id if session.analysis_result else None,
+                })
+
+            return Response({
+                "status": "ok", 
+                "count": len(result), 
+                "sessions": result,
+                "analysis_address": analysis_result.request.address,
+            })
+
+        except AnalysisResult.DoesNotExist:
+            return Response(
+                {"status": "error", "message": "분석 결과를 찾을 수 없습니다."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except Exception as e:
+            return Response(
+                {"status": "error", "message": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+@csrf_exempt
+@api_view(["POST"])
+def update_analysis_session_title(request, user_id, session_id):
+    """
+    분석 세션 제목 업데이트
+    """
+    try:
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        
+        user = User.objects.get(id=user_id)
+        session = AnalysisSession.objects.get(user=user, session_id=session_id)
+        
+        data = json.loads(request.body)
+        new_title = data.get('title', '').strip()
+        
+        if new_title:
+            session.title = new_title
+            session.save()
+            
+            return Response({
+                "status": "ok",
+                "message": "제목이 업데이트되었습니다.",
+                "title": session.title
+            })
+        else:
+            return Response(
+                {"status": "error", "message": "제목을 입력해주세요."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+            
+    except (User.DoesNotExist, AnalysisSession.DoesNotExist):
+        return Response(
+            {"status": "error", "message": "세션을 찾을 수 없습니다."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+    except Exception as e:
+        return Response(
+            {"status": "error", "message": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+
+@csrf_exempt
+@api_view(["DELETE"])
+def delete_analysis_session(request, user_id, session_id):
+    """
+    분석 세션 삭제
+    """
+    try:
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        
+        user = User.objects.get(id=user_id)
+        session = AnalysisSession.objects.get(user=user, session_id=session_id)
+        
+        session.delete()
+        
+        return Response({
+            "status": "ok",
+            "message": "세션이 삭제되었습니다."
+        })
+        
+    except (User.DoesNotExist, AnalysisSession.DoesNotExist):
+        return Response(
+            {"status": "error", "message": "세션을 찾을 수 없습니다."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+    except Exception as e:
+        return Response(
+            {"status": "error", "message": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+@login_required
+def user_analysis_dashboard(request):
+    """
+    사용자 개인화 분석 대시보드
+    
+    Args:
+        request: HTTP 요청 객체
+        
+    Returns:
+        HttpResponse: 개인화 대시보드 페이지
+    """
+    user = request.user
+    
+    # 사용자의 전체 분석 요청 조회
+    user_analyses = AnalysisRequest.objects.filter(user=user).order_by('-created_at')
+    
+    # 분석 통계 계산
+    total_analyses = user_analyses.count()
+    
+    if total_analyses > 0:
+        # 가장 최근 분석
+        latest_analysis = user_analyses.first()
+        
+        # 주요 업종 분석 (가장 많이 분석한 업종)
+        from django.db.models import Count
+        popular_business_types = user_analyses.values(
+            'business_type__name'
+        ).annotate(
+            count=Count('business_type')
+        ).order_by('-count')[:5]
+        
+        # 평균 생존율 계산 (결과가 있는 분석만)
+        user_results = AnalysisResult.objects.filter(user=user)
+        if user_results.exists():
+            from django.db.models import Avg
+            avg_survival_rate = user_results.aggregate(
+                avg_rate=Avg('survival_percentage')
+            )['avg_rate'] or 0
+            
+            # 최고/최저 생존율
+            best_analysis = user_results.order_by('-survival_percentage').first()
+            worst_analysis = user_results.order_by('survival_percentage').first()
+        else:
+            avg_survival_rate = 0
+            best_analysis = None
+            worst_analysis = None
+            
+        # 월별 분석 추이 (최근 12개월)
+        from datetime import datetime, timedelta
+        from django.db.models import Count
+        from django.db.models.functions import TruncMonth
+        
+        one_year_ago = datetime.now() - timedelta(days=365)
+        monthly_stats = user_analyses.filter(
+            created_at__gte=one_year_ago
+        ).annotate(
+            month=TruncMonth('created_at')
+        ).values('month').annotate(
+            count=Count('id')
+        ).order_by('month')
+        
+        # 지역별 분석 분포 (주소에서 시/구 추출)
+        region_stats = []
+        for analysis in user_analyses[:20]:  # 최근 20개 분석
+            address_parts = analysis.address.split()
+            if len(address_parts) >= 2:
+                region = f"{address_parts[0]} {address_parts[1]}"
+                region_stats.append(region)
+        
+        from collections import Counter
+        region_counter = Counter(region_stats)
+        top_regions = region_counter.most_common(5)
+        
+    else:
+        latest_analysis = None
+        popular_business_types = []
+        avg_survival_rate = 0
+        best_analysis = None
+        worst_analysis = None
+        monthly_stats = []
+        top_regions = []
+    
+    # 최근 분석 결과 (AnalysisResult 객체들) - 템플릿에서 사용하기 위해
+    recent_analyses = AnalysisResult.objects.filter(
+        user=user
+    ).select_related('request').order_by('-created_at')[:10]
+    
+    context = {
+        'total_analyses': total_analyses,
+        'latest_analysis': latest_analysis,
+        'popular_business_types': popular_business_types,
+        'avg_survival_rate': round(avg_survival_rate, 1) if avg_survival_rate else 0,
+        'best_analysis': best_analysis,
+        'worst_analysis': worst_analysis,
+        'monthly_stats': list(monthly_stats),
+        'top_regions': top_regions,
+        'recent_analyses': recent_analyses,  # AnalysisResult 객체들로 변경
+    }
+    
+    return render(request, 'AI_Analyzer/user_dashboard.html', context)
+
+@login_required
+def user_analysis_comparison(request):
+    """
+    사용자의 분석 결과 비교 페이지
+    
+    Args:
+        request: HTTP 요청 객체
+        
+    Returns:
+        HttpResponse: 분석 비교 페이지
+    """
+    user = request.user
+    
+    # 사용자의 분석 결과 조회 (결과가 있는 것만)
+    user_results = AnalysisResult.objects.filter(
+        user=user
+    ).select_related('request').order_by('-created_at')[:20]  # 최근 20개
+    
+    if request.method == 'POST':
+        # 선택된 분석 결과들 비교
+        selected_ids = request.POST.getlist('analysis_ids')
+        if len(selected_ids) > 1:
+            comparison_results = user_results.filter(
+                request__id__in=selected_ids
+            ).order_by('-created_at')
+            
+            context = {
+                'user_results': user_results,
+                'comparison_results': comparison_results,
+                'is_comparison': True,
+            }
+            return render(request, 'AI_Analyzer/user_comparison.html', context)
+    
+    context = {
+        'user_results': user_results,
+        'is_comparison': False,
+    }
+    
+    return render(request, 'AI_Analyzer/user_comparison.html', context)

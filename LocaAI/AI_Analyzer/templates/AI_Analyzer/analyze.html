@@ -1,7 +1,270 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}상권 분석{% endblock %}
+{% block title %}AI 상권분석 - 분석하기{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* 기존 스타일들... */
+    
+    /* Progress Bar 강화 CSS 추가 */
+    .progress-bar {
+        height: 100% !important;
+        min-height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: inherit !important;
+    }
+    
+    .progress-bar span {
+        line-height: 1 !important;
+        white-space: nowrap !important;
+    }
+    
+    /* 기존 스타일 계속... */
+    .container-fluid {
+        padding: 0;
+    }
+    
+    .hero-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 100px 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="rgba(255,255,255,0.1)"><polygon points="1000,100 1000,0 0,100"/></svg>');
+        background-size: cover;
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .hero-subtitle {
+        font-size: 1.3rem;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+    }
+    
+    .analysis-form {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        margin-top: -50px;
+        position: relative;
+        z-index: 3;
+    }
+    
+    .form-section {
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .form-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+    
+    .section-title {
+        color: #667eea;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+    }
+    
+    .form-control, .form-select {
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 12px 15px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .btn-analyze {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 15px 40px;
+        border-radius: 50px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-analyze:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+    
+    .btn-analyze:disabled {
+        opacity: 0.6;
+        transform: none;
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+    }
+    
+    .analysis-progress {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 2rem;
+        margin: 2rem 0;
+    }
+    
+    .overall-progress {
+        margin-bottom: 2rem;
+    }
+    
+    .progress {
+        height: 12px;
+        border-radius: 10px;
+        background-color: #e9ecef;
+        overflow: hidden;
+    }
+    
+    .progress-bar {
+        transition: width 0.6s ease;
+        border-radius: 10px;
+    }
+    
+    .progress-step {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        border-radius: 10px;
+        background: white;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+    
+    .progress-step.active {
+        border-color: #667eea;
+        background: #f8f9ff;
+        transform: scale(1.02);
+    }
+    
+    .progress-step.completed {
+        border-color: #28a745;
+        background: #f8fff8;
+    }
+    
+    .progress-step.error {
+        border-color: #dc3545;
+        background: #fff8f8;
+    }
+    
+    .progress-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        font-size: 1.2rem;
+        background: #e9ecef;
+        color: #6c757d;
+        transition: all 0.3s ease;
+    }
+    
+    .progress-step.active .progress-icon {
+        background: #667eea;
+        color: white;
+    }
+    
+    .progress-step.completed .progress-icon {
+        background: #28a745;
+        color: white;
+    }
+    
+    .progress-step.error .progress-icon {
+        background: #dc3545;
+        color: white;
+    }
+    
+    .progress-text {
+        flex: 1;
+    }
+    
+    .progress-title {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.25rem;
+    }
+    
+    .progress-detail {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    .progress-step.active .progress-title {
+        color: #667eea;
+    }
+    
+    .progress-step.completed .progress-title {
+        color: #28a745;
+    }
+    
+    .progress-step.error .progress-title {
+        color: #dc3545;
+    }
+    
+    /* 반응형 */
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.5rem;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.1rem;
+        }
+        
+        .analysis-form {
+            margin-top: -30px;
+            padding: 1.5rem;
+        }
+        
+        .progress-step {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .progress-icon {
+            margin-right: 0;
+            margin-bottom: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 {% include 'includes/header.html' %}
@@ -12,6 +275,35 @@
       color: #fff;
       background-color: #0d6efd; /* 원래 primary 색 */
       opacity: 0.65;  /* 투명도 조절로 흐릿하게 표시 */
+    }
+    
+    /* Progress Bar 강화 CSS - 완전히 채워지도록 */
+    .progress-bar {
+      height: 100% !important;
+      min-height: 100% !important;
+      max-height: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border-radius: inherit !important;
+      line-height: 1 !important;
+      box-sizing: border-box !important;
+    }
+    
+    .progress-bar span {
+      line-height: 1 !important;
+      white-space: nowrap !important;
+      color: white !important;
+      font-weight: 500 !important;
+    }
+    
+    /* Progress 컨테이너 설정 */
+    .progress {
+      overflow: hidden !important;
+      border-radius: 8px !important;
+      background-color: #e9ecef !important;
     }
     
     /* 분석 진행 상황 스타일 */
@@ -615,6 +907,14 @@
         behavior: 'smooth',
         block: 'start'
       });
+      
+      // 외국인 관련 지표 표시
+      document.getElementById('tempForeignCN300').textContent = (result.temp_foreign_cn_300m !== undefined) ? result.temp_foreign_cn_300m + '%' : '-';
+      document.getElementById('tempForeignJP300').textContent = (result.temp_foreign_jp_300m !== undefined) ? result.temp_foreign_jp_300m + '%' : '-';
+      document.getElementById('tempForeignOther300').textContent = (result.temp_foreign_other_300m !== undefined) ? result.temp_foreign_other_300m + '%' : '-';
+      document.getElementById('longForeignCN1000').textContent = (result.long_foreign_cn_1000m !== undefined) ? result.long_foreign_cn_1000m + '%' : '-';
+      document.getElementById('longForeignJP1000').textContent = (result.long_foreign_jp_1000m !== undefined) ? result.long_foreign_jp_1000m + '%' : '-';
+      document.getElementById('longForeignOther1000').textContent = (result.long_foreign_other_1000m !== undefined) ? result.long_foreign_other_1000m + '%' : '-';
     }
     
     // 업종명 반환 함수
@@ -1463,8 +1763,10 @@
                   <div class="text-center">
                     <div class="display-1 fw-bold mb-3" id="survivalPercentage">-%</div>
                     <h4 class="mb-3">장기 생존 확률</h4>
-                    <div class="progress" style="height: 20px;">
-                      <div id="survivalBar" class="progress-bar" style="width: 0%"></div>
+                    <div class="progress" style="height: 40px;">
+                      <div id="survivalBar" class="progress-bar" style="width: 0%; height: 100%; display: flex; align-items: center; justify-content: center;">
+                        <span style="font-size: 1.1rem; font-weight: 500; color: white;">분석중...</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1509,14 +1811,69 @@
               
               <div class="mt-4">
                 <h6>경쟁 강도 분석</h6>
-                <div class="progress" style="height: 25px;">
-                  <div id="competitionBar" class="progress-bar" style="width: 0%">
-                    <span id="competitionLevel">분석중...</span>
+                <div class="progress" style="height: 40px;">
+                  <div id="competitionBar" class="progress-bar" style="width: 0%; height: 100%; display: flex; align-items: center; justify-content: center;">
+                    <span id="competitionLevel" style="font-size: 1.1rem; font-weight: 500; color: white;">분석중...</span>
                   </div>
                 </div>
                 <small class="text-muted mt-2 d-block">
                   경쟁업체 비율이 20% 이하면 낮음, 20-50%는 보통, 50% 이상은 높음으로 분류됩니다.
                 </small>
+              </div>
+            </div>
+
+            <!-- 외국인 분석 -->
+            <div class="mb-4">
+              <h5 class="text-primary border-bottom border-primary pb-2 mb-3">
+                <i class="bi bi-globe me-2"></i>외국인 분석
+              </h5>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <div class="card h-100">
+                    <div class="card-header bg-white">
+                      <h6 class="mb-0">단기체류 외국인 (300m)</h6>
+                    </div>
+                    <div class="card-body">
+                      <div class="row text-center">
+                        <div class="col-4">
+                          <h6>중국인</h6>
+                          <div class="h4 text-primary" id="tempForeignCN300">-</div>
+                        </div>
+                        <div class="col-4">
+                          <h6>일본인</h6>
+                          <div class="h4 text-primary" id="tempForeignJP300">-</div>
+                        </div>
+                        <div class="col-4">
+                          <h6>기타</h6>
+                          <div class="h4 text-primary" id="tempForeignOther300">-</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="card h-100">
+                    <div class="card-header bg-white">
+                      <h6 class="mb-0">장기체류 외국인 (1000m)</h6>
+                    </div>
+                    <div class="card-body">
+                      <div class="row text-center">
+                        <div class="col-4">
+                          <h6>중국인</h6>
+                          <div class="h4 text-success" id="longForeignCN1000">-</div>
+                        </div>
+                        <div class="col-4">
+                          <h6>일본인</h6>
+                          <div class="h4 text-success" id="longForeignJP1000">-</div>
+                        </div>
+                        <div class="col-4">
+                          <h6>기타</h6>
+                          <div class="h4 text-success" id="longForeignOther1000">-</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 

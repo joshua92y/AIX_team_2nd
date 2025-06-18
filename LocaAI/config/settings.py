@@ -235,6 +235,17 @@ LOGIN_URL = "custom_auth:login"
 LOGIN_REDIRECT_URL = "border:inquiry_list"
 LOGOUT_REDIRECT_URL = "border:inquiry_list"
 
+# CSRF 설정
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]
+
+# 세션 설정
+SESSION_COOKIE_AGE = 86400  # 24시간
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
 # ============================================================================
 # 외부 서비스 API 설정
 # ============================================================================
