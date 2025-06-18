@@ -58,3 +58,8 @@ def blog_api(request):
     
     # POST 아니면 그냥 blog.html 렌더링
     return render(request, 'blog.html')
+
+def guidebook(request):
+    lang = getSessionLang(request)
+    print(lang)
+    return render(request, 'guidebook.html', {'lang': lang})
