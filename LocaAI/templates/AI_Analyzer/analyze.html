@@ -1812,69 +1812,120 @@
       </div>
     </div>  <!-- 상권 정보 입력 카드 끝 -->
 
-    <!-- 📁 최근 분석 결과 -->
+    <!-- 📁 최근 분석 결과 (로그인한 사용자만) -->
+    {% if user.is_authenticated %}
     <div class="row mt-5">
       <div class="col-lg-12">
-        <div class="card p-4 shadow-sm mb-4">
-          <h4 class="mb-3">
-            <span data-lang="KOR">📁 내 최근 분석 기록</span>
-            <span data-lang="ENG" style="display: none;">📁 My Recent Analyses</span>
-            <span data-lang="ESP" style="display: none;">📁 Mis análisis recientes</span>
-          </h4>
+        <div class="accordion mb-4" id="analysisHistoryAccordion">
+          <div class="accordion-item shadow-sm">
+            <h2 class="accordion-header" id="analysisHistoryHeading">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#analysisHistoryCollapse" aria-expanded="false" aria-controls="analysisHistoryCollapse">
+                <i class="bi bi-person-check me-2"></i>
+                <strong>
+                  <span data-lang="KOR">📁 내 최근 분석 기록</span>
+                  <span data-lang="ENG" style="display: none;">📁 My Recent Analyses</span>
+                  <span data-lang="ESP" style="display: none;">📁 Mis análisis recientes</span>
+                </strong>
+                <small class="text-muted ms-2">
+                  <span data-lang="KOR">({{ user.username }}님의 개인 기록{% if previous_docs %} - {{ previous_docs|length }}개{% endif %})</span>
+                  <span data-lang="ENG" style="display: none;">({{ user.username }}'s records{% if previous_docs %} - {{ previous_docs|length }} items{% endif %})</span>
+                  <span data-lang="ESP" style="display: none;">(Registros de {{ user.username }}{% if previous_docs %} - {{ previous_docs|length }} elementos{% endif %})</span>
+                </small>
+              </button>
+            </h2>
+            <div id="analysisHistoryCollapse" class="accordion-collapse collapse" aria-labelledby="analysisHistoryHeading" data-bs-parent="#analysisHistoryAccordion">
+              <div class="accordion-body">
           {% if previous_docs %}
-            <ul class="list-group">
+                  <ul class="list-group list-group-flush">
               {% for doc in previous_docs %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  <div>
-                    <strong>
-                      <span data-lang="KOR">분석 ID: </span>
-                      <span data-lang="ENG" style="display: none;">Analysis ID: </span>
-                      <span data-lang="ESP" style="display: none;">ID de Análisis: </span>
-                      {{ doc.request.id }}
-                    </strong>
-                    <br>
-
-                    <small>
-                      <span data-lang="KOR">주소: </span>
-                      <span data-lang="ENG" style="display: none;">Address: </span>
-                      <span data-lang="ESP" style="display: none;">Dirección: </span>
-                      {{ doc.request.address }}
-                    </small>
-                    <br>
-
-                    <small>
-                      <span data-lang="KOR">분석일: </span>
-                      <span data-lang="ENG" style="display: none;">Date: </span>
-                      <span data-lang="ESP" style="display: none;">Fecha: </span>
-                      {{ doc.created_at|date:"Y-m-d H:i" }}
-                    </small>
-                    <br>
-
-                    <small>
-                      <span data-lang="KOR">생존 확률: </span>
-                      <span data-lang="ENG" style="display: none;">Survival Rate: </span>
-                      <span data-lang="ESP" style="display: none;">Probabilidad de Supervivencia: </span>
-                      {{ doc.survival_percentage }}%
-                    </small>
-                  </div>
-                  <button class="btn btn-sm btn-outline-primary" onclick="showPdfPreview('{{ doc.request.id }}')">
-                    <span data-lang="KOR">결과보기</span>
-                    <span data-lang="ENG" style="display: none;">View Result</span>
-                    <span data-lang="ESP" style="display: none;">Ver Resultado</span>
-                  </button>
-                </li>
+                      <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <div>
+                          <strong>
+                            <span data-lang="KOR">분석 ID: {{ doc.request.id }}</span>
+                            <span data-lang="ENG" style="display: none;">Analysis ID: {{ doc.request.id }}</span>
+                            <span data-lang="ESP" style="display: none;">ID de Análisis: {{ doc.request.id }}</span>
+                          </strong>
+                          <span class="badge bg-{% if doc.survival_percentage >= 80 %}success{% elif doc.survival_percentage >= 60 %}warning{% else %}danger{% endif %} ms-2">
+                            {{ doc.survival_percentage|floatformat:1 }}%
+                          </span>
+                          <br>
+                          <small class="text-muted">
+                            <i class="bi bi-geo-alt me-1"></i>{{ doc.request.address|truncatechars:50 }}
+                          </small><br>
+                          <small class="text-muted">
+                            <i class="bi bi-calendar me-1"></i>{{ doc.created_at|date:"Y-m-d H:i" }}
+                            <i class="bi bi-shop ms-3 me-1"></i>{{ doc.request.business_type.name }}
+                          </small>
+                        </div>
+                        <button class="btn btn-sm btn-outline-primary" onclick="showPdfPreview({{ doc.request.id }})">
+                          <i class="bi bi-eye me-1"></i>
+                          <span data-lang="KOR">결과보기</span>
+                          <span data-lang="ENG" style="display: none;">View Result</span>
+                          <span data-lang="ESP" style="display: none;">Ver Resultado</span>
+                        </button>
+                      </li>
               {% endfor %}
-            </ul>
+                  </ul>
+                  {% if previous_docs|length > 5 %}
+                    <div class="text-center mt-3">
+                      <small class="text-muted">
+                        <span data-lang="KOR">최근 {{ previous_docs|length }}개 기록 중 일부만 표시됩니다.</span>
+                        <span data-lang="ENG" style="display: none;">Showing part of {{ previous_docs|length }} recent records.</span>
+                        <span data-lang="ESP" style="display: none;">Mostrando parte de {{ previous_docs|length }} registros recientes.</span>
+                      </small>
+                    </div>
+                  {% endif %}
           {% else %}
-            <p class="text-muted">
-              <span data-lang="KOR">아직 분석 결과가 없습니다.</span>
-              <span data-lang="ENG" style="display: none;">No analysis results yet.</span>
-              <span data-lang="ESP" style="display: none;">Aún no hay resultados de análisis.</span>
-            </p>
+                  <div class="text-center p-3">
+                    <i class="bi bi-folder2-open text-muted" style="font-size: 3rem;"></i>
+                    <p class="text-muted mt-2">
+                      <span data-lang="KOR">아직 분석 결과가 없습니다.</span>
+                      <span data-lang="ENG" style="display: none;">No analysis results yet.</span>
+                      <span data-lang="ESP" style="display: none;">Aún no hay resultados de análisis.</span>
+                    </p>
+                    <p class="text-muted small">
+                      <span data-lang="KOR">위의 양식을 작성하여 첫 번째 상권 분석을 시작해보세요!</span>
+                      <span data-lang="ENG" style="display: none;">Fill out the form above to start your first commercial analysis!</span>
+                      <span data-lang="ESP" style="display: none;">¡Complete el formulario de arriba para comenzar su primer análisis comercial!</span>
+                    </p>
+                  </div>
           {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
+    {% else %}
+    <!-- 로그인하지 않은 사용자를 위한 안내 -->
+    <div class="row mt-5">
+      <div class="col-lg-12">
+        <div class="card p-4 shadow-sm mb-4 border-warning">
+          <h4 class="mb-3 text-warning">
+            <i class="bi bi-person-x me-2"></i>
+            <span data-lang="KOR">개인 분석 기록</span>
+            <span data-lang="ENG" style="display: none;">Personal Analysis Records</span>
+            <span data-lang="ESP" style="display: none;">Registros de Análisis Personal</span>
+          </h4>
+          <div class="text-center p-3">
+            <i class="bi bi-lock text-warning" style="font-size: 3rem;"></i>
+            <p class="text-muted mt-2">
+              <span data-lang="KOR">분석 기록을 보려면 로그인이 필요합니다.</span>
+              <span data-lang="ENG" style="display: none;">Login required to view analysis records.</span>
+              <span data-lang="ESP" style="display: none;">Se requiere iniciar sesión para ver los registros de análisis.</span>
+            </p>
+            <a href="{% url 'custom_auth:login' %}?next={{ request.get_full_path }}" class="btn btn-warning">
+              <i class="bi bi-box-arrow-in-right me-1"></i>
+              <span data-lang="KOR">로그인하기</span>
+              <span data-lang="ENG" style="display: none;">Login</span>
+              <span data-lang="ESP" style="display: none;">Iniciar Sesión</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
 
   
     <!-- 본문: 분석 결과 + 챗봇 -->
@@ -2202,8 +2253,11 @@
                   <div class="text-center">
                     <div class="display-1 fw-bold mb-3" id="survivalPercentage">-%</div>
                     <h4 class="mb-3">장기 생존 확률</h4>
-                    <div class="progress" style="height: 20px;">
-                      <div id="survivalBar" class="progress-bar" style="width: 0%"></div>
+                    <div class="progress" style="height: 25px;">
+                      <div id="survivalBar" class="progress-bar" style="width: 0%; transition: width 0.6s ease;"></div>
+                    </div>
+                    <div class="mt-2">
+                      <span id="survivalBarText" class="badge fs-6" style="font-size: 1rem; font-weight: 500;">분석중...</span>
                     </div>
                   </div>
                 </div>
@@ -2247,15 +2301,119 @@
               </div>
               
               <div class="mt-4">
-                <h6>경쟁 강도 분석</h6>
-                <div class="progress" style="height: 25px;">
-                  <div id="competitionBar" class="progress-bar" style="width: 0%">
-                    <span id="competitionLevel">분석중...</span>
-                  </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h6 class="mb-0">경쟁 강도 분석</h6>
+                  <span id="competitionLevel" class="badge fs-6" style="font-size: 1.1rem; font-weight: 500;">분석중...</span>
+                </div>
+                <div class="progress" style="height: 40px;">
+                  <div id="competitionBar" class="progress-bar" style="width: 0%; transition: width 0.6s ease;"></div>
                 </div>
                 <small class="text-muted mt-2 d-block">
                   경쟁업체 비율이 20% 이하면 낮음, 20-50%는 보통, 50% 이상은 높음으로 분류됩니다.
                 </small>
+              </div>
+            </div>
+
+            <!-- 인구 구성 분석 -->
+            <div class="mb-4">
+              <h5 class="text-primary border-bottom border-primary pb-2 mb-3">
+                <i class="bi bi-people me-2"></i>인구 구성 분석 (1000m 반경)
+              </h5>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="card h-100">
+                    <div class="card-body text-center">
+                      <h6 class="card-title mb-3">연령대별 인구 비율</h6>
+                      <div style="position: relative; height: 300px; width: 100%;">
+                        <canvas id="ageChart" style="max-height: 300px; max-width: 100%;"></canvas>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="card h-100">
+                    <div class="card-body">
+                      <h6 class="card-title mb-3">연령대별 상세 정보</h6>
+                      <div class="row g-2">
+                        <div class="col-6">
+                          <div class="text-center p-2 border rounded">
+                            <div class="fw-bold" style="color: #FF6384;" id="age20Percent">-%</div>
+                            <small class="text-muted">20대</small>
+                          </div>
+                        </div>
+                        <div class="col-6">
+                          <div class="text-center p-2 border rounded">
+                            <div class="fw-bold" style="color: #36A2EB;" id="age30Percent">-%</div>
+                            <small class="text-muted">30대</small>
+                          </div>
+                        </div>
+                        <div class="col-6">
+                          <div class="text-center p-2 border rounded">
+                            <div class="fw-bold" style="color: #FFCE56;" id="age40Percent">-%</div>
+                            <small class="text-muted">40대</small>
+                          </div>
+                        </div>
+                        <div class="col-6">
+                          <div class="text-center p-2 border rounded">
+                            <div class="fw-bold" style="color: #4BC0C0;" id="age50Percent">-%</div>
+                            <small class="text-muted">50대</small>
+                          </div>
+                        </div>
+                        <div class="col-12">
+                          <div class="text-center p-2 border rounded">
+                            <div class="fw-bold" style="color: #9966FF;" id="age60Percent">-%</div>
+                            <small class="text-muted">60대 이상</small>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="mt-3 text-center">
+                        <small class="text-muted">
+                          <i class="bi bi-info-circle me-1"></i>
+                          1000m 반경 내 생활인구 기준
+                        </small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 외국인 분석 -->
+            <div class="mb-4">
+              <h5 class="text-primary border-bottom border-primary pb-2 mb-3">
+                <i class="bi bi-globe me-2"></i>외국인 분석
+              </h5>
+              <div class="row g-3 text-center">
+                <div class="col-md-4">
+                  <div class="card h-100">
+                    <div class="card-body">
+                      <i class="bi bi-airplane text-primary mb-2" style="font-size: 2rem;"></i>
+                      <h6>단기체류 외국인</h6>
+                      <div class="h4 text-primary" id="tempForeign1000">-</div>
+                      <small class="text-muted">1000m 반경</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="card h-100">
+                    <div class="card-body">
+                      <i class="bi bi-house text-success mb-2" style="font-size: 2rem;"></i>
+                      <h6>장기체류 외국인</h6>
+                      <div class="h4 text-success" id="longForeign300">-</div>
+                      <small class="text-muted">300m 반경</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="card h-100">
+                    <div class="card-body">
+                      <i class="bi bi-flag text-warning mb-2" style="font-size: 2rem;"></i>
+                      <h6>장기체류 중국인 비율</h6>
+                      <div class="h4 text-warning" id="longForeignCNRatio300">-</div>
+                      <small class="text-muted">1000m 반경</small>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -2286,9 +2444,14 @@
 
             <!-- PDF 저장 버튼 -->
             <div class="text-center">
-              <button class="btn btn-primary" onclick="generatePDF()">
+              <button id="pdfSaveBtn" class="btn btn-primary" onclick="generatePDF()">
                 <i class="bi bi-file-earmark-pdf me-2"></i>PDF로 저장
               </button>
+              <div id="guestPdfMessage" style="display: none;" class="alert alert-info mt-3">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>비회원 제한:</strong> PDF 저장 기능은 회원만 사용할 수 있습니다. 
+                <a href="{% url 'custom_auth:login' %}?next={{ request.get_full_path }}" class="btn btn-sm btn-outline-primary ms-2">로그인하기</a>
+              </div>
             </div>
           </div>
         </div>
@@ -2353,6 +2516,13 @@
   <script>
     console.log("🧪 Template user_id:", "{{ request.user.id|safe }}");
     console.log("🧪 User info:", JSON.parse(document.getElementById('user-info-data').textContent));
+    
+    // Django 템플릿 문법을 JavaScript 변수로 분리
+    const USER_AUTHENTICATED = {% if user.is_authenticated %}true{% else %}false{% endif %};
+    const CSRF_TOKEN = '{{ csrf_token }}';
+    
+    // 전역 변수 설정 (중복 선언 방지)
+    let currentRequestId = null;
   </script>
 {% endblock content %}
 
