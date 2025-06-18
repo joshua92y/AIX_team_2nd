@@ -1,12 +1,15 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
   <title>{% block title %}페이지 제목{% endblock %}</title>
   <meta name="description" content="">
   <meta name="keywords" content="">
+
+  <!-- ✅ CSRF token for Ajax  -->
+  <meta name="csrf-token" content="{{ csrf_token }}">
 
   <!-- Favicons -->
   <link href="{% static 'assets/img/favicon.png' %}" rel="icon">
@@ -27,53 +30,14 @@
   <!-- Main CSS -->
   <link href="{% static 'assets/css/main.css' %}" rel="stylesheet">
 
+  <!-- Extra CSS Block -->
+  {% block extra_css %}{% endblock %}
+
   <!-- include js -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
 </head>
+
 <body>
-    <!-- 네비게이션 바 -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="/">LocaAI</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'border:inquiry_list' %}">문의 게시판</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'border:notice_list' %}">공지사항</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'chatbot:chatbot' %}">챗봇</a>
-                    </li>
-                </ul>
-                <ul class="navbar-nav">
-                    {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <span class="nav-link">{{ user.username }}님</span>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'custom_auth:logout' %}">로그아웃</a>
-                    </li>
-                    {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'custom_auth:login' %}">로그인</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'custom_auth:register' %}">회원가입</a>
-                    </li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-<body class="index-page">
-
   <!-- ✅ Header -->
   {% include 'includes/header.html' %}
 
@@ -102,5 +66,49 @@
 
   <!-- Main JS -->
   <script src="{% static 'assets/js/main.js' %}"></script>
+
+  <script>
+    const sessionLang = "{{ request.session.language|default:'KOR' }}";
+
+		$(window).ready(function() {
+		  funcChangeLang(sessionLang);
+		})
+    
+    // 선택한 언어를 세션에 저장하는 function
+    function setSelectedLangValue(lang) {
+      $.ajax({
+        type: 'POST',
+        url: '/set-lang/',
+        data: {
+          "lang": lang
+        },
+        headers: {
+          'X-CSRFToken': getCSRFToken()   // 토큰추가
+        },
+        success: function(res) {
+          funcChangeLang(lang);         // UI 전환
+          console.log(res.code, res.message, 'session lang changed to', lang)
+        },
+        error: function(xhr, status, error) {
+          console.log('session lang change error', lang)
+        }
+      });
+    }
+
+    // 언어 변경 함수
+    function funcChangeLang(lang) {
+      console.log("funcChangeLang 실행됨:", lang); // 콘솔에 출력 확인
+			$('[data-lang]').hide();
+			$('[data-lang="'+lang+'"]').show();
+		}
+        
+    // CSRF 토큰을 가져오는 function
+    function getCSRFToken() {
+      return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    }
+  </script>
+
+  <!-- Extra JS Block -->
+  {% block extra_js %}{% endblock %}
 </body>
 </html>

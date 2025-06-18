@@ -8,6 +8,7 @@ class Post(models.Model):
     BOARD_TYPES = (
         ('inquiry', '문의 게시판'),
         ('notice', '공지사항'),
+        ('portfolio', '포트폴리오'),
     )
     
     title = models.CharField(max_length=200)

@@ -6,4 +6,5 @@ urlpatterns = [
     path('blog/', views.blog, name='blog'),
     path('blog-detail/', views.blog_detail, name='blog_detail'),
     path('blog-api/', views.blog_api, name='blog_api'),
+    path('set-lang/', views.set_language, name='set_language'),
 ]

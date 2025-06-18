@@ -1,3 +1,5 @@
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404
 from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -15,6 +17,8 @@ import time
 import pickle
 import numpy as np
 import os
+from django.utils.crypto import get_random_string
+from chatbot.models import ChatSession
 
 # PDF 생성은 클라이언트 사이드에서 jsPDF로 처리
 
@@ -200,7 +204,7 @@ def index(request):
         request, "AI_Analyzer/analyze.html", {"business_types": business_types}
     )
 
-
+@login_required
 def analyze_page(request):
     """
     상권 분석 페이지 뷰
@@ -211,7 +215,52 @@ def analyze_page(request):
     Returns:
         HttpResponse: 분석 페이지 렌더링 결과
     """
-    return render(request, "AI_Analyzer/analyze.html")
+    
+    """상권 분석 메인 페이지 - 사용자별 이전 분석 목록 포함"""
+    
+    user = request.user # 사용자 정보 추가
+
+    # 사용자의 가장 최근 세션 가져오기 또는 새 세션 생성 (chatbot/views.py 로직 참조)
+    try:
+        session = (
+            ChatSession.objects.filter(user=user)
+            .order_by("-lastload_at", "-created_at")
+            .first()
+        )
+        if not session:
+            session = ChatSession.objects.create(
+                user=user, session_id=get_random_string(12)
+            )
+    except Exception as e:
+        # 혹시 문제가 있으면 새 세션 생성
+        print(f"DEBUG: Error getting/creating session: {e}") # 디버깅 로그 추가
+        session = ChatSession.objects.create(
+            user=user, session_id=get_random_string(12)
+        )
+
+    user_info = {
+        "user_id": str(user.id),  # UUID를 문자열로 변환
+        "initial_session_id": session.session_id,
+        "username": user.username,
+    }
+
+    print(f"DEBUG: user.id in view: {user.id}") # 디버깅 로그 추가
+    print(f"DEBUG: session.session_id in view: {session.session_id}") # 디버깅 로그 추가
+    print(f"DEBUG: user_info dict in view: {user_info}") # 디버깅 로그 추가
+
+    # 이전 분석 결과를 사용자별로 조회 mk추가
+    previous_docs = AnalysisResult.objects.filter(
+        request__user=request.user
+    ).order_by('-created_at')
+
+    business_types = BusinessType.objects.all().order_by('id')
+
+    return render(request, 'AI_Analyzer/analyze.html', {
+        'business_types': business_types,
+        'previous_docs': previous_docs,
+        'user_info': user_info, # user_info 추가
+    })
+
 
 
 @csrf_exempt
@@ -285,6 +334,7 @@ def get_coordinates(request):
         )
 
 
+@login_required
 @csrf_exempt
 @require_http_methods(["POST"])
 def analyze_location(request):
@@ -365,6 +415,7 @@ def analyze_location(request):
             )
 
         analysis_request = AnalysisRequest.objects.create(
+            user=request.user,  # 현재 로그인한 사용자로 설정 mk추가
             address=address,
             area=float(area),
             business_type=business_type,
@@ -1259,7 +1310,7 @@ def perform_spatial_analysis(analysis_request):
         "데이터베이스 락으로 인해 분석을 완료할 수 없습니다. 잠시 후 다시 시도해 주세요."
     )
 
-
+@login_required # mk추가
 def result_detail(request, request_id):
     """
     분석 결과 상세 페이지 뷰
@@ -1273,6 +1324,14 @@ def result_detail(request, request_id):
     """
     try:
         analysis_request = AnalysisRequest.objects.get(id=request_id)
+
+        # ✅ 접근 제한: 다른 사용자 결과 접근 방지
+        if analysis_request.user != request.user:
+            print(f"⚠️ 다른 사용자의 결과에 접근 시도: {request.user} → {analysis_request.user}")
+            return render(request, 'AI_Analyzer/error.html', {
+                'error': '해당 분석 결과에 접근할 수 없습니다.'
+            })
+
         analysis_result = AnalysisResult.objects.get(request=analysis_request)
 
         return render(

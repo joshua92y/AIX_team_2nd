@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}상세 분석 결과{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <div class="row">
+    <div class="col-lg-10 offset-lg-1">
+      <div class="card p-4 shadow-sm">
+        <h2 class="mb-4">📄 분석 결과 상세 보기</h2>
+
+        <ul class="list-group list-group-flush mb-4">
+          <li class="list-group-item">
+            <strong>주소:</strong> {{ result.request.address }}
+          </li>
+          <li class="list-group-item">
+            <strong>업종 코드:</strong> {{ result.request.industry_code }}
+          </li>
+          <li class="list-group-item">
+            <strong>면적:</strong> {{ result.request.area }} ㎡
+          </li>
+          <li class="list-group-item">
+            <strong>주류 판매 여부:</strong> 
+            {% if result.request.service == "1" %}판매함{% else %}판매 안함{% endif %}
+          </li>
+          <li class="list-group-item">
+            <strong>생성일시:</strong> {{ result.created_at|date:"Y년 m월 d일 H:i" }}
+          </li>
+          <li class="list-group-item">
+            <strong>AI 예측 생존 확률:</strong> <span class="text-primary fw-bold">{{ result.survival_rate }}%</span>
+          </li>
+        </ul>
+
+        <!-- 추가 데이터 -->
+        <div class="mb-4">
+          <h5>📊 통계 정보</h5>
+          <ul class="list-group">
+            <li class="list-group-item">생활인구: {{ result.living_population|default:"-" }}명</li>
+            <li class="list-group-item">직장인구: {{ result.working_population|default:"-" }}명</li>
+            <li class="list-group-item">외국인 (단기): {{ result.foreigner_short|default:"-" }}명</li>
+            <li class="list-group-item">외국인 (장기): {{ result.foreigner_long|default:"-" }}명</li>
+            <li class="list-group-item">경쟁업체 수: {{ result.competition_count|default:"-" }}개</li>
+            <li class="list-group-item">토지가치: {{ result.land_value|default:"-" }}원</li>
+          </ul>
+        </div>
+
+        <!-- PDF 저장 버튼 (선택) -->
+        <div class="text-end">
+          <a href="/api/pdf/{{ result.request.id }}/" class="btn btn-outline-primary">PDF로 저장</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

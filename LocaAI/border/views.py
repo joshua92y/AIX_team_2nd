@@ -104,9 +104,13 @@ def post_detail(request, pk):
 
 def post_create(request, board_type):
     # 공지사항 작성 권한 체크
-    if board_type == 'notice' and not (request.user.is_authenticated and request.user.is_admin()):
-        messages.error(request, '공지사항은 관리자만 작성할 수 있습니다.')
-        return redirect('border:notice_list' if board_type == 'notice' else 'border:inquiry_list')
+    if board_type in ['notice', 'portfolio'] and not (request.user.is_authenticated and request.user.is_admin()):
+        messages.error(request, f'{board_type} 게시판은 관리자만 작성할 수 있습니다.')
+        redirect_map = {
+            'notice': 'border:notice_list',
+            'portfolio': 'border:portfolio_list',
+        }
+        return redirect(redirect_map.get(board_type, 'border:inquiry_list'))
     
     if request.method == 'POST':
         form = PostForm(request.POST, request.FILES, user=request.user)  # user 객체를 kwargs로 전달
@@ -129,10 +133,9 @@ def post_update(request, pk):
     post = get_object_or_404(Post, pk=pk)
 
     # 권한 체크 (existing logic remains)
-    if post.board_type == 'notice':
+    if post.board_type in ['notice', 'portfolio']:
         if not (request.user.is_authenticated and request.user.is_admin()):
-            print("공지사항 수정 권한 없음")
-            messages.error(request, '공지사항은 관리자만 수정할 수 있습니다.')
+            messages.error(request, f'{post.board_type} 게시판은 관리자만 수정할 수 있습니다.')
             return redirect('border:post_detail', pk=pk)
     else:  # inquiry
         if request.user.is_authenticated:
@@ -234,9 +237,9 @@ def post_delete(request, pk):
     post = get_object_or_404(Post, pk=pk)
     
     # 권한 체크
-    if post.board_type == 'notice':
+    if post.board_type in ['notice', 'portfolio']:
         if not (request.user.is_authenticated and request.user.is_admin()):
-            messages.error(request, '공지사항은 관리자만 삭제할 수 있습니다.')
+            messages.error(request, f'{post.board_type} 게시판은 관리자만 삭제할 수 있습니다.')
             return redirect('border:post_detail', pk=pk)
     else:  # inquiry
         if request.user.is_authenticated:

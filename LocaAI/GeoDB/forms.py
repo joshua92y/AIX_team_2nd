@@ -99,4 +99,11 @@ class EditablePublicBuildingForm(BaseGISForm):
     """편집 가능한 공공건물 폼"""
     class Meta:
         model = EditablePublicBuilding
+        fields = '__all__'
+
+
+class AdministrativeDistrictForm(BaseGISForm):
+    """행정동구역 폼"""
+    class Meta:
+        model = AdministrativeDistrict
         fields = '__all__' 

@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
 from django.utils.text import slugify
+from AI_Analyzer.models import AnalysisResult
 
 User = get_user_model()
 
@@ -13,6 +14,7 @@ class ChatSession(models.Model):
     title = models.SlugField(max_length=200, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     lastload_at = models.DateTimeField(default=now)
+    analysis_result = models.ForeignKey(AnalysisResult, on_delete=models.SET_NULL, null=True, blank=True, related_name='chat_sessions')
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None

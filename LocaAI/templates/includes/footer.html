@@ -1,4 +1,5 @@
 {% load static %}
+
 <footer id="footer" class="footer">
 
   <div class="footer-newsletter">
@@ -7,12 +8,27 @@
         <div class="col-lg-6">
           <h4>Join Our Newsletter</h4>
           <p>Subscribe to our newsletter and receive the latest news about our products and services!</p>
-          <form action="forms/newsletter.php" method="post" class="php-email-form">
-            <div class="newsletter-form"><input type="email" name="email"><input type="submit" value="Subscribe"></div>
-            <div class="loading">Loading</div>
-            <div class="error-message"></div>
-            <div class="sent-message">Your subscription request has been sent. Thank you!</div>
+          <form id="newsletter-form" action="#" method="post" class="newsletter-form">
+            <input
+              type="email"
+              name="email"
+              id="newsletter-email"
+              placeholder="Enter your email"
+              required
+              class="flex-grow px-4 py-3 text-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            >
+            <button type="submit" class="btn btn-primary">
+              Subscribe
+            </button>
           </form>
+          <!-- ✅ form 아래 메시지 출력 -->
+          <div id="newsletter-feedback" style="margin-top: 0.5rem;">
+            <div class="loading text-sm text-gray-500" style="display: none;">Loading...</div>
+            <div class="error-message text-sm text-red-500" style="display: none;"></div>
+            <div class="sent-message text-sm text-green-600" style="display: none;"></div>
+          </div>
+          <div class="loading" style="display: none;">Loading...</div>
+          <div class="sent-message" style="display: none; color: green;">Your subscription request has been sent. Thank you!</div>
         </div>
       </div>
     </div>
@@ -27,10 +43,18 @@
         <span class="sitename">Loca Ai</span>
       </a>
       <div class="footer-contact pt-3">
-        <p>MBC 아카데미 신림</p>
-        <p>서울 관악구 남부순환로 1633 7~8F</p>
+        <p>
+          <span data-lang="KOR">MBC 아카데미 신림</span>
+          <span data-lang="ENG">MBC Academy Sillim</span>
+          <span data-lang="ESP">Academia MBC Sillim</span>
+        </p>
+        <p>
+          <span data-lang="KOR">서울 관악구 남부순환로 1633 7~8F</span>
+          <span data-lang="ENG">1633 Nambusunhwan-ro, Gwanak-gu, Seoul, 7~8F</span>
+          <span data-lang="ESP">1633 Nambusunhwan-ro, Gwanak-gu, Seúl, 7~8F</span>
+        </p>
         <p class="mt-3"><strong>Phone:</strong> <span>+82 2675-7776</span></p>
-        <p><strong>Email:</strong> <span>info@example.com</span></p>
+        <p><strong>Email:</strong> <span>aix25best@gmail.com</span></p>
       </div>
     </div>
 
@@ -38,18 +62,26 @@
     <div class="col-12 col-lg-4 footer-links mb-4 mb-lg-0 d-flex flex-column align-items-center">
       <h4>Useful Links</h4>
       <ul class="list-unstyled text-center">
-        <li><a href="/#hero" class="active">Home</a></li>
+        <li><a href="{% url 'index' %}" class="active">Home</a></li>
         <li><a href="/#about">About</a></li>
-        <li><a href="/#services">Services</a></li>
-        <li><a href="/#team">Team</a></li>
-        <li><a href="{% url 'blog' %}">Blog</a></li>
+        <li><a href="{% url 'AI_Analyzer:analyze_page' %}">Services</a></li>
+        <li><a href="#">Data</a></li>
+        <li><a href="{% url 'border:portfolio_list' %}">Portfolio</a></li>
+        <li><a href="/#contact">Contact Us</a></li>
+        <li><a href="#">guide book</a></li>
+        <li><a href="{% url 'border:notice_list' %}">notice</a></li>
+        <li><a href="{% url 'border:inquiry_list' %}">customer board</a></li>        
       </ul>
     </div>
 
     <!-- 오른쪽: Follow Us -->
     <div class="col-12 col-lg-4 text-center text-lg-end">
       <h4>Follow Us</h4>
-      <p>Loca Ai를 팔로우하고 최신 소식을 받아보세요.</p>
+      <p>
+        <span data-lang="KOR">Loca Ai를 팔로우하고 최신 소식을 받아보세요.</span>
+        <span data-lang="ENG">Follow Loca Ai to get the latest updates.</span>
+        <span data-lang="ESP">Sigue a Loca Ai para recibir las últimas noticias.</span>
+      </p>
       <div class="social-links d-flex justify-content-center justify-content-lg-end">
         <a href=""><i class="bi bi-twitter-x"></i></a>
         <a href=""><i class="bi bi-facebook"></i></a>
@@ -66,3 +98,73 @@
   </div>
 
 </footer>
+
+
+<script>
+document.getElementById('newsletter-form').addEventListener('submit', async function (e) {
+  e.preventDefault();
+
+  const form = e.target;
+  const emailInput = form.querySelector('#newsletter-email');
+  const email = emailInput.value.trim();
+
+  const feedbackContainer = document.getElementById('newsletter-feedback');
+  const loading = feedbackContainer.querySelector('.loading');
+  const error = feedbackContainer.querySelector('.error-message');
+  const success = feedbackContainer.querySelector('.sent-message');
+
+  loading.style.display = 'block';
+  error.style.display = 'none';
+  success.style.display = 'none';
+
+  try {
+    const response = await fetch('/api/smtp/newsletter/subscribe/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    const data = await response.json();
+    loading.style.display = 'none';
+
+    if (!response.ok) {
+      error.innerText = data.email?.[0] || data.detail || '구독 요청 중 오류가 발생했습니다.';
+      error.style.color = '';  // 인라인 스타일 초기화
+      error.classList.remove('text-green-600');
+      error.classList.add('text-red-500');
+      error.style.display = 'block';
+    } else {
+      success.innerText = data.message || '구독이 완료되었습니다!';
+      success.classList.remove('text-red-500');
+      success.classList.add('text-green-600');
+      success.style.display = 'block';
+      emailInput.value = '';
+    }
+
+  } catch (err) {
+    loading.style.display = 'none';
+    error.innerText = '서버에 연결할 수 없습니다.';
+    error.classList.remove('text-green-600');
+    error.classList.add('text-red-500');
+    error.style.display = 'block';
+  }
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+});
+</script>

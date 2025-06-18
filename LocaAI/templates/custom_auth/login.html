@@ -1,36 +1,207 @@
-{% extends 'base.html' %}
 {% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>로그인</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-{% block title %}로그인 - LocaAI{% endblock %}
+  <!-- 로그인 전용 CSS -->
+  <link rel="stylesheet" href="{% static 'assets/css/signin.css' %}">
 
-{% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h4 class="mb-0">로그인</h4>
-                </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        {% for field in form %}
-                        <div class="mb-3">
-                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                            {{ field.errors }}
-                            {{ field }}
-                        </div>
-                        {% endfor %}
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">로그인</button>
-                        </div>
-                    </form>
-                    <div class="mt-3 text-center">
-                        <p class="mb-0">계정이 없으신가요? <a href="{% url 'custom_auth:register' %}">회원가입</a></p>
-                    </div>
-                </div>
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+  <!-- LOGIN MODULE -->
+  <div class="login">
+    <div class="wrap">
+
+      <!-- LOGIN FORM -->
+      <div class="user">
+        
+        <!-- LOGO -->
+        <div class="logo-wrapper" style="position: relative;">
+          <a href="{% url 'index' %}" class="logo-link">
+            <img src="{% static 'assets/img/logo.png' %}" alt="로고">
+            <span class="logo-text">Loca<span class="highlight">AI</span></span>
+          </a>
+
+          <!-- 여기 안으로 넣기 -->
+          <div id="toggle-wrap" style="position: absolute; top: 8px; right: 10px;">
+            <div id="toggle-terms">
+              <div id="cross">
+                <span></span>
+                <span></span>
+              </div>
             </div>
+          </div>
+        </div>
+
+        <!-- TOGGLE -->
+        <div id="toggle-wrap">
+          <div id="toggle-terms">
+            <div id="cross">
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- RECOVERY -->
+        <div class="recovery">
+          <h2>Password Recovery</h2>
+          <p>Enter either the <strong>email address</strong> or <strong>username</strong> on the account and <strong>click Submit</strong></p>
+          <p>We'll email instructions on how to reset your password.</p>
+          <!-- form 태그 -->
+          <form class="recovery-form" method="post" data-reset-url="{% url 'custom_auth:custom_password_reset' %}">
+          {% csrf_token %}
+            <input type="text" class="input" name="identifier" placeholder="Enter Email or Username Here">
+            <input type="submit" class="button" value="Submit">
+          </form>
+          {% if form.errors %}
+            <p class="error">{{ form.errors }}</p>
+          {% endif %}
+          <p class="mssg">An email has been sent to you with further instructions.</p>
+        </div>
+
+        <!-- FORM -->
+        <div class="form-wrap">
+        <!-- TABS -->
+        <div class="tabs">
+          <h3 class="login-tab">
+            <a class="log-in {% if not is_signup %}active{% endif %}" href="#login-tab-content"><span>Login</span></a>
+          </h3>
+          <h3 class="signup-tab">
+            <a class="sign-up {% if is_signup %}active{% endif %}" href="#signup-tab-content"><span>Sign Up</span></a>
+          </h3>
+        </div>
+
+        <!-- TABS CONTENT -->
+        <div class="tabs-content">
+          
+          <!-- LOGIN TAB -->
+          <div id="login-tab-content" {% if not is_signup %}class="active"{% endif %}>
+            <form class="login-form" method="post" action="{% url 'custom_auth:login' %}">
+              {% csrf_token %}
+              {% if next %}
+              <input type="hidden" name="next" value="{{ next }}">
+              {% endif %}
+              <input type="text" class="input" name="username" placeholder="Email or Username">
+              <input type="password" class="input" name="password" placeholder="Password">
+              <button type="submit" class="button">Login</button>
+            </form>
+            <div class="help-action">
+              <p><a class="forgot" href="#">Forgot your password?</a></p>
+            </div>
+          </div>
+
+          <!-- SIGNUP TAB -->
+          <div id="signup-tab-content" {% if is_signup %}class="active"{% endif %}>
+            <form class="signup-form" method="post" action="{% url 'custom_auth:register' %}">
+              {% csrf_token %}
+              <input type="text" name="username" class="input" placeholder="Username"
+                    value="{{ form.username.value|default_if_none:'' }}">
+              {% if form.username.errors %}
+                <p class="error">{{ form.username.errors.0 }}</p>
+              {% endif %}
+
+              <input type="email" name="email" class="input" placeholder="Email"
+                    value="{{ form.email.value|default_if_none:'' }}">
+              {% if form.email.errors %}
+                <p class="error">{{ form.email.errors.0 }}</p>
+              {% endif %}
+
+              <input type="password" name="password1" class="input" placeholder="Password">
+              {% if form.password1.errors %}
+                <p class="error">{{ form.password1.errors.0 }}</p>
+              {% endif %}
+
+              <input type="password" name="password2" class="input" placeholder="Password 확인">
+              {% if form.password2.errors %}
+                <p class="error">{{ form.password2.errors.0 }}</p>
+              {% endif %}
+
+              <button type="submit" class="button">Sign Up</button>
+            </form>
+          </div>
+
         </div>
     </div>
-</div>
-{% endblock %} 
+  </div>
+
+  <script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const recoveryForm = document.querySelector(".recovery-form");
+
+    if (recoveryForm) {
+      const submitBtn = recoveryForm.querySelector('input[type="submit"]');
+      const msgEl = document.querySelector(".mssg");
+
+      recoveryForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const identifier = recoveryForm.querySelector("input[name='identifier']").value;
+        const csrfToken = recoveryForm.querySelector("[name='csrfmiddlewaretoken']").value;
+        const resetUrl = recoveryForm.dataset.resetUrl;
+
+        // 초기 설정
+        submitBtn.disabled = true;
+        submitBtn.value = "🔄 전송 중...";
+        submitBtn.classList.remove("success", "error");
+        msgEl.style.display = "none";
+
+        fetch(resetUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken,
+          },
+          body: JSON.stringify({ identifier }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log("📬 서버 응답:", data);
+            msgEl.textContent = data.detail || "메일이 전송되었습니다.";
+            msgEl.classList.add("animate-success");
+            msgEl.style.display = "block";
+
+            submitBtn.value = "✅ 전송 완료";
+            submitBtn.classList.add("success");
+
+            setTimeout(() => {
+              submitBtn.disabled = false;
+              submitBtn.value = "Submit";
+              submitBtn.classList.remove("success");
+              msgEl.classList.remove("animate-success");
+            }, 2500);
+          })
+          .catch((error) => {
+            console.error("❌ 에러 발생:", error);
+            msgEl.textContent = "요청에 실패했습니다.";
+            msgEl.classList.add("animate-error");
+            msgEl.style.display = "block";
+
+            submitBtn.value = "❌ 실패";
+            submitBtn.classList.add("error");
+
+            setTimeout(() => {
+              submitBtn.disabled = false;
+              submitBtn.value = "Submit";
+              submitBtn.classList.remove("error");
+              msgEl.classList.remove("animate-error");
+            }, 2500);
+          });
+      });
+    }
+  });
+  </script>
+
+
+
+
+
+  <!-- 로그인용 JS -->
+  <script src="{% static 'assets/js/signin.js' %}"></script>
+</body>
+</html>

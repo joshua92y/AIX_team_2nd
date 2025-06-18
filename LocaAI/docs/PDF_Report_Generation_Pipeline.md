@@ -351,7 +351,7 @@ function downloadPDF() {
     document.getElementById('downloadPdfBtn').style.display = 'none';
     document.getElementById('retryPdfBtn').style.display = 'none';
     
-    // 서버에서 PDF 데이터 가져오기
+            // 서버에서 PDF 데이터 가져오기
     fetch(`/ai_analyzer/pdf-data/${currentRequestId}/`, {
         method: 'GET',
         headers: {
