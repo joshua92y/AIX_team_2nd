@@ -28,7 +28,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
-from chatbot.models import ChatSession
 
 # PDF 생성은 클라이언트 사이드에서 jsPDF로 처리
 
@@ -227,36 +226,6 @@ def analyze_page(request):
     
     """상권 분석 메인 페이지 - 회원은 이전 분석 목록 포함, 비회원은 분석만 가능"""
     
-    user = request.user # 사용자 정보 추가
-
-    # 사용자의 가장 최근 세션 가져오기 또는 새 세션 생성 (chatbot/views.py 로직 참조)
-    try:
-        session = (
-            ChatSession.objects.filter(user=user)
-            .order_by("-lastload_at", "-created_at")
-            .first()
-        )
-        if not session:
-            session = ChatSession.objects.create(
-                user=user, session_id=get_random_string(12)
-            )
-    except Exception as e:
-        # 혹시 문제가 있으면 새 세션 생성
-        print(f"DEBUG: Error getting/creating session: {e}") # 디버깅 로그 추가
-        session = ChatSession.objects.create(
-            user=user, session_id=get_random_string(12)
-        )
-
-    user_info = {
-        "user_id": str(user.id),  # UUID를 문자열로 변환
-        "initial_session_id": session.session_id,
-        "username": user.username,
-    }
-
-    print(f"DEBUG: user.id in view: {user.id}") # 디버깅 로그 추가
-    print(f"DEBUG: session.session_id in view: {session.session_id}") # 디버깅 로그 추가
-    print(f"DEBUG: user_info dict in view: {user_info}") # 디버깅 로그 추가
-
     # 로그인한 사용자만 이전 분석 결과 조회 (최근 10개만) - 개인화 개선
     previous_docs = []
     user_stats = {}
@@ -283,7 +252,6 @@ def analyze_page(request):
     return render(request, 'AI_Analyzer/analyze.html', {
         'business_types': business_types,
         'previous_docs': previous_docs,
-        'user_info': user_info, # user_info 추가
         'user_stats': user_stats  # 사용자 통계 추가
     })
 
