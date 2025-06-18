@@ -3126,14 +3126,22 @@
     <div class="row">
       <div class="col-lg-12 mb-4">
         <div class="card p-4 shadow-sm">
-          <h3 class="mb-3">상권 정보입력</h3>
+          <h3 class="mb-3">
+            <span data-lang="KOR">상권 정보입력</span>
+            <span data-lang="ENG" style="display: none;">Enter Commercial Area Info</span>
+            <span data-lang="ESP" style="display: none;">Ingresar Información del Área Comercial</span>
+          </h3>
 
           <form>
             <div class="row g-3">
               <!-- 업종 선택 -->
               <div class="col-md-3">
-                <label for="business_type_id" class="form-label">업종</label>
-                <select class="form-select" id="business_type_id" name="business_type_id" required>
+                <label for="business_type_id" class="form-label">
+                  <span data-lang="KOR">업종</span>
+                  <span data-lang="ENG" style="display: none;">Industry</span>
+                  <span data-lang="ESP" style="display: none;">Industria</span>
+                </label>
+                <select class="form-select" id="business_type_id" name="business_type_id" data-lang="KOR" required>
                   <option selected disabled>업종을 선택해주세요</option>
                   <option value="0">감성주점</option>
                   <option value="1">경양식</option>
@@ -3174,6 +3182,92 @@
                   <option value="36">호프/통닭</option>
                   <option value="37">횟집</option>
                 </select>
+                
+                <!-- 영어 업종 선택 -->
+                <select class="form-select" id="industryEng" name="business_type_id" data-lang="ENG" style="display: none;" required>
+                  <option selected disabled>Please select an industry</option>
+                  <option value="0">Sentimental pub</option>
+                  <option value="1">Western restaurant</option>
+                  <option value="2">Tourist hotel</option>
+                  <option value="3">Theatre</option>
+                  <option value="4">Others</option>
+                  <option value="5">Other refreshment food</option>
+                  <option value="6">Kimbap(lunchbox)</option>
+                  <option value="7">Cafe</option>
+                  <option value="8">Cold noodle restaurant</option>
+                  <option value="9">Teahouse</option>
+                  <option value="10">Rice cake cafe</option>
+                  <option value="11">Live cafe</option>
+                  <option value="12">Department store</option>
+                  <option value="13">Pufferfish handling</option>
+                  <option value="14">Snack bar</option>
+                  <option value="15">Buffet</option>
+                  <option value="16">Meat(charcoal grill)</option>
+                  <option value="17">Ice cream</option>
+                  <option value="18">Foreign food specialty(Indian, Thai, etc.)</option>
+                  <option value="19">Amusement park</option>
+                  <option value="20">General cooking sales</option>
+                  <option value="21">Japanese food</option>
+                  <option value="22">Traditional tea house</option>
+                  <option value="23">Rice wine/draft beer/soju bar</option>
+                  <option value="24">Chinese food</option>
+                  <option value="25">Railway station</option>
+                  <option value="26">Catering</option>
+                  <option value="27">Coffee shop</option>
+                  <option value="28">Kids cafe</option>
+                  <option value="29">Soup(health food)</option>
+                  <option value="30">Whole chicken(fried chicken)</option>
+                  <option value="31">Family restaurant</option>
+                  <option value="32">Fast food</option>
+                  <option value="33">Convenience store</option>
+                  <option value="34">Food truck</option>
+                  <option value="35">Korean food</option>
+                  <option value="36">Beer/chicken pub</option>
+                  <option value="37">Raw fish restaurant</option>
+                </select>
+                
+                <!-- 스페인어 업종 선택 -->
+                <select class="form-select" id="industryEsp" name="business_type_id" data-lang="ESP" style="display: none;" required>
+                  <option selected disabled>Por favor seleccione una industria</option>
+                  <option value="0">Pub sentimental</option>
+                  <option value="1">Restaurante occidental</option>
+                  <option value="2">Hotel turístico</option>
+                  <option value="3">Teatro</option>
+                  <option value="4">Otros</option>
+                  <option value="5">Otra comida refrescante</option>
+                  <option value="6">Kimbap(fiambrera)</option>
+                  <option value="7">Café</option>
+                  <option value="8">Restaurante de fideos fríos</option>
+                  <option value="9">Casa de té</option>
+                  <option value="10">Café de pastel de arroz</option>
+                  <option value="11">Café en vivo</option>
+                  <option value="12">Grandes almacenes</option>
+                  <option value="13">Manejo de pez globo</option>
+                  <option value="14">Bar de aperitivos</option>
+                  <option value="15">Buffet</option>
+                  <option value="16">Carne(parrilla de carbón)</option>
+                  <option value="17">Helado</option>
+                  <option value="18">Especialidad de comida extranjera(India, Tailandia, etc.)</option>
+                  <option value="19">Parque de atracciones</option>
+                  <option value="20">Ventas de cocina general</option>
+                  <option value="21">Comida japonesa</option>
+                  <option value="22">Casa de té tradicional</option>
+                  <option value="23">Vino de arroz/cerveza de barril/bar de soju</option>
+                  <option value="24">Comida china</option>
+                  <option value="25">Estación de ferrocarril</option>
+                  <option value="26">Catering</option>
+                  <option value="27">Cafetería</option>
+                  <option value="28">Café para niños</option>
+                  <option value="29">Sopa(comida saludable)</option>
+                  <option value="30">Pollo entero(pollo frito)</option>
+                  <option value="31">Restaurante familiar</option>
+                  <option value="32">Comida rápida</option>
+                  <option value="33">Tienda de conveniencia</option>
+                  <option value="34">Camión de comida</option>
+                  <option value="35">Comida coreana</option>
+                  <option value="36">Pub de cerveza/pollo</option>
+                  <option value="37">Restaurante de pescado crudo</option>
+                </select>
               </div>
 
               <!-- 주소 입력 -->
@@ -3182,35 +3276,61 @@
                 <input type="hidden" id="longitude" name="longitude">
                 <input type="hidden" id="x_coord" name="x_coord">
                 <input type="hidden" id="y_coord" name="y_coord">
-                <label for="address" class="form-label">주소</label>
+                
+                <label for="address" class="form-label" data-lang="KOR">주소</label>
+                <label for="address" class="form-label" data-lang="ENG" style="display: none;">Address</label>
+                <label for="address" class="form-label" data-lang="ESP" style="display: none;">Dirección</label>
+                
                 <div class="input-group">
-                  <input type="text" class="form-control" id="address" name="address" placeholder="클릭하여 주소를 검색하세요" readonly onclick="openAddressSearch()" style="cursor: pointer;">
-                  <button class="btn btn-outline-secondary" type="button" onclick="openAddressSearch()">
-                    <i class="bi bi-search me-1"></i>검색
-                  </button>
+                  <input type="text" class="form-control lang-input" id="address" name="address" placeholder="주소를 입력해주세요" data-lang="KOR">
+                  <button class="btn btn-outline-secondary lang-btn" type="button" onclick="openAddressSearch()" data-lang="KOR">검색</button>
+                  
+                  <input type="text" class="form-control lang-input" id="addressEng" name="address" placeholder="Please enter your address" data-lang="ENG" style="display: none;">
+                  <button class="btn btn-outline-secondary lang-btn" type="button" onclick="openAddressSearch()" data-lang="ENG" style="display: none;">Search</button>
+                  
+                  <input type="text" class="form-control lang-input" id="addressEsp" name="address" placeholder="Por favor ingrese la dirección" data-lang="ESP" style="display: none;">
+                  <button class="btn btn-outline-secondary lang-btn" type="button" onclick="openAddressSearch()" data-lang="ESP" style="display: none;">Buscar</button>
                 </div>
               </div>
 
               <!-- 점포 면적 입력 -->
               <div class="col-md-3">
-                <label for="area" class="form-label">점포 면적 (㎡)</label>
+                <label for="area" class="form-label" data-lang="KOR">점포 면적 (㎡)</label>
+                <label for="area" class="form-label" data-lang="ENG" style="display: none;">Store Area (㎡)</label>
+                <label for="area" class="form-label" data-lang="ESP" style="display: none;">Área del local (㎡)</label>
                 <input type="number" class="form-control" id="area" name="area" placeholder="예: 33.2" required>
               </div>
 
               <!-- 주류 판매 여부 선택 -->
               <div class="col-md-3">
-                <label for="service_type" class="form-label">주류 판매 여부</label>
+                <label for="service_type" class="form-label">
+                  <span data-lang="KOR">주류 판매 여부</span>
+                  <span data-lang="ENG" style="display: none;">Alcohol Sale</span>
+                  <span data-lang="ESP" style="display: none;">Venta de alcohol</span>
+                </label>
                 <select class="form-select" id="service_type" name="service_type" required>
-                  <option selected disabled>선택</option>
-                  <option value="1">판매함</option>
-                  <option value="0">판매 안함</option>
+                  <option selected disabled data-lang="KOR">선택</option>
+                  <option disabled style="display: none;" data-lang="ENG">Choose</option>
+                  <option disabled style="display: none;" data-lang="ESP">Seleccionar</option>
+                  
+                  <option value="1" data-lang="KOR">판매함</option>
+                  <option value="1" data-lang="ENG" style="display: none;">Yes</option>
+                  <option value="1" data-lang="ESP" style="display: none;">Sí</option>
+                  
+                  <option value="0" data-lang="KOR">판매 안함</option>
+                  <option value="0" data-lang="ENG" style="display: none;">No</option>
+                  <option value="0" data-lang="ESP" style="display: none;">No</option>
                 </select>
               </div>
             </div>
 
             <!-- 버튼 -->
             <div class="text-center mt-4">
-              <button type="button" class="btn btn-primary custom px-5" onclick="getFormData();">상권 분석하기</button>
+              <button type="button" class="btn btn-primary custom px-5" onclick="getFormData();">
+                <span data-lang="KOR">상권 분석하기</span>
+                <span data-lang="ENG" style="display: none;">Analyze Commercial Area</span>
+                <span data-lang="ESP" style="display: none;">Analizar Zona Comercial</span>
+              </button>
             </div>
           </form>
 
@@ -3227,7 +3347,11 @@
             <h2 class="accordion-header" id="analysisHistoryHeading">
               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#analysisHistoryCollapse" aria-expanded="false" aria-controls="analysisHistoryCollapse">
                 <i class="bi bi-person-check me-2"></i>
-                <strong>📁 내 최근 분석 기록</strong>
+                <strong>
+                  <span data-lang="KOR">📁 내 최근 분석 기록</span>
+                  <span data-lang="ENG" style="display: none;">📁 My Recent Analyses</span>
+                  <span data-lang="ESP" style="display: none;">📁 Mis análisis recientes</span>
+                </strong>
                 <small class="text-muted ms-2">({{ user.username }}님의 개인 기록{% if previous_docs %} - {{ previous_docs|length }}개{% endif %})</small>
               </button>
             </h2>
@@ -3302,7 +3426,11 @@
       <div class="col-lg-8 mb-4 analysis-container">
         <div class="card p-4 shadow-sm">
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <h4 class="mb-0">상권 분석 결과</h4>
+            <h4 class="mb-0">
+              <span data-lang="KOR">상권 분석 결과</span>
+              <span data-lang="ENG" style="display: none;">Commercial Area Analysis Result</span>
+              <span data-lang="ESP" style="display: none;">Resultado del Análisis Comercial</span>
+            </h4>
             <!-- 모달 버튼 -->
             <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#explanationModal">
               상권 분석 도움말
