@@ -1604,7 +1604,7 @@
                   <span data-lang="ESP">Industria</span>
                 </label>
                 <!-- 한국어 업종 선택 -->
-                <select class="form-select" id="industryKor" name="industry" data-lang="KOR" required>
+                <select class="form-select" id="business_type_id" name="industry" data-lang="KOR" required>
                   <option selected disabled>업종을 선택해주세요</option>
                   <option value="0">감성주점</option>
                   <option value="1">경양식</option>
@@ -1750,16 +1750,16 @@
 
                 <div class="input-group">
                   <!-- 한국어 -->
-                  <input type="text" class="form-control" id="address-kor" name="address" placeholder="주소를 입력해주세요" data-lang="KOR">
-                  <button class="btn btn-outline-secondary" type="button" onclick="openAddressSearch()" data-lang="KOR">검색</button>
+                  <input type="text" class="form-control lang-input" id="address" name="address" placeholder="주소를 입력해주세요" data-lang="KOR">
+                  <button class="btn btn-outline-secondary lang-btn" type="button" onclick="openAddressSearch()" data-lang="KOR">검색</button>
 
                   <!-- 영어 -->
-                  <input type="text" class="form-control" id="address-eng" name="address" placeholder="Please enter your address" data-lang="ENG" style="display: none;">
-                  <button class="btn btn-outline-secondary" type="button" onclick="openAddressSearch()" data-lang="ENG" style="display: none;">Search</button>
+                  <input type="text" class="form-control lang-input" id="address-eng" name="address" placeholder="Please enter your address" data-lang="ENG" style="display: none;">
+                  <button class="btn btn-outline-secondary lang-btn" type="button" onclick="openAddressSearch()" data-lang="ENG" style="display: none;">Search</button>
 
                   <!-- 스페인어 -->
-                  <input type="text" class="form-control" id="address-esp" name="address" placeholder="Por favor ingrese la dirección" data-lang="ESP" style="display: none;">
-                  <button class="btn btn-outline-secondary" type="button" onclick="openAddressSearch()" data-lang="ESP" style="display: none;">Buscar</button>
+                  <input type="text" class="form-control lang-input" id="address-esp" name="address" placeholder="Por favor ingrese la dirección" data-lang="ESP" style="display: none;">
+                  <button class="btn btn-outline-secondary lang-btn" type="button" onclick="openAddressSearch()" data-lang="ESP" style="display: none;">Buscar</button>
                 </div>
               </div>
 
@@ -1774,28 +1774,26 @@
 
               <!-- 주류 판매 여부 선택 -->
               <div class="col-md-2">
-                <!-- 라벨 -->
-                <label for="service" class="form-label" data-lang="KOR">주류 판매 여부</label>
-                <label for="service" class="form-label" data-lang="ENG" style="display: none;">Alcohol Sale</label>
-                <label for="service" class="form-label" data-lang="ESP" style="display: none;">Venta de alcohol</label>
+                <!-- 라벨 (언어별 span으로 구분) -->
+                <label for="service" class="form-label">
+                  <span data-lang="KOR">주류 판매 여부</span>
+                  <span data-lang="ENG" style="display: none;">Alcohol Sale</span>
+                  <span data-lang="ESP" style="display: none;">Venta de alcohol</span>
+                </label>
 
-                <!-- 셀렉트박스 -->
-                <select class="form-select" id="service" name="service" required data-lang="KOR">
-                  <option selected disabled>선택</option>
-                  <option value="1">판매함</option>
-                  <option value="0">판매 안함</option>
-                </select>
+                <!-- 단 하나의 select -->
+                <select class="form-select" id="service_type" name="service" required>
+                  <option selected disabled data-lang="KOR">선택</option>
+                  <option disabled style="display: none;" data-lang="ENG">Choose</option>
+                  <option disabled style="display: none;" data-lang="ESP">Seleccionar</option>
 
-                <select class="form-select" name="service" required data-lang="ENG" style="display: none;">
-                  <option selected disabled>Choose</option>
-                  <option value="1">Yes</option>
-                  <option value="0">No</option>
-                </select>
+                  <option value="1" data-lang="KOR">판매함</option>
+                  <option value="1" data-lang="ENG" style="display: none;">Yes</option>
+                  <option value="1" data-lang="ESP" style="display: none;">Sí</option>
 
-                <select class="form-select" name="service" required data-lang="ESP" style="display: none;">
-                  <option selected disabled>Seleccionar</option>
-                  <option value="1">Sí</option>
-                  <option value="0">No</option>
+                  <option value="0" data-lang="KOR">판매 안함</option>
+                  <option value="0" data-lang="ENG" style="display: none;">No</option>
+                  <option value="0" data-lang="ESP" style="display: none;">No</option>
                 </select>
               </div>
             </div>
@@ -2015,7 +2013,7 @@
                 </span>
               </p>
 
-              <button class="btn btn-outline-secondary mt-3" disabled>
+              <button class="btn btn-outline-secondary mt-3">
                 <i class="bi bi-file-earmark-pdf me-2"></i>
                 <span data-lang="KOR">PDF로 저장</span>
                 <span data-lang="ENG" style="display: none;">Save as PDF</span>
