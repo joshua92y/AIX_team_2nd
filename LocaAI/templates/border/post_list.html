@@ -2,15 +2,7 @@
 {% load static %}
 {% load user_extras %}
 {% block title %}
-    <span data-lang="KOR">
-        {% if board_type == 'inquiry' %}문의 게시판{% elif board_type == 'portfolio' %}포트폴리오{% else %}공지사항{% endif %} - LocaAI
-    </span>
-    <span data-lang="ENG" style="display:none">
-        {% if board_type == 'inquiry' %}Inquiry Board{% elif board_type == 'portfolio' %}Portfolio{% else %}Notice{% endif %} - LocaAI
-    </span>
-    <span data-lang="ESP" style="display:none">
-        {% if board_type == 'inquiry' %}Tablero de consultas{% elif board_type == 'portfolio' %}Portafolio{% else %}Avisos{% endif %} - LocaAI
-    </span>
+    {% if board_type == 'inquiry' %}문의 게시판{% elif board_type == 'portfolio' %}포트폴리오{% else %}공지사항{% endif %} - LocaAI
 {% endblock %}
 
 {% block css %}
