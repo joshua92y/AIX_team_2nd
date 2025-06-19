@@ -19,8 +19,7 @@ djangorestframework==3.16.0
 filelock==3.18.0
 frozenlist==1.7.0
 fsspec==2025.5.1
-GDAL @ https://github.com/cgohlke/geospatial-wheels/releases/download/v2025.3.30/gdal-3.10.2-cp313-cp313-win_amd64.whl
-greenlet==3.2.3
+# GDAL==3.10.2  # removed due to macOS build compatibility issues
 grpcio==1.73.0
 h11==0.16.0
 h2==4.2.0
@@ -64,7 +63,6 @@ pydantic-settings==2.9.1
 pydantic_core==2.33.2
 pyproj==3.7.1
 python-dotenv==1.1.0
-pywin32==310
 PyYAML==6.0.2
 qdrant-client==1.14.2
 regex==2024.11.6
