@@ -1,134 +1,131 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block title %}가이드북 - LocaAI{% endblock %}
+
 {% block content %}
 <div class="container my-5 d-flex flex-column align-items-center justify-content-center text-center">
   <div class="text-center mb-4">
-    <h2 class="display-6 fw-bold text-primary">Loca AI 사용 가이드북 📘</h2>
-    <p>소상공인을 위한 맞춤 AI 비즈니스 솔루션</p>
+      <h2 class="display-6 fw-bold text-primary">
+        <i class="bi bi-journal-bookmark-fill text-primary me-2"></i>
+        <!--<i class="bi bi-book text-primary me-2"></i>-->
+        Loca AI 가이드북
+      </h2>
+    <p>단계별 안내로 복잡한 상권 분석도 누구나 쉽게 시작 가능</p>
   </div>
 
-  <div class="accordion w-100" id="guideAccordion" style="max-width: 800px;">
+  <div class="accordion w-100" id="guideAccordion" style="max-width: 1000px;">
 
     <!-- 1. 소개 -->
     <div class="accordion-item">
-    <h2 class="accordion-header" id="headingOne">
+      <h2 class="accordion-header" id="headingOne">
         <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
-        1. 소개
+          1. 소개
         </button>
-    </h2>
-    <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#guideAccordion">
+      </h2>
+
+      <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#guideAccordion">
         <div class="accordion-body">
 
-        <div class="card border-0 shadow-sm mx-auto" style="max-width: 800px;">
+          <div class="card border-0 shadow-sm mx-auto" style="max-width: 1000px;">
             <div class="card-body text-center">
 
-            <img src="{% static 'assets/img/guide01.png' %}" class="img-fluid rounded mb-4" alt="소개 이미지" style="max-width: 500px;">
+              <img src="{% static 'assets/img/guide01.png' %}" class="img-fluid rounded mb-4" alt="소개 이미지" style="max-width: 500px;">
 
-            <h4 class="card-title mb-3">
+              <h4 class="card-title mb-3">
                 <i class="bi bi-geo-alt-fill text-primary me-2"></i>
-                상권 분석 전문 AI <strong class="text-primary">LocaAI</strong>
-            </h4>
+                상권 분석 <strong class="text-primary">Loca AI</strong>
+              </h4>
 
-            <p class="text-muted mb-3">
-                데이터 기반으로 
-                <span class="px-2 py-1 rounded fw-bold" style="background-color: #e6f4ea; color: #198754;">
-                    창업 성공률
-                </span>
-                을 높이세요!
-            </p>
+              <p class="text-muted mb-3">
+                소상공인을 위한 맞춤 AI 비즈니스 솔루션
+              </p>
 
-            <hr class="my-4">
+              <hr class="my-4">
 
-            <!-- 설명 영역 -->
-            <div class="text-start">
+              <!-- 설명 영역 -->
+              <div class="text-start">
 
+                <!-- 상권 분석이란 -->
                 <h5 class="mb-2">
-                <i class="bi bi-question-circle text-primary me-2"></i>
-                상권 분석이란?
+                  <i class="bi bi-question-circle text-success me-2"></i>
+                  상권 분석이란 ?
                 </h5>
                 <p class="mb-4">
-                특정 위치를 중심으로 유동 인구, 경쟁 업체, 소비 패턴 등 다양한 정보를 분석하여
-                <strong>사업 가능성과 생존률</strong>을 판단하는 과정입니다.
+                  상권 분석은 특정 지역의 유동 인구, 경쟁 업종, 소비 성향 등<br>
+                  다양한 상업 정보를 종합해 <strong>입지의 상업적 특성과 가능성</strong>을 파악하는 분석 과정입니다.
                 </p>
 
+                <!-- 왜 필요한가요? -->
                 <h5 class="mb-2">
-                <i class="bi bi-exclamation-circle text-warning me-2"></i>
-                왜 필요한가요?
+                  <i class="bi bi-exclamation-circle text-warning me-2"></i>
+                  왜 필요한가요 ?
                 </h5>
                 <p class="mb-4">
-                창업은 큰 투자입니다.
-                <strong>객관적인 데이터</strong>를 바탕으로 입지 선택과 업종 결정을 하여
-                실패 확률을 줄이고 <strong>성공 가능성</strong>을 높이세요.
+                  창업은 단순한 도전이 아닌, 인생의 중요한 선택입니다.<br>
+                  방대한 상권 데이터를 분석하여 <strong>창업의 불확실성</strong>을 줄이고, <strong>성공 가능성</strong>을 높여드립니다.
                 </p>
 
+                <!-- LocaAI가 도와드립니다 -->
                 <h5 class="mb-3">
-                <i class="bi bi-lightning-charge-fill text-primary me-2"></i>
-                LocaAI가 도와드립니다!
+                  <i class="bi bi-lightning-charge-fill text-primary me-2"></i>
+                  <strong>Loca AI</strong> 가 도와드립니다!
                 </h5>
                 <p>
-                다음 정보를 입력하시면 자동 분석 리포트를 생성해 드립니다:
+                  아래 4가지만 입력하면, 상권 분석 리포트를 받아보실 수 있습니다 :
                 </p>
 
-                <!-- 입력 정보 안내 (가로 정렬된 카드 스타일) -->
+                <!-- 입력 정보 안내 -->
                 <div class="row text-center justify-content-center my-4">
-
-                <div class="col-6 col-md-3 mb-3" data-aos="fade-up" data-aos-delay="100">
+                  <div class="col-6 col-md-3 mb-3" data-aos="fade-up" data-aos-delay="100">
                     <div class="border rounded py-3 px-2 h-100 d-flex flex-column align-items-center bg-light">
-                    <i class="bi bi-check-circle-fill text-success fs-4 mb-2"></i>
-                    <div class="fw-semibold">업종</div>
+                      <i class="bi bi-check-circle-fill text-success fs-4 mb-2"></i>
+                      <div class="fw-semibold">업종</div>
                     </div>
-                </div>
+                  </div>
 
-                <div class="col-6 col-md-3 mb-3" data-aos="fade-up" data-aos-delay="200">
+                  <div class="col-6 col-md-3 mb-3" data-aos="fade-up" data-aos-delay="200">
                     <div class="border rounded py-3 px-2 h-100 d-flex flex-column align-items-center bg-light">
-                    <i class="bi bi-check-circle-fill text-success fs-4 mb-2"></i>
-                    <div class="fw-semibold">주소</div>
+                      <i class="bi bi-check-circle-fill text-success fs-4 mb-2"></i>
+                      <div class="fw-semibold">주소</div>
                     </div>
-                </div>
+                  </div>
 
-                <div class="col-6 col-md-3 mb-3" data-aos="fade-up" data-aos-delay="300">
+                  <div class="col-6 col-md-3 mb-3" data-aos="fade-up" data-aos-delay="300">
                     <div class="border rounded py-3 px-2 h-100 d-flex flex-column align-items-center bg-light">
-                    <i class="bi bi-check-circle-fill text-success fs-4 mb-2"></i>
-                    <div class="fw-semibold">점포 면적</div>
+                      <i class="bi bi-check-circle-fill text-success fs-4 mb-2"></i>
+                      <div class="fw-semibold">점포 면적</div>
                     </div>
-                </div>
+                  </div>
 
-                <div class="col-6 col-md-3 mb-3" data-aos="fade-up" data-aos-delay="400">
+                  <div class="col-6 col-md-3 mb-3" data-aos="fade-up" data-aos-delay="400">
                     <div class="border rounded py-3 px-2 h-100 d-flex flex-column align-items-center bg-light">
-                    <i class="bi bi-check-circle-fill text-success fs-4 mb-2"></i>
-                    <div class="fw-semibold">주류 판매 여부</div>
+                      <i class="bi bi-check-circle-fill text-success fs-4 mb-2"></i>
+                      <div class="fw-semibold">주류 판매 여부</div>
                     </div>
+                  </div>
                 </div>
 
-                </div>
-
+                <!-- 결과 안내 -->
                 <p class="mb-4">
-                입력하신 정보를 바탕으로 <strong class="text-primary">LocaAI</strong>는 최신 빅데이터 분석을 통해<br>
-                해당 위치의 
-                <span style="padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-weight: bold; background-color: #e6f4ea; color: #198754;">
-                    장기 생존률
-                </span>
-                을 예측하고<br>
-                <strong>맞춤형 상권 분석 리포트</strong>를 PDF로 제공합니다.
+                  입력된 정보를 바탕으로 <strong class="text-primary">LocaAI</strong>는 최신 빅데이터를 분석하여 <br>
+                  해당 입지의 <strong>장기 생존률</strong>을 예측하고, <strong>맞춤형 리포트</strong>를 PDF로 제공해드립니다.
                 </p>
 
-                <div class="alert alert-primary mt-4" role="alert">
-                <strong>복잡한 상권 분석, 이제는 LocaAI와 함께 손쉽게 시작하세요!</strong><br>
-                데이터 기반의 의사결정으로 성공적인 창업을 응원합니다.
+                <!-- 캐치프레이즈 -->
+                <div class="alert alert-primary mt-4 text-center" role="alert">
+                  <strong>이제 감이 아닌, 데이터로 시작하세요 ! LocaAI가 함께합니다.</strong><br>
+                  <strong>빅데이터 기반의 상권분석으로 성공적인 창업을 도와드립니다.</strong>
                 </div>
 
-                <p class="text-muted text-center mt-4"><em>– 상권 분석 AI, LocaAI –</em></p>
+                <!--<p class="text-muted text-center mt-4"><em>– LocaAI –</em></p>-->
 
-            </div>
-            </div>
-        </div>
-
-        </div>
-    </div>
-    </div>
-
-
+              </div> <!-- 설명 영역 -->
+            </div> <!-- card-body -->
+          </div> <!-- card -->
+        </div> <!-- accordion-body -->
+      </div> <!-- accordion-collapse -->
+    </div> <!-- accordion-item -->
 
     <!-- 2. 회원가입 및 로그인 -->
     <div class="accordion-item">
@@ -139,10 +136,42 @@
       </h2>
       <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#guideAccordion">
         <div class="accordion-body">
-          <ol class="text-start mx-auto" style="max-width: 600px;">
-            <li>상단 우측 <strong>“Sign Up” 또는 “Login”</strong> 클릭</li>
-            <li>간단한 정보 입력 후 로그인 완료</li>
-          </ol>
+
+          <div class="card border-0 shadow-sm mx-auto" style="max-width: 1000px;">
+            <div class="card-body text-center">
+
+              <img src="{% static 'assets/img/guide02.png' %}" class="img-fluid rounded mb-4" alt="회원가입 이미지" style="max-width: 500px;">
+
+              <h4 class="card-title mb-3">
+                <i class="bi bi-person-check-fill text-primary me-2"></i>
+                <strong class="text-primary">Loca AI</strong> 회원가입 안내
+              </h4>
+
+              <p class="text-muted mb-3">
+                누구나 3단계로 간편하게 가입할 수 있습니다.
+              </p>
+              <hr class="my-4">
+
+              <!-- 설명 영역 -->
+              <div class="text-start mx-auto" style="max-width: 1000px;">
+
+                <h5 class="mb-2">
+                  <i class="bi bi-box-arrow-in-right text-success me-2"></i>
+                  가입 절차 안내
+                </h5>
+
+                <ol class="mb-4">
+                  <li>상단 우측 <strong>“Get Started”</strong> 클릭 후 <strong>“Sign Up”</strong> 선택</li>
+                  <li><strong>Username, Email, Password</strong> 입력</li>
+                  <li>가입 후 <strong>즉시 서비스 이용 가능</strong></li>
+                </ol>
+
+                <div class="alert alert-primary mt-4 text-center" role="alert">
+                  복잡한 인증 없이, <strong>3가지 정보만 입력하면 간단하게 가입 완료!</strong><br>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -156,12 +185,54 @@
       </h2>
       <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#guideAccordion">
         <div class="accordion-body">
-          <ol class="text-start mx-auto" style="max-width: 600px;">
-            <li>업종을 선택</li>
-            <li>주소 입력 후 <strong>검색</strong> 클릭</li>
-            <li>점포 면적과 주류 판매 여부 입력</li>
-            <li><strong>“상권 분석하기”</strong> 클릭</li>
-          </ol>
+          <div class="card border-0 shadow-sm mx-auto" style="max-width: 1000px;">
+            <div class="card-body text-center">
+
+              <!-- 📷 이미지 -->
+              <img src="{% static 'assets/img/guide03.png' %}" 
+                class="rounded mb-4" 
+                alt="상권 정보 입력 화면 예시" 
+                style="width: 100%; height: auto; object-fit: contain;">
+
+              <!-- 🔹 제목 -->
+              <h4 class="card-title mb-3">
+                <i class="bi bi-pencil-square text-primary me-2"></i>
+                <strong class="text-primary"></strong>상권 정보 </strong>입력 방법
+              </h4>
+
+              <p class="text-muted mb-3">
+                아래 항목들을 입력하면 상권 분석이 시작됩니다.
+              </p>
+
+              <hr class="my-4">
+
+              <!-- 설명 -->
+              <div class="text-start mx-auto" style="max-width: 1000px;">
+                <h5 class="mb-2">
+                  <i class="bi bi-info-circle-fill text-success me-2"></i>
+                  입력 항목 안내
+                </h5>
+
+                <ol class="mb-4" style="line-height: 1.8;">
+                  <li><strong>업종</strong>을 선택해주세요.</li>
+                  <li><strong>검색</strong> 버튼을 누른 후 <strong>주소</strong>를 입력해주세요.</li>
+                  <li><strong>점포 면적</strong>을 숫자로 입력해주세요.</li>
+                  <li><strong>주류 판매 여부</strong>를 선택해주세요.</li>
+                  <li>모든 정보를 입력한 후 <strong>“상권 분석하기”</strong> 버튼을 클릭하면 분석이 시작됩니다.</li>
+                </ol>
+
+                <!-- 알림 -->
+                <div class="alert alert-primary mt-4 text-center" role="alert">
+                  <strong>상권 분석 서비스는 로그인 후 이용 가능합니다.</strong><br>
+                    지금 로그인하고 <strong>LocaAI</strong>의 분석 서비스를 바로 이용해보세요!<br>
+                  <a href="{% url 'custom_auth:login' %}?next={{ request.path }}" 
+                    class="text-decoration-underline fw-semibold text-primary">
+                    로그인 하러 가기 <i class="bi bi-arrow-right-circle ms-1"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -325,4 +396,8 @@
     font-size: 1rem;
   }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/accordion-scroll.js' %}"></script>
 {% endblock %}
