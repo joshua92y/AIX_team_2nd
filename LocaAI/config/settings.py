@@ -25,6 +25,7 @@ import platform
 
 # 프로젝트 루트 디렉토리
 BASE_DIR = Path(__file__).resolve().parent.parent
+print(f"[INFO] 프로젝트 루트 디렉토리: {BASE_DIR}")
 
 # 환경변수 로드
 load_dotenv(dotenv_path=BASE_DIR / ".env")
@@ -36,6 +37,7 @@ load_dotenv(dotenv_path=BASE_DIR / ".env")
 # 비밀 키 (환경변수에서 로드, 프로덕션에서는 반드시 설정)
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-your-secret-key")
 FERNET_KEY = os.getenv("FERNET_KEY")
+print(f"[INFO] 비밀 키 로드: {'설정됨' if FERNET_KEY else '없음'}")
 
 # 디버그 모드 (프로덕션에서는 반드시 False)
 DEBUG = os.getenv("DEBUG", "True").lower() in ("true", "1", "yes", "on")
@@ -195,6 +197,10 @@ if platform.system() == "Windows":
     GDAL_LIBRARY_PATH = os.path.join(
         BASE_DIR, "venv", "Lib", "site-packages", "osgeo", "gdal.dll"
     )
+elif platform.system() == "Darwin":  # macOS
+    GEOS_LIBRARY_PATH = "/opt/homebrew/lib/libgeos_c.dylib"  # brew로 설치한 기본 위치
+    GDAL_LIBRARY_PATH = "/opt/homebrew/lib/libgdal.dylib"    # brew 설치 경로 (gdal 3.x 기준)
+
 # 지도 설정 (Leaflet.js 직접 사용)
 
 # ============================================================================
@@ -249,7 +255,9 @@ KAKAO_JS_API_KEY = os.getenv("KAKAO_JS_API_KEY")
 # RAG 모델설정: LocaAI/chatbot/rag_settings.py
 # Qdrant 설정
 QDRANT_URL = os.getenv("QDRANT_URL")
+print(f"[INFO] Qdrant URL: {QDRANT_URL}")
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
+print(f"[INFO] Qdrant API Key: {'설정됨' if QDRANT_API_KEY else '없음'}")
 
 # Channels (WebSocket) 설정
 CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
