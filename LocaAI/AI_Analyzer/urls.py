@@ -12,4 +12,5 @@ urlpatterns = [
     path('result/<int:request_id>/', views.result_detail, name='result_detail'),
     path('database-info/', views.database_info, name='database_info'),
     path('pdf-data/<int:request_id>/', views.get_pdf_data, name='get_pdf_data'),
+    path('api/result-list/<int:user_id>/', views.analysis_list_api, name='analysis_list_api'),
 ] 

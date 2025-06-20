@@ -1,17 +1,15 @@
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404
-from django.shortcuts import render, redirect
+#LocaAI/AI_Analyzer/viws.py
+from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.contrib.gis.db import models
 from django.db import connection, transaction
 from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth.decorators import user_passes_test
-from django.template.loader import render_to_string
+from django.contrib.auth.decorators import login_required
 import json
 import requests
-from pyproj import Proj, Transformer
+from pyproj import Transformer
 from .models import BusinessType, AnalysisRequest, AnalysisResult
 import time
 import pickle
@@ -19,7 +17,9 @@ import numpy as np
 import os
 from django.utils.crypto import get_random_string
 from chatbot.models import ChatSession
-
+from django.core.serializers.json import DjangoJSONEncoder
+import pandas as pd
+from datetime import datetime, timedelta
 # PDF 생성은 클라이언트 사이드에서 jsPDF로 처리
 
 # XGBoost 모델 전역 변수
@@ -255,10 +255,14 @@ def analyze_page(request):
 
     business_types = BusinessType.objects.all().order_by('id')
 
+    # JSON 직렬화
+    user_info_json = json.dumps(user_info, cls=DjangoJSONEncoder)
+    previous_docs_json = json.dumps(list(previous_docs.values()), cls=DjangoJSONEncoder)
+
     return render(request, 'AI_Analyzer/analyze.html', {
         'business_types': business_types,
-        'previous_docs': previous_docs,
-        'user_info': user_info, # user_info 추가
+        'previous_docs': previous_docs_json,
+        'user_info': user_info_json, # user_info 추가
     })
 
 
@@ -1368,13 +1372,16 @@ def get_analysis_result_api(request, request_id):
         analysis_request = AnalysisRequest.objects.get(id=request_id)
         analysis_result = AnalysisResult.objects.get(request=analysis_request)
 
-        # 결과 데이터를 딕셔너리로 변환
+        # 서비스 유형명 변환
+        service_type_map = {0: "휴게음식점", 1: "일반음식점"}
+        service_type_name = service_type_map.get(analysis_request.service_type, "알 수 없음")
+
         result_data = {
             "request": {
                 "address": analysis_request.address,
-                "business_type_id": analysis_request.business_type_id,
+                "business_type": analysis_request.business_type.name,  # 업종명 반환
                 "area": float(analysis_request.area),
-                "service_type": analysis_request.service_type,
+                "service_type": service_type_name,  # 한글명 반환
                 "created_at": analysis_request.created_at.isoformat(),
             },
             "result": {
@@ -1664,3 +1671,45 @@ def format_currency(value):
         return f"₩{value/10000:.0f}만"
     else:
         return f"₩{value:,.0f}"
+
+def analysis_list_api(request, user_id):
+    print(f"🔍 API 호출: user_id={user_id}")
+    try:
+        from custom_auth.models import User
+        user = User.objects.get(id=user_id)
+        print(f"✅ 사용자 찾음: {user.username}")
+        
+        analysis = AnalysisRequest.objects.filter(user=user).order_by('-created_at')
+        print(f"📊 분석 요청 수: {analysis.count()}")
+        
+        data = []
+        
+        for item in analysis:
+            # AnalysisResult에서 survival_percentage 가져오기
+            try:
+                analysis_result = AnalysisResult.objects.get(request=item)
+                survival_percentage = analysis_result.survival_percentage
+                result_id = analysis_result.pk
+            except AnalysisResult.DoesNotExist:
+                survival_percentage = None
+                result_id = None
+                print(f"⚠️ 분석 결과 없음: {item.id}")
+            
+            data.append({
+                "id": item.id,
+                "result_id": result_id,
+                "user": item.user.username,
+                "business_type": item.business_type.name if item.business_type else "알 수 없음",
+                "address": item.address,
+                "survival_percentage": survival_percentage,
+                "created_at": item.created_at.strftime("%Y-%m-%d %H:%M"),
+            })
+        
+        print(f"📤 응답 데이터: {len(data)}개 항목")
+        return JsonResponse(data, safe=False)
+    except User.DoesNotExist:
+        print(f"❌ 사용자를 찾을 수 없음: user_id={user_id}")
+        return JsonResponse({"error": "사용자를 찾을 수 없습니다."}, status=404)
+    except Exception as e:
+        print(f"❌ 오류 발생: {str(e)}")
+        return JsonResponse({"error": f"오류가 발생했습니다: {str(e)}"}, status=500)
