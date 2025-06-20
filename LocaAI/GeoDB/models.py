@@ -370,3 +370,42 @@ class StoreResult(models.Model):
     def survival_percentage(self):
         """생존 확률을 퍼센트로 반환"""
         return self.result * 100 if self.result else 0
+
+
+class SeoulDistrict(models.Model):
+    """서울시 구별 경계면 데이터"""
+    adm_sect_c = django_models.CharField(max_length=10, unique=True, verbose_name="행정구역코드", help_text="5자리 구별 코드 (11110: 종로구)")
+    sgg_nm = django_models.CharField(max_length=100, verbose_name="구명", help_text="서울특별시 종로구")
+    sgg_oid = django_models.FloatField(null=True, blank=True, verbose_name="구 OID")
+    col_adm_se = django_models.CharField(max_length=10, null=True, blank=True, verbose_name="행정구분")
+    
+    # 지오메트리
+    geom = models.MultiPolygonField(srid=5186, verbose_name="구경계면")
+    
+    # 생성/수정 시간
+    created_at = django_models.DateTimeField(auto_now_add=True, verbose_name="생성시간")
+    updated_at = django_models.DateTimeField(auto_now=True, verbose_name="수정시간")
+    
+    class Meta:
+        db_table = 'seoul_district'
+        verbose_name = "서울시구별경계"
+        verbose_name_plural = "서울시구별경계"
+        managed = True
+        ordering = ['adm_sect_c']
+    
+    def __str__(self):
+        return f"{self.sgg_nm} ({self.adm_sect_c})"
+    
+    @property
+    def district_name_only(self):
+        """구명만 추출 (예: '서울특별시 종로구' → '종로구')"""
+        if self.sgg_nm and '구' in self.sgg_nm:
+            return self.sgg_nm.split()[-1]
+        return self.sgg_nm or ''
+    
+    @property 
+    def area_sqkm(self):
+        """구면적을 제곱킬로미터로 반환"""
+        if self.geom:
+            return round(self.geom.area / 1000000, 2)  # sqm to sqkm
+        return 0

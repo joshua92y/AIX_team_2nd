@@ -713,4 +713,177 @@ def get_geometry_data(request):
         return JsonResponse(data)
     except Exception as e:
         print(f"Geometry data error: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+def get_seoul_districts_geojson(request):
+    """서울시 구별 경계면 벡터 타일 데이터 API"""
+    try:
+        from GeoDB.models import SeoulDistrict
+        from django.contrib.gis.serializers import geojson
+        from django.db.models import Count, Sum
+        
+        # 구별 데이터 조회
+        districts = SeoulDistrict.objects.all().order_by('adm_sect_c')
+        
+        features = []
+        for district in districts:
+            # 해당 구의 행정동 수 계산 (간단한 쿼리)
+            with connection.cursor() as cursor:
+                # 행정동 수 계산
+                cursor.execute("""
+                    SELECT COUNT(*) FROM "행정동구역" 
+                    WHERE emd_cd LIKE %s
+                """, [f"{district.adm_sect_c}%"])
+                dong_count = cursor.fetchone()[0] or 0
+                
+                # 인구 수 계산
+                cursor.execute("""
+                    SELECT COALESCE(SUM(총생활인구수_sum), 0) FROM dong_life 
+                    WHERE emd_cd LIKE %s
+                """, [f"{district.adm_sect_c}%"])
+                total_population = int(cursor.fetchone()[0] or 0)
+                
+                # 실제 업체 수 계산 (dong_store 테이블에서 COUNT)
+                cursor.execute("""
+                    SELECT COUNT(*) FROM dong_store ds
+                    JOIN "행정동구역" ad ON ds.emd_kor_nm = ad.emd_kor_nm
+                    WHERE ad.emd_cd LIKE %s
+                """, [f"{district.adm_sect_c}%"])
+                total_businesses = int(cursor.fetchone()[0] or 0)
+            
+            # GeoJSON Feature 생성 (원본 좌표계 사용)
+            feature = {
+                "type": "Feature",
+                "id": district.adm_sect_c,  # 벡터 타일용 ID 추가
+                "properties": {
+                    "adm_sect_c": district.adm_sect_c,
+                    "district_name": district.district_name_only,
+                    "full_name": district.sgg_nm,
+                    "dong_count": dong_count,
+                    "total_population": total_population,
+                    "total_businesses": total_businesses,
+                    "area_sqkm": district.area_sqkm
+                },
+                "geometry": json.loads(district.geom.geojson)
+            }
+            features.append(feature)
+        
+        geojson_data = {
+            "type": "FeatureCollection",
+            "features": features
+        }
+        
+        return JsonResponse(geojson_data)
+        
+    except Exception as e:
+        print(f"Seoul districts GeoJSON error: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+def get_dong_geojson(request):
+    """행정동별 경계면 GeoJSON 데이터 API"""
+    try:
+        gu_code = request.GET.get('gu_code')  # 구 코드 (예: 11110)
+        
+        if not gu_code:
+            return JsonResponse({'error': 'gu_code parameter required'}, status=400)
+        
+        from django.db import connection
+        
+        with connection.cursor() as cursor:
+            # 행정동 기본 정보 조회 (원본 좌표계 사용)
+            cursor.execute("""
+                SELECT emd_cd, emd_kor_nm, emd_eng_nm, ST_AsGeoJSON(geom) as geometry
+                FROM "행정동구역"
+                WHERE emd_cd LIKE %s
+                ORDER BY emd_cd
+            """, [f"{gu_code}%"])
+            
+            admin_results = cursor.fetchall()
+            
+            # 각 행정동의 인구 데이터 조회
+            results = []
+            for admin_row in admin_results:
+                emd_cd, emd_kor_nm, emd_eng_nm, geometry = admin_row
+                
+                # 거주인구 조회
+                cursor.execute("""
+                    SELECT COALESCE(총생활인구수_sum, 0) FROM dong_life WHERE emd_cd = %s
+                """, [emd_cd])
+                dong_life = int(cursor.fetchone()[0] or 0)
+                
+                # 직장인구 조회
+                cursor.execute("""
+                    SELECT COALESCE(총_직장_인구_수_sum, 0) FROM dong_work WHERE emd_cd = %s
+                """, [emd_cd])
+                dong_work = int(cursor.fetchone()[0] or 0)
+                
+                # 실제 업체 수 조회 (dong_store 테이블에서 COUNT)
+                cursor.execute("""
+                    SELECT COUNT(*) FROM dong_store ds
+                    JOIN "행정동구역" ad ON ds.emd_kor_nm = ad.emd_kor_nm
+                    WHERE ad.emd_cd = %s
+                """, [emd_cd])
+                total_businesses = int(cursor.fetchone()[0] or 0)
+                
+                # 평균 생존률 조회 (store_result 테이블에서)
+                cursor.execute("""
+                    SELECT COALESCE(AVG(result * 100), 0) 
+                    FROM "store_result" sr
+                    JOIN "행정동구역" ad ON sr.emd_kor_nm = ad.emd_kor_nm
+                    WHERE ad.emd_cd = %s AND sr.result IS NOT NULL
+                """, [emd_cd])
+                avg_survival_rate = float(cursor.fetchone()[0] or 0)
+                
+                # 가장 많은 업종 조회 (dong_store 테이블에서)
+                cursor.execute("""
+                    SELECT ds."UPTAENM", COUNT(*) as count
+                    FROM dong_store ds
+                    JOIN "행정동구역" ad ON ds.emd_kor_nm = ad.emd_kor_nm
+                    WHERE ad.emd_cd = %s AND ds."UPTAENM" IS NOT NULL
+                    GROUP BY ds."UPTAENM"
+                    ORDER BY count DESC
+                    LIMIT 1
+                """, [emd_cd])
+                
+                top_business_result = cursor.fetchone()
+                if top_business_result:
+                    top_business_type, top_business_count = top_business_result
+                else:
+                    top_business_type, top_business_count = "정보없음", 0
+                
+                results.append((emd_cd, emd_kor_nm, emd_eng_nm, geometry, dong_life, dong_work, 
+                              total_businesses, avg_survival_rate, top_business_type, top_business_count))
+        
+        features = []
+        for row in results:
+            emd_cd, emd_kor_nm, emd_eng_nm, geometry, dong_life, dong_work, total_businesses, avg_survival_rate, top_business_type, top_business_count = row
+            
+            feature = {
+                "type": "Feature",
+                "properties": {
+                    "emd_cd": emd_cd,
+                    "emd_kor_nm": emd_kor_nm,
+                    "emd_eng_nm": emd_eng_nm,
+                    "dong_life": int(dong_life) if dong_life else 0,
+                    "dong_work": int(dong_work) if dong_work else 0,
+                    "total_businesses": int(total_businesses) if total_businesses else 0,
+                    "avg_survival_rate": round(float(avg_survival_rate), 1),
+                    "top_business_type": top_business_type,
+                    "top_business_count": int(top_business_count)
+                },
+                "geometry": json.loads(geometry) if geometry else None
+            }
+            features.append(feature)
+        
+        geojson_data = {
+            "type": "FeatureCollection",
+            "features": features
+        }
+        
+        return JsonResponse(geojson_data)
+        
+    except Exception as e:
+        print(f"Dong GeoJSON error: {e}")
         return JsonResponse({'error': str(e)}, status=500) 
