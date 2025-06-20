@@ -835,9 +835,9 @@ function loadTopBusinessSurvivalChart() {
                             callbacks: {
                                 afterBody: function(context) {
                                     const index = context[0].dataIndex;
-                                    const analysisCount = data.analysis_counts[index];
-                                    const avgArea = data.avg_area[index];
-                                    const storeCount = data.store_counts[index];
+                                    const analysisCount = (data.analysis_counts && data.analysis_counts[index]) || 0;
+                                    const avgArea = (data.avg_area && data.avg_area[index]) || 0;
+                                    const storeCount = (data.store_counts && data.store_counts[index]) || 0;
                                     
                                     return [
                                         `분석 건수: ${analysisCount}건`,
@@ -891,13 +891,23 @@ function loadTopBusinessSurvivalChart() {
 function updateTopBusinessDetails(data) {
     const detailsContainer = document.getElementById('topBusinessDetails');
     
+    if (!data || !data.labels || !data.datasets || !data.datasets[0] || !data.datasets[0].data) {
+        detailsContainer.innerHTML = `
+            <div class="text-center text-muted">
+                <i class="bi bi-exclamation-triangle mb-2"></i>
+                <p>데이터를 불러올 수 없습니다.</p>
+            </div>
+        `;
+        return;
+    }
+    
     let detailsHtml = '';
     data.labels.forEach((label, index) => {
         const rank = index + 1;
-        const rate = data.datasets[0].data[index];
-        const analysisCount = data.analysis_counts[index];
-        const avgArea = data.avg_area[index];
-        const storeCount = data.store_counts[index];
+        const rate = data.datasets[0].data[index] || 0;
+        const analysisCount = (data.analysis_counts && data.analysis_counts[index]) || 0;
+        const avgArea = (data.avg_area && data.avg_area[index]) || 0;
+        const storeCount = (data.store_counts && data.store_counts[index]) || 0;
         
         detailsHtml += `
             <div class="business-detail-item">

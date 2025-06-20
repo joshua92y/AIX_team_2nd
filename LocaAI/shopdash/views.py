@@ -445,12 +445,12 @@ def top_business_survival_rate(request):
             """)
             total_count = cursor.fetchone()[0]
         
-        # 결과가 없는 경우 기본값 사용
+        # 결과가 없는 경우 기본값 사용 (업종명, 생존률, 분석건수, 평균면적, 0건수, 최소생존률, 최대생존률)
         if not results:
             results = [
-                ('카페', 75.5, 15, 45.2),
-                ('음식점', 68.2, 22, 52.8),
-                ('편의점', 62.1, 18, 38.9)
+                ('카페', 75.5, 15, 45.2, 0, 65.0, 85.0),
+                ('음식점', 68.2, 22, 52.8, 1, 55.0, 80.0),
+                ('편의점', 62.1, 18, 38.9, 2, 45.0, 75.0)
             ]
         
         data = {
@@ -472,6 +472,7 @@ def top_business_survival_rate(request):
             }],
             'analysis_counts': [int(row[2]) for row in results],
             'avg_area': [round(float(row[3]), 1) for row in results],
+            'store_counts': [int(row[2]) for row in results],  # 분석 건수를 매장 수로 사용
             'zero_counts': [int(row[4]) for row in results],  # 0값 개수
             'min_survival_rates': [round(float(row[5]), 1) for row in results],  # 최소 생존률
             'max_survival_rates': [round(float(row[6]), 1) for row in results],  # 최대 생존률
@@ -501,6 +502,7 @@ def top_business_survival_rate(request):
             }],
             'analysis_counts': [15, 22, 18],
             'avg_area': [45.2, 52.8, 38.9],
+            'store_counts': [15, 22, 18],
             'total_analysis_count': 0
         })
 
