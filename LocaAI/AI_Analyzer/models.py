@@ -1,5 +1,6 @@
 from django.contrib.gis.db import models
 from django.db import models as django_models
+from django.utils.crypto import get_random_string
 
 
 class BusinessType(django_models.Model):
@@ -168,5 +169,54 @@ class AnalysisResult(django_models.Model):
     
     def __str__(self):
         return f"{self.request.address} 분석결과"
+
+
+class AnalysisSession(django_models.Model):
+    """
+    분석 결과별 채팅 세션
+    
+    분석 결과를 기반으로 한 AI 상담 세션을 관리
+    chatbot.ChatSession과 유사하지만 특정 분석 결과에 연결됨
+    """
+    session_id = django_models.CharField(max_length=50, unique=True, verbose_name="세션 ID")
+    user = django_models.ForeignKey('custom_auth.User', on_delete=django_models.CASCADE, verbose_name="사용자")
+    analysis_result = django_models.ForeignKey(AnalysisResult, on_delete=django_models.CASCADE, verbose_name="분석 결과", null=True, blank=True)
+    title = django_models.CharField(max_length=100, verbose_name="세션 제목", blank=True)
+    created_at = django_models.DateTimeField(auto_now_add=True, verbose_name="생성일시")
+    lastload_at = django_models.DateTimeField(auto_now=True, verbose_name="마지막 접근일시")
+    
+    def save(self, *args, **kwargs):
+        if not self.session_id:
+            self.session_id = get_random_string(12)
+        if not self.title and self.analysis_result:
+            self.title = f"{self.analysis_result.request.address} 분석 상담"
+        super().save(*args, **kwargs)
+    
+    class Meta:
+        verbose_name = "분석 세션"
+        verbose_name_plural = "분석 세션"
+        ordering = ['-lastload_at', '-created_at']
+    
+    def __str__(self):
+        return f"📊 {self.session_id} - {self.title}"
+
+
+class AnalysisSessionLog(django_models.Model):
+    """
+    분석 세션별 채팅 로그
+    
+    AnalysisSession에 대한 대화 내용을 JSON 형태로 저장
+    chatbot.ChatLog와 동일한 구조
+    """
+    session = django_models.OneToOneField(AnalysisSession, on_delete=django_models.CASCADE, related_name="log", verbose_name="세션")
+    log = django_models.JSONField(default=list, verbose_name="채팅 로그")  # [{role: "user", content: "..."}, {role: "assistant", content: "..."} ...]
+    updated_at = django_models.DateTimeField(auto_now=True, verbose_name="수정일시")
+
+    class Meta:
+        verbose_name = "분석 세션 로그"
+        verbose_name_plural = "분석 세션 로그"
+
+    def __str__(self):
+        return f"💬 {self.session.session_id} 채팅로그"
     
     

@@ -625,31 +625,42 @@
                 <div class="col-12" data-aos="fade-up" data-aos-delay="100">
                     <div class="chart-card">
                         <div class="card-header">
-                            <h5 class="card-title">
-                                <i class="bi bi-geo-alt-fill text-primary me-2"></i>
-                                <span data-lang="KOR">대화형 서울시 지도</span>
-                                <span data-lang="ENG">Interactive Seoul Map</span>
-                                <span data-lang="ESP">Mapa interactivo de Seúl</span>
-                            </h5>
-                            <div class="card-subtitle text-muted mt-1">
-                                <small>
-                                <i class="bi bi-info-circle me-1"></i>
-                                    <span data-lang="KOR">마우스 오버: 구별 정보 확인 | 클릭: 행정동 상세보기 | 마우스 휠: 확대/축소</span>
-                                    <span data-lang="ENG">Mouse over: View district info | Click: See administrative detail | Mouse wheel: Zoom in/out</span>
-                                    <span data-lang="ESP">Pasar el mouse: Ver info del distrito | Clic: Ver detalle administrativo | Rueda del mouse: Acercar/alejar</span>
-                                </small>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title mb-1">
+                                        <i class="bi bi-geo-alt-fill text-primary me-2"></i>
+                                        <span data-lang="KOR">대화형 서울시 지도</span>
+                                        <span data-lang="ENG">Interactive Seoul Map</span>
+                                        <span data-lang="ESP">Mapa interactivo de Seúl</span>
+                                    </h5>
+                                    <div class="card-subtitle text-muted">
+                                        <small>
+                                        <i class="bi bi-info-circle me-1"></i>
+                                            <span data-lang="KOR">마우스 오버: 구별 정보 확인 | 클릭: 행정동 상세보기 | 마우스 휠: 확대/축소</span>
+                                            <span data-lang="ENG">Mouse over: View district info | Click: See administrative detail | Mouse wheel: Zoom in/out</span>
+                                            <span data-lang="ESP">Pasar el mouse: Ver info del distrito | Clic: Ver detalle administrativo | Rueda del mouse: Acercar/alejar</span>
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="map-controls">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm me-2" id="map-back-btn" title="뒤로가기">
+                                        <i class="bi bi-arrow-left"></i>
+                                        <span data-lang="KOR">뒤로</span>
+                                        <span data-lang="ENG">Back</span>
+                                        <span data-lang="ESP">Atrás</span>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-primary btn-sm" id="map-reset-btn" title="지도 초기화">
+                                        <i class="bi bi-arrow-clockwise"></i>
+                                        <span data-lang="KOR">초기화</span>
+                                        <span data-lang="ENG">Reset</span>
+                                        <span data-lang="ESP">Restablecer</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <div class="card-body p-0">
-                            <div id="map" class="map-container">
-                                <div class="text-center">
-                                    <i class="bi bi-map" style="font-size: 4rem; opacity: 0.3; margin-bottom: 1rem;"></i>
-                                    <p class="mb-0">
-                                        <span data-lang="KOR">지도 기능은 추후 업데이트 예정입니다</span>
-                                        <span data-lang="ENG">Map feature will be updated soon</span>
-                                        <span data-lang="ESP">La función de mapa se actualizará pronto</span>
-                                    </p>
-                                </div>
+                            <div id="map" class="map-container" style="height: 600px; position: relative;">
+                                <!-- 지도가 여기에 로드됩니다 -->
                             </div>
                         </div>
                     </div>
@@ -663,6 +674,14 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<!-- OpenLayers 지도 라이브러리 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@10.6.1/ol.css" type="text/css">
+<script src="https://cdn.jsdelivr.net/npm/ol@10.6.1/dist/ol.js"></script>
+<!-- Proj4js 좌표계 변환 라이브러리 -->
+<script src="https://cdn.jsdelivr.net/npm/proj4@2.9.2/dist/proj4.js"></script>
+
+<!-- 서울시 상권 분석 지도 -->
+<script src="{% static 'js/shopdash_map.js' %}"></script>
 
 <script>
 // AOS 초기화
@@ -816,9 +835,9 @@ function loadTopBusinessSurvivalChart() {
                             callbacks: {
                                 afterBody: function(context) {
                                     const index = context[0].dataIndex;
-                                    const analysisCount = data.analysis_counts[index];
-                                    const avgArea = data.avg_area[index];
-                                    const storeCount = data.store_counts[index];
+                                    const analysisCount = (data.analysis_counts && data.analysis_counts[index]) || 0;
+                                    const avgArea = (data.avg_area && data.avg_area[index]) || 0;
+                                    const storeCount = (data.store_counts && data.store_counts[index]) || 0;
                                     
                                     return [
                                         `분석 건수: ${analysisCount}건`,
@@ -872,13 +891,23 @@ function loadTopBusinessSurvivalChart() {
 function updateTopBusinessDetails(data) {
     const detailsContainer = document.getElementById('topBusinessDetails');
     
+    if (!data || !data.labels || !data.datasets || !data.datasets[0] || !data.datasets[0].data) {
+        detailsContainer.innerHTML = `
+            <div class="text-center text-muted">
+                <i class="bi bi-exclamation-triangle mb-2"></i>
+                <p>데이터를 불러올 수 없습니다.</p>
+            </div>
+        `;
+        return;
+    }
+    
     let detailsHtml = '';
     data.labels.forEach((label, index) => {
         const rank = index + 1;
-        const rate = data.datasets[0].data[index];
-        const analysisCount = data.analysis_counts[index];
-        const avgArea = data.avg_area[index];
-        const storeCount = data.store_counts[index];
+        const rate = data.datasets[0].data[index] || 0;
+        const analysisCount = (data.analysis_counts && data.analysis_counts[index]) || 0;
+        const avgArea = (data.avg_area && data.avg_area[index]) || 0;
+        const storeCount = (data.store_counts && data.store_counts[index]) || 0;
         
         detailsHtml += `
             <div class="business-detail-item">

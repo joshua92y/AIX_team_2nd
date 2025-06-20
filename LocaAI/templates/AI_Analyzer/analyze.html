@@ -6,12 +6,43 @@
 {% block content %}
 {% include 'includes/header.html' %}
 
+
+
   <style>
     /* 기본 primary 버튼 disabled 시 커스텀 스타일 */
     .btn-primary.custom {
       color: #fff;
       background-color: #0d6efd; /* 원래 primary 색 */
       opacity: 0.65;  /* 투명도 조절로 흐릿하게 표시 */
+    }
+    
+    /* Progress Bar 강화 CSS - 완전히 채워지도록 */
+    .progress-bar {
+      height: 100% !important;
+      min-height: 100% !important;
+      max-height: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border-radius: inherit !important;
+      line-height: 1 !important;
+      box-sizing: border-box !important;
+    }
+    
+    .progress-bar span {
+      line-height: 1 !important;
+      white-space: nowrap !important;
+      color: white !important;
+      font-weight: 500 !important;
+    }
+    
+    /* Progress 컨테이너 설정 */
+    .progress {
+      overflow: hidden !important;
+      border-radius: 8px !important;
+      background-color: #e9ecef !important;
     }
     
     /* 분석 진행 상황 스타일 */
@@ -121,81 +152,113 @@
         font-size: 1.5rem !important;
       }
     }
-
-    /* 챗봇 스타일 */
-    .chat-interface-container {
-      display: flex;
-      flex-direction: column;
-      height: 500px;
+    
+    /* 챗봇 마크다운 스타일링 */
+    #chatMessages .bg-white h1,
+    #chatMessages .bg-white h2,
+    #chatMessages .bg-white h3,
+    #chatMessages .bg-white h4,
+    #chatMessages .bg-white h5,
+    #chatMessages .bg-white h6 {
+      margin-top: 0.5rem;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #1e3a8a;
+    }
+    
+    #chatMessages .bg-white p {
+      margin-bottom: 0.5rem;
+      line-height: 1.5;
+    }
+    
+    #chatMessages .bg-white ul,
+    #chatMessages .bg-white ol {
+      margin-bottom: 0.5rem;
+      padding-left: 1.2rem;
+    }
+    
+    #chatMessages .bg-white li {
+      margin-bottom: 0.2rem;
+    }
+    
+    #chatMessages .bg-white strong {
+      font-weight: 600;
+      color: #1e40af;
+    }
+    
+    #chatMessages .bg-white code {
+      background-color: #f1f5f9;
+      padding: 0.1rem 0.3rem;
+      border-radius: 0.25rem;
+      font-size: 0.85em;
+      color: #dc2626;
+    }
+    
+    /* PIP 채팅 히스토리 hover 효과 */
+    .hover-bg-light:hover {
+      background-color: #f8f9fa !important;
+      cursor: pointer;
+    }
+    
+    .cursor-pointer {
+      cursor: pointer;
+    }
+    
+    /* PIP 채팅 히스토리 스타일 */
+    .chat-history-item .hover-effect {
+      transition: all 0.2s ease-in-out;
+    }
+    
+    .chat-history-item:hover .hover-effect:not(.bg-primary) {
+      background-color: #e9ecef !important;
+      transform: translateX(2px);
+    }
+    
+    .chat-history-item.active .hover-effect {
+      box-shadow: 0 2px 8px rgba(13, 110, 253, 0.3);
     }
 
-    .chat-messages-area {
-      flex: 1;
-      overflow-y: auto;
-      padding: 1rem;
-      background-color: #f8f9fa;
+    #chatMessages .bg-white pre {
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+    }
+    
+    /* 분석결과 상담 섹션 sticky 스타일 */
+    .chatbot-sticky {
+      position: sticky;
+      top: 20px;
+      z-index: 100;
+      transition: all 0.3s ease;
+    }
+    
+    /* 상권분석결과 섹션 컨테이너 스타일 */
+    .analysis-container {
+      position: relative;
+    }
+    
+    /* 반응형 디자인 - 모바일에서는 sticky 비활성화 */
+    @media (max-width: 991.98px) {
+      .chatbot-sticky {
+        position: static;
+        top: auto;
+        z-index: auto;
+      }
+    }
+    
+    #chatMessages .bg-white pre {
       border-radius: 0.5rem;
-      margin-bottom: 1rem;
+      padding: 0.75rem;
+      overflow-x: auto;
+      margin: 0.5rem 0;
     }
-
-    .chat-welcome-message {
-      text-align: center;
-      padding: 1rem;
-    }
-
-    .message-entry {
-      margin-bottom: 1rem;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .message-bubble {
-      padding: 0.75rem 1rem;
-      border-radius: 1rem;
-      max-width: 80%;
-      word-wrap: break-word;
-    }
-
-    .user-message {
-      align-items: flex-end;
-    }
-
-    .user-message .message-bubble {
-      background-color: #007bff;
-      color: white;
-    }
-
-    .bot-message {
-      align-items: flex-start;
-    }
-
-    .bot-message .message-bubble {
-      background-color: #e9ecef;
-      color: #212529;
-    }
-
-    .typing-indicator-message .message-bubble {
-      background-color: #e9ecef;
-      color: #6c757d;
-    }
-
-    .chat-input-area {
-      display: flex;
-      gap: 0.5rem;
-      padding: 0.5rem;
-      background-color: white;
-      border-radius: 0.5rem;
-    }
-
-    .chat-input-area textarea {
-      resize: none;
-      border: 1px solid #ced4da;
-      border-radius: 0.5rem;
-      padding: 0.5rem;
-    }
-
-    .chat-input-area button {
+    
+    #chatMessages .bg-white blockquote {
+      border-left: 4px solid #3b82f6;
+      background-color: #f8fafc;
       padding: 0.5rem 1rem;
+      margin: 0.5rem 0;
+      font-style: italic;
+      color: #475569;
     }
   </style>
 
@@ -209,23 +272,134 @@
   <script src="https://cdn.jsdelivr.net/npm/jspdf-customfonts@0.0.4/dist/customfonts.js"></script>
   <!-- html2canvas 라이브러리 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- Chart.js 라이브러리 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- 마크다운 렌더링 라이브러리 -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
   <script>
+    // Django 템플릿에서 JavaScript 변수로 사용자 인증 상태 전달
+    const USER_AUTHENTICATED = {% if user.is_authenticated %}true{% else %}false{% endif %};
+    const USER_ID = {% if user.is_authenticated %}'{{ user.id }}'{% else %}null{% endif %};
+    const CSRF_TOKEN = '{{ csrf_token }}';
+  </script>
+
+  <script>
+    let currentAnalysisData = null;
+    let currentRequestId = null;
+    let currentSessionId = null;
+    let chatSocket = null;
+    let currentBotMessageElement = null;
+    
+    $(document).ready(function() {
+      // 초기화
+      $('.result-section').hide();
+      $('#analysisResults').hide();
+      
+      // WebSocket 초기화 (로그인한 사용자만)
+      if (USER_AUTHENTICATED) {
+        initializeChatSocket();
+      }
+
+             // PIP 이벤트 리스너는 동적 생성 시 추가됨
+     });
+     
+     // WebSocket 초기화
+    function initializeChatSocket() {
+      if (USER_AUTHENTICATED) {
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${wsProtocol}//${window.location.host}/ws/chatbot/`;
+        
+        // WebSocket 연결 시도
+        document.getElementById('chatConnectionStatus').style.display = 'block';
+        
+        chatSocket = new WebSocket(wsUrl);
+        
+        chatSocket.onopen = function(e) {
+          // WebSocket 연결 완료
+          document.getElementById('chatConnectionStatus').style.display = 'none';
+          document.getElementById('chatbotStatus').textContent = '연결됨';
+          document.getElementById('chatbotStatus').className = 'badge bg-success';
+        };
+        
+        chatSocket.onmessage = function(e) {
+          const data = JSON.parse(e.data);
+          // 챗봇 메시지 수신 처리
+          
+          if (data.chunk) {
+            // 스트리밍 응답 처리
+            appendToCurrentBotMessage(data.chunk);
+          } else if (data.done) {
+            // 응답 완료
+            finalizeBotMessage();
+            if (data.session_id) {
+              currentSessionId = data.session_id;
+            }
+          } else if (data.error) {
+            // 오류 처리
+            addBotMessage('죄송합니다. 오류가 발생했습니다: ' + data.error);
+          }
+        };
+        
+        chatSocket.onclose = function(e) {
+          // WebSocket 연결 종료
+          document.getElementById('chatbotStatus').textContent = '연결끊김';
+          document.getElementById('chatbotStatus').className = 'badge bg-warning';
+        };
+        
+        chatSocket.onerror = function(e) {
+          console.error('챗봇 WebSocket 오류:', e);
+          document.getElementById('chatbotStatus').textContent = '오류';
+          document.getElementById('chatbotStatus').className = 'badge bg-danger';
+        };
+      }
+    }
+
     $(window).on('load', function() {
       _eventBind();
     });
 
     // 페이지 내 이벤트 바인딩
     function _eventBind() {
-      console.log("이벤트 바인딩 시작");
+
+      
+      // 챗봇 초기 상태 설정
+      initializeChatbotState();
+    }
+    
+    // 챗봇 초기 상태 설정
+    function initializeChatbotState() {
+      // 페이지 로드 시 항상 비활성화 상태로 시작
+      const inactiveElement = document.getElementById('chatbotInactive');
+      const activeElement = document.getElementById('chatbotActive');
+      
+      // 비활성화 상태 표시
+      if (inactiveElement) {
+        inactiveElement.style.setProperty('display', 'flex', 'important');
+        inactiveElement.style.visibility = 'visible';
+        inactiveElement.style.height = 'auto';
+      }
+      
+      // 활성화 상태 숨기기
+      if (activeElement) {
+        activeElement.style.setProperty('display', 'none', 'important');
+        activeElement.style.visibility = 'hidden';
+        activeElement.style.height = '0';
+        activeElement.style.overflow = 'hidden';
+      }
+      
+      document.getElementById('chatbotStatus').textContent = '대기중';
+      document.getElementById('chatbotStatus').className = 'badge bg-secondary';
+      
+
     }
 
-    // Daum 우편번호 서비스 팝업 열기
+    // Daum 우편번호 서비스 PIP 팝업 열기
     function openAddressSearch() {
       new daum.Postcode({
         oncomplete: function(data) {
           // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드
-          console.log("선택된 주소 데이터:", data);
+
           
           // 기본 주소 정보
           let fullAddr = '';
@@ -250,8 +424,9 @@
           // 최종 주소
           const finalAddress = fullAddr + extraAddr;
           
-          // 주소를 입력하고 좌표 변환 시작
+          // 주소를 입력하고 팝업 즉시 닫기 (UX 개선)
           document.getElementById('address').value = finalAddress;
+          closeAddressSearch();
           
           // 기존 AI_Analyzer의 좌표 변환 API 사용
           const csrfToken = '{{ csrf_token }}';
@@ -274,15 +449,10 @@
                 document.getElementById('x_coord').value = response.x_coord.toFixed(2);
                 document.getElementById('y_coord').value = response.y_coord.toFixed(2);
                 
-                console.log("좌표 변환 완료:", {
-                  address: finalAddress,
-                  latitude: response.latitude,
-                  longitude: response.longitude,
-                  x_coord: response.x_coord,
-                  y_coord: response.y_coord
-                });
+
                 
-                alert("주소와 좌표가 설정되었습니다.");
+                // 성공 메시지를 더 부드럽게 표시
+                showSuccessMessage("주소와 좌표가 설정되었습니다.");
               } else {
                 console.error("좌표 변환 실패:", response.error);
                 alert("좌표 변환에 실패했습니다: " + response.error);
@@ -295,11 +465,1073 @@
             }
           });
         },
+        onclose: function(state) {
+          // 주소 검색 창이 닫힐 때 실행되는 콜백
+  
+        },
+        // PIP 팝업 설정 (페이지 내 팝업)
+        width: '100%',
+        height: '100%',
         theme: {
           searchBgColor: "#0d6efd", // 검색창 배경색
           queryTextColor: "#FFFFFF" // 검색창 글자색  
         }
-      }).open();
+      }).embed(document.getElementById('addressSearchContainer'));
+      
+      // PIP 팝업 컨테이너 표시
+      const addressModal = document.getElementById('addressSearchModal');
+      addressModal.style.display = 'block';
+      addressModal.style.pointerEvents = 'auto';
+      
+      // 닫기 오버레이 활성화
+      const closeOverlay = addressModal.querySelector('div[onclick="closeAddressSearch()"]');
+      if (closeOverlay) {
+        closeOverlay.style.display = 'block';
+        closeOverlay.style.pointerEvents = 'auto';
+      }
+      
+      document.body.style.overflow = 'hidden'; // 스크롤 방지
+    }
+    
+    // 주소 검색 팝업 닫기 (안전한 DOM 요소 제거 포함)
+    function closeAddressSearch() {
+      try {
+        const addressModal = document.getElementById('addressSearchModal');
+        if (addressModal) {
+          addressModal.style.display = 'none';
+          addressModal.style.pointerEvents = 'none';
+          
+          // 닫기 오버레이 비활성화
+          const closeOverlay = addressModal.querySelector('div[onclick="closeAddressSearch()"]');
+          if (closeOverlay) {
+            closeOverlay.style.display = 'none';
+            closeOverlay.style.pointerEvents = 'none';
+          }
+        }
+        
+        // 스크롤 복원
+        document.body.style.overflow = 'auto';
+        
+        // 다음 주소 API 컨테이너 안전하게 초기화
+        const container = document.getElementById('addressSearchContainer');
+        if (container) {
+          // 기존 다음 주소 API iframe이나 요소들을 안전하게 제거
+          const children = [...container.children];
+          children.forEach(child => {
+            try {
+              if (child.parentNode === container) {
+                container.removeChild(child);
+              }
+            } catch (e) {
+              // removeChild 오류 무시
+              console.warn('주소 검색 요소 제거 중 무시된 오류:', e.message);
+            }
+          });
+          
+          // innerHTML로 완전히 초기화
+          container.innerHTML = '';
+        }
+      } catch (error) {
+        console.warn('주소 검색 팝업 닫기 중 오류 (무시됨):', error.message);
+        // 오류가 발생해도 기본 동작은 수행
+        document.body.style.overflow = 'auto';
+      }
+    }
+    
+    // 주소 검색 컨테이너 클릭 시 이벤트 전파 방지
+    document.addEventListener('DOMContentLoaded', function() {
+      const addressContainer = document.getElementById('addressSearchContainer');
+      if (addressContainer) {
+        addressContainer.addEventListener('click', function(e) {
+          e.stopPropagation(); // 이벤트 버블링 방지
+        });
+      }
+      
+      // 모든 모달 초기화 확인
+      const addressModal = document.getElementById('addressSearchModal');
+      if (addressModal) {
+        addressModal.style.display = 'none';
+        addressModal.style.pointerEvents = 'none';
+      }
+      
+
+      
+    });
+    
+    // 성공 메시지 표시 함수
+    function showSuccessMessage(message) {
+      // 기존 메시지가 있으면 제거
+      const existingMessage = document.getElementById('successMessage');
+      if (existingMessage) {
+        existingMessage.remove();
+      }
+      
+      // 성공 메시지 생성
+      const messageDiv = document.createElement('div');
+      messageDiv.id = 'successMessage';
+      messageDiv.className = 'alert alert-success alert-dismissible fade show position-fixed';
+      messageDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+      messageDiv.innerHTML = `
+        <i class="bi bi-check-circle me-2"></i>${message}
+        <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+      `;
+      
+      document.body.appendChild(messageDiv);
+      
+      // 3초 후 자동 제거
+      setTimeout(() => {
+        if (messageDiv.parentElement) {
+          messageDiv.remove();
+        }
+      }, 3000);
+    }
+
+    // ===========================================
+    // 분석결과 챗봇 관련 기능
+    // ===========================================
+    
+    // 채팅 메시지 전송
+    async function sendChatMessage() {
+      const input = document.getElementById('chatInput');
+      const message = input.value.trim();
+      
+      if (!message || !chatSocket) return;
+      
+      // 새로운 세션이 필요한 경우 생성
+      if (!currentSessionId) {
+        try {
+          await createNewChatSession();
+        } catch (error) {
+          console.error('세션 생성 실패:', error);
+          addBotMessage('죄송합니다. 채팅 세션을 생성할 수 없습니다. 잠시 후 다시 시도해주세요.');
+          return;
+        }
+      }
+      
+      // 사용자 메시지 추가
+      addUserMessage(message);
+      
+      // 입력 필드 초기화
+      input.value = '';
+      
+      // 분석 데이터를 포함한 컨텍스트 생성
+      const contextualMessage = createContextualMessage(message);
+      
+      // WebSocket으로 메시지 전송
+      chatSocket.send(JSON.stringify({
+        user_id: USER_ID,
+        session_id: currentSessionId,
+        question: contextualMessage,
+        collection: 'analysis_result_consultation'
+      }));
+      
+      // 봇 응답 준비
+      prepareBotMessage();
+    }
+
+    // 새로운 채팅 세션 생성
+    async function createNewChatSession() {
+      const userId = USER_ID;
+      if (!userId || userId === 'None') {
+        throw new Error('사용자 인증이 필요합니다');
+      }
+
+      // CSRF 토큰 가져오기
+      const csrfToken = getCsrfToken();
+      
+      try {
+        const response = await fetch(`/chatbot/sessions/${userId}/create/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+          },
+          body: JSON.stringify({})
+        });
+
+        console.log('세션 생성 응답 상태:', response.status);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('세션 생성 실패 응답:', errorText);
+          throw new Error(`세션 생성 요청 실패: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log('세션 생성 응답 데이터:', data);
+        
+        if (data.status !== 'ok' || !data.session_id) {
+          throw new Error('세션 생성 응답 오류: ' + JSON.stringify(data));
+        }
+
+        currentSessionId = data.session_id;
+        console.log('새로운 채팅 세션 생성됨:', currentSessionId);
+        
+        // PIP 히스토리 업데이트
+        setTimeout(() => {
+          updatePIPChatHistory();
+        }, 100);
+        
+      } catch (error) {
+        console.error('세션 생성 상세 오류:', error);
+        throw error;
+      }
+    }
+
+    // CSRF 토큰 가져오기 함수
+    function getCsrfToken() {
+      // 여러 방법으로 CSRF 토큰 시도
+      let token = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+      
+      if (!token) {
+        // 쿠키에서 시도
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+          const [name, value] = cookie.trim().split('=');
+          if (name === 'csrftoken') {
+            token = value;
+            break;
+          }
+        }
+      }
+      
+      if (!token) {
+        // Django 템플릿 변수에서 시도
+        token = '{{ csrf_token }}';
+      }
+      
+      console.log('CSRF 토큰:', token ? '존재함' : '없음');
+      return token || '';
+    }
+    
+    // 분석 데이터를 포함한 컨텍스트 메시지 생성
+    function createContextualMessage(userMessage) {
+      if (!currentAnalysisData) return userMessage;
+      
+      const context = `
+다음은 방금 완료된 상권 분석 결과입니다:
+
+**기본 정보:**
+- 주소: ${currentAnalysisData.request?.address || '정보 없음'}
+- 업종: ${currentAnalysisData.request?.business_type?.name || '정보 없음'}
+- 면적: ${currentAnalysisData.request?.area || '정보 없음'}㎡
+
+**AI 생존 확률:** ${currentAnalysisData.result?.survival_percentage || '정보 없음'}%
+
+**핵심 지표:**
+- 생활인구 (300m): ${Math.round(currentAnalysisData.result?.life_pop_300m || 0).toLocaleString()}명
+- 직장인구 (300m): ${Math.round(currentAnalysisData.result?.working_pop_300m || 0).toLocaleString()}명
+- 경쟁업체 (300m): ${currentAnalysisData.result?.competitor_300m || 0}개
+- 공시지가: ${formatLandValue(currentAnalysisData.result?.total_land_value || 0)}
+
+**경쟁강도 분석:**
+- 경쟁업체 비율: ${(currentAnalysisData.result?.competitor_ratio_300m || 0).toFixed(1)}%
+- 업종 다양성: ${(currentAnalysisData.result?.business_diversity_300m || 0).toFixed(2)}
+
+**외국인 분석:**
+- 단기체류 외국인: ${Math.round(currentAnalysisData.result?.['2A_Temp_Total'] || 0).toLocaleString()}명
+- 장기체류 외국인: ${Math.round(currentAnalysisData.result?.['1A_Long_Total'] || 0).toLocaleString()}명
+- 중국인 비율: ${(currentAnalysisData.result?.['2A_Long_CN'] || 0).toFixed(1)}%
+
+**연령대별 인구 (1000m 반경):**
+- 20대: ${(currentAnalysisData.result?.['2A_20'] || 0).toFixed(1)}%
+- 30대: ${(currentAnalysisData.result?.['2A_30'] || 0).toFixed(1)}%
+- 40대: ${(currentAnalysisData.result?.['2A_40'] || 0).toFixed(1)}%
+- 50대: ${(currentAnalysisData.result?.['2A_50'] || 0).toFixed(1)}%
+- 60대+: ${(currentAnalysisData.result?.['2A_60'] || 0).toFixed(1)}%
+
+위 분석 결과를 바탕으로 다음 질문에 답변해주세요: ${userMessage}
+      `;
+      
+      return context;
+    }
+    
+    // 사용자 메시지 추가
+    function addUserMessage(message) {
+      const messagesContainer = document.getElementById('chatMessages');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'd-flex align-items-start mb-3 justify-content-end';
+      messageDiv.innerHTML = `
+        <div class="flex-grow-1 text-end me-2">
+          <div class="bg-primary text-white rounded p-2 shadow-sm d-inline-block" style="max-width: 80%;">
+            <p class="mb-0 small">${escapeHtml(message)}</p>
+          </div>
+        </div>
+        <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; min-width: 32px;">
+          <i class="bi bi-person text-white" style="font-size: 14px;"></i>
+        </div>
+      `;
+      messagesContainer.appendChild(messageDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    // 봇 응답 준비
+    function prepareBotMessage() {
+      const messagesContainer = document.getElementById('chatMessages');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'd-flex align-items-start mb-3';
+      messageDiv.id = 'currentBotMessage';
+      messageDiv.innerHTML = `
+        <div class="bg-primary rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; min-width: 32px;">
+          <i class="bi bi-robot text-white" style="font-size: 14px;"></i>
+        </div>
+        <div class="flex-grow-1">
+          <div class="bg-white rounded p-2 shadow-sm">
+            <small class="text-muted d-block mb-1">분석결과 상담 AI</small>
+            <p class="mb-0 small" id="botMessageContent">
+              <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+              답변을 생성하고 있습니다...
+            </p>
+          </div>
+        </div>
+      `;
+      messagesContainer.appendChild(messageDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    // 봇 메시지에 스트리밍 텍스트 추가
+    function appendToCurrentBotMessage(chunk) {
+      const contentElement = document.getElementById('botMessageContent');
+      const pipContentElement = document.getElementById('pipBotMessageContent');
+      
+      if (contentElement) {
+        if (contentElement.innerHTML.includes('spinner-border')) {
+          // 첫 번째 청크: 스피너 제거하고 텍스트 시작
+          currentBotMessageText = chunk;
+          contentElement.innerHTML = marked.parse(chunk);
+        } else {
+          // 후속 청크: 기존 텍스트에 추가
+          currentBotMessageText += chunk;
+          contentElement.innerHTML = marked.parse(currentBotMessageText);
+        }
+        document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+      }
+
+      // PIP도 동시에 업데이트
+      if (pipContentElement) {
+        if (pipContentElement.innerHTML.includes('spinner-border')) {
+          pipContentElement.innerHTML = marked.parse(chunk);
+        } else {
+          pipContentElement.innerHTML = marked.parse(currentBotMessageText);
+        }
+        document.getElementById('pipChatMessages').scrollTop = document.getElementById('pipChatMessages').scrollHeight;
+      }
+    }
+    
+    // 봇 메시지 완료 처리
+    function finalizeBotMessage() {
+      const currentMessage = document.getElementById('currentBotMessage');
+      const currentPIPMessage = document.getElementById('currentPIPBotMessage');
+      
+      if (currentMessage) {
+        currentMessage.removeAttribute('id');
+      }
+      if (currentPIPMessage) {
+        currentPIPMessage.removeAttribute('id');
+      }
+      // 메시지 텍스트 초기화
+      currentBotMessageText = '';
+      
+      // PIP 히스토리 업데이트
+      setTimeout(() => {
+        updatePIPChatHistory();
+      }, 100);
+    }
+    
+    // 봇 메시지 추가 (오류 등)
+    function addBotMessage(message) {
+      const messagesContainer = document.getElementById('chatMessages');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'd-flex align-items-start mb-3';
+      messageDiv.innerHTML = `
+        <div class="bg-primary rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; min-width: 32px;">
+          <i class="bi bi-robot text-white" style="font-size: 14px;"></i>
+        </div>
+        <div class="flex-grow-1">
+          <div class="bg-white rounded p-2 shadow-sm">
+            <small class="text-muted d-block mb-1">분석결과 상담 AI</small>
+            <div class="mb-0 small">${marked.parse(message)}</div>
+          </div>
+        </div>
+      `;
+      messagesContainer.appendChild(messageDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    // 추천 질문 입력
+    function fillExampleQuestion(question) {
+      document.getElementById('chatInput').value = question;
+      document.getElementById('chatInput').focus();
+    }
+
+    // PIP 예시 질문 입력 함수
+    function fillPIPExampleQuestion(question) {
+      const pipChatInput = document.getElementById('pipChatInput');
+      if (pipChatInput) {
+        pipChatInput.value = question;
+        pipChatInput.focus();
+      }
+    }
+
+    // 챗봇 PIP 열기
+    function openChatbotPIP() {
+      // 기존 PIP 모달이 있으면 제거
+      const existingModal = document.getElementById('chatbotPIPModal');
+      if (existingModal) {
+        existingModal.remove();
+      }
+      
+      // 새로운 PIP 모달 생성
+      const pipModal = document.createElement('div');
+      pipModal.id = 'chatbotPIPModal';
+      pipModal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.8);
+        z-index: 10003;
+        pointer-events: auto;
+        display: block;
+      `;
+      
+      pipModal.innerHTML = `
+        <div class="d-flex flex-column h-100">
+          <!-- PIP 헤더 -->
+          <div class="bg-white border-bottom px-4 py-3 d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+              <div class="bg-gradient bg-primary rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                <i class="bi bi-robot text-white" style="font-size: 18px;"></i>
+              </div>
+              <div>
+                <h5 class="mb-0 text-primary">분석결과 상담 AI</h5>
+                <small class="text-muted">현재 분석 세션 기반 상담</small>
+              </div>
+            </div>
+            <div class="d-flex align-items-center">
+              <span class="badge bg-success-subtle text-success me-3">온라인</span>
+              <button class="btn btn-outline-secondary btn-sm me-2" onclick="minimizeChatbotPIP()" title="최소화">
+                <i class="bi bi-dash-lg"></i>
+              </button>
+              <button class="btn btn-outline-danger btn-sm" onclick="closeChatbotPIP()" title="닫기">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- PIP 채팅 영역 -->
+          <div class="flex-grow-1 bg-light d-flex">
+            <!-- 채팅 히스토리 사이드바 -->
+            <div class="bg-white border-end" style="width: 280px; min-width: 280px;">
+              <div class="p-3 border-bottom">
+                <h6 class="mb-0 text-primary">
+                  <i class="bi bi-chat-dots me-2"></i>채팅 히스토리
+                </h6>
+              </div>
+              <div class="p-2" style="max-height: calc(100vh - 200px); overflow-y: auto;">
+                <div id="pipChatHistory">
+                  <!-- 채팅 히스토리가 여기에 표시됩니다 -->
+                  <div class="text-center text-muted py-4">
+                    <i class="bi bi-chat-square-dots" style="font-size: 2rem;"></i>
+                    <p class="small mt-2 mb-0">아직 대화 기록이 없습니다.<br>AI와 대화를 시작해보세요!</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 채팅 메시지 영역 -->
+            <div class="flex-grow-1 d-flex flex-column">
+              <div id="pipChatMessages" class="flex-grow-1 overflow-auto p-4" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); max-height: calc(100vh - 200px); min-height: 400px;"></div>
+
+              <!-- PIP 입력 영역 -->
+              <div class="bg-white border-top p-4">
+                <div class="input-group">
+                  <input type="text" id="pipChatInput" class="form-control" placeholder="분석 결과에 대해 궁금한 점을 물어보세요...">
+                  <button class="btn btn-primary" id="pipChatSendBtn" type="button">
+                    <i class="bi bi-send-fill me-1"></i>전송
+                  </button>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                  <small class="text-muted">
+                    <i class="bi bi-shield-check me-1"></i>
+                    현재 분석 세션 결과를 기반으로 답변
+                  </small>
+                  <div id="pipChatConnectionStatus" style="display: none;">
+                    <small class="text-primary">
+                      <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                      AI 연결 중...
+                    </small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 사이드바 (분석 요약) -->
+            <div class="bg-white border-start" style="width: 350px; min-width: 350px;">
+              <div class="p-3 border-bottom">
+                <h6 class="mb-0 text-primary">
+                  <i class="bi bi-graph-up me-2"></i>분석 요약
+                </h6>
+              </div>
+              <div class="p-3" style="max-height: calc(100vh - 200px); overflow-y: auto;">
+                <!-- 추천 질문 버튼 -->
+                <div class="mb-4">
+                  <h6 class="text-primary mb-3">💡 추천 질문</h6>
+                  <div class="d-grid gap-2">
+                    <button class="btn btn-sm btn-outline-primary" onclick="fillPIPExampleQuestion('이 상권의 생존 확률이 높은 이유는 무엇인가요?')">
+                      <i class="bi bi-graph-up me-2"></i>생존 확률
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning" onclick="fillPIPExampleQuestion('경쟁업체가 많은 편인가요?')">
+                      <i class="bi bi-shop me-2"></i>경쟁 현황
+                    </button>
+                    <button class="btn btn-sm btn-outline-success" onclick="fillPIPExampleQuestion('창업 시 주의해야 할 점은 무엇인가요?')">
+                      <i class="bi bi-exclamation-triangle me-2"></i>주의사항
+                    </button>
+                  </div>
+                </div>
+                
+                <div id="pipAnalysisSummary">
+                  <!-- 분석 요약 내용이 여기에 동적으로 추가됩니다 -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // DOM에 추가
+      document.body.appendChild(pipModal);
+      
+      // 기존 채팅 메시지 복사
+      const chatMessages = document.getElementById('chatMessages');
+      const pipChatMessages = document.getElementById('pipChatMessages');
+      if (chatMessages && pipChatMessages) {
+        pipChatMessages.innerHTML = chatMessages.innerHTML;
+      }
+      
+      // 채팅 히스토리 업데이트
+      updatePIPChatHistory();
+      
+      // 분석 요약 정보 업데이트
+      updatePIPAnalysisSummary();
+      
+      // PIP 입력 필드 상태 동기화
+      const chatInput = document.getElementById('chatInput');
+      const pipChatInput = document.getElementById('pipChatInput');
+      const chatSendBtn = document.getElementById('chatSendBtn');
+      const pipChatSendBtn = document.getElementById('pipChatSendBtn');
+      
+      if (chatInput && pipChatInput) {
+        pipChatInput.disabled = chatInput.disabled;
+        pipChatInput.value = chatInput.value;
+      }
+      if (chatSendBtn && pipChatSendBtn) {
+        pipChatSendBtn.disabled = chatSendBtn.disabled;
+      }
+      
+      // 이벤트 리스너 추가
+      pipChatInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          sendPIPMessage();
+        }
+      });
+      pipChatSendBtn.addEventListener('click', sendPIPMessage);
+      
+      // 스크롤을 맨 아래로
+      setTimeout(() => {
+        pipChatMessages.scrollTop = pipChatMessages.scrollHeight;
+      }, 100);
+    }
+
+    // 챗봇 PIP 닫기
+    function closeChatbotPIP() {
+      const pipModal = document.getElementById('chatbotPIPModal');
+      if (pipModal) {
+        pipModal.remove();
+      }
+    }
+
+    // 챗봇 PIP 최소화 (닫기와 동일)
+    function minimizeChatbotPIP() {
+      closeChatbotPIP();
+    }
+
+    // PIP 채팅 히스토리 업데이트 (DB 기반)
+    async function updatePIPChatHistory() {
+      const historyDiv = document.getElementById('pipChatHistory');
+      if (!historyDiv) return;
+
+      try {
+        // 사용자 ID 확인
+        const userId = USER_ID;
+        if (!userId || userId === 'None') {
+          historyDiv.innerHTML = `
+            <div class="text-center text-muted py-4">
+              <i class="bi bi-person-x" style="font-size: 2rem;"></i>
+              <p class="small mt-2 mb-0">로그인이 필요합니다</p>
+            </div>
+          `;
+          return;
+        }
+
+        // 로딩 표시
+        historyDiv.innerHTML = `
+          <div class="text-center text-muted py-4">
+            <div class="spinner-border spinner-border-sm mb-2" role="status"></div>
+            <p class="small mb-0">채팅 기록을 불러오는 중...</p>
+          </div>
+        `;
+
+        // chatbot 앱의 세션 리스트 API 호출
+        const response = await fetch(`/chatbot/sessions/${userId}/`);
+        if (!response.ok) {
+          throw new Error('세션 데이터를 불러올 수 없습니다');
+        }
+
+        const data = await response.json();
+        if (data.status !== 'ok' || !data.sessions || data.sessions.length === 0) {
+          historyDiv.innerHTML = `
+            <div class="text-center text-muted py-4">
+              <i class="bi bi-chat-square-dots" style="font-size: 2rem;"></i>
+              <p class="small mt-2 mb-0">아직 대화 기록이 없습니다.<br>AI와 대화를 시작해보세요!</p>
+            </div>
+          `;
+          return;
+        }
+
+        // 세션 리스트 렌더링
+        let historyHTML = '';
+        data.sessions.forEach((session, index) => {
+          const isActive = session.session_id === currentSessionId;
+          const title = session.title || `세션 ${index + 1}`;
+          const preview = session.preview || '새로운 대화';
+          const createdAt = new Date(session.created_at).toLocaleDateString('ko-KR', {
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+
+          historyHTML += `
+            <div class="chat-history-item mb-2 ${isActive ? 'active' : ''}" 
+                 onclick="loadChatSession('${session.session_id}')" 
+                 style="cursor: pointer;">
+              <div class="p-2 rounded ${isActive ? 'bg-primary text-white' : 'bg-light'} hover-effect">
+                <div class="d-flex justify-content-between align-items-start mb-1">
+                  <h6 class="mb-0 small fw-bold text-truncate" style="max-width: 180px;" title="${title}">
+                    ${title}
+                  </h6>
+                  <small class="${isActive ? 'text-white-50' : 'text-muted'}" style="font-size: 0.7rem;">
+                    ${createdAt}
+                  </small>
+                </div>
+                <p class="mb-0 small ${isActive ? 'text-white-50' : 'text-muted'} text-truncate" 
+                   style="font-size: 0.75rem; line-height: 1.2;" title="${preview}">
+                  ${preview.length > 40 ? preview.substring(0, 40) + '...' : preview}
+                </p>
+              </div>
+            </div>
+          `;
+        });
+
+        historyDiv.innerHTML = historyHTML;
+
+        // 현재 활성 세션으로 스크롤
+        const activeItem = historyDiv.querySelector('.chat-history-item.active');
+        if (activeItem) {
+          activeItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+      } catch (error) {
+        console.error('채팅 히스토리 로드 실패:', error);
+        historyDiv.innerHTML = `
+          <div class="text-center text-muted py-4">
+            <i class="bi bi-exclamation-triangle text-warning" style="font-size: 2rem;"></i>
+            <p class="small mt-2 mb-0">채팅 기록을 불러올 수 없습니다.<br>잠시 후 다시 시도해주세요.</p>
+          </div>
+        `;
+      }
+    }
+
+    // 채팅 세션 로드 함수
+    async function loadChatSession(sessionId) {
+      if (!sessionId || sessionId === currentSessionId) return;
+
+      try {
+        const userId = USER_ID;
+        if (!userId || userId === 'None') return;
+
+        // 로딩 표시
+        const pipChatMessages = document.getElementById('pipChatMessages');
+        if (pipChatMessages) {
+          pipChatMessages.innerHTML = `
+            <div class="text-center py-4">
+              <div class="spinner-border text-primary mb-3" role="status"></div>
+              <p class="text-muted">대화 기록을 불러오는 중...</p>
+            </div>
+          `;
+        }
+
+        // 세션 데이터 로드
+        const response = await fetch(`/chatbot/sessions/${userId}/${sessionId}/`);
+        if (!response.ok) {
+          throw new Error('세션 데이터를 불러올 수 없습니다');
+        }
+
+        const data = await response.json();
+        if (data.status !== 'ok') {
+          throw new Error('세션 데이터 응답 오류: ' + JSON.stringify(data));
+        }
+
+        // 현재 세션 ID 업데이트
+        currentSessionId = sessionId;
+
+        // 채팅 메시지 렌더링
+        let messagesHTML = '';
+        const chatLog = data.chat_log || data.log || [];
+        
+        if (chatLog && chatLog.length > 0) {
+          chatLog.forEach(message => {
+          if (message.role === 'user') {
+            messagesHTML += `
+              <div class="d-flex align-items-start mb-3">
+                <div class="ms-auto d-flex align-items-start">
+                  <div class="bg-primary text-white rounded-3 p-3 shadow-sm me-2" style="max-width: 70%;">
+                    <p class="mb-0">${message.content}</p>
+                  </div>
+                  <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; min-width: 36px;">
+                    <i class="bi bi-person-fill text-white" style="font-size: 16px;"></i>
+                  </div>
+                </div>
+              </div>
+            `;
+          } else if (message.role === 'assistant') {
+            messagesHTML += `
+              <div class="d-flex align-items-start mb-3">
+                <div class="bg-gradient bg-primary rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; min-width: 36px;">
+                  <i class="bi bi-robot text-white" style="font-size: 16px;"></i>
+                </div>
+                <div class="flex-grow-1">
+                  <div class="bg-white rounded-3 p-3 shadow-sm border" style="max-width: 85%;">
+                    <div class="d-flex align-items-center mb-2">
+                      <strong class="text-primary me-2">분석결과 상담 AI</strong>
+                      <span class="badge bg-success-subtle text-success">온라인</span>
+                    </div>
+                    <div class="message-content">${message.content}</div>
+                  </div>
+                </div>
+              </div>
+            `;
+            }
+          });
+        }
+
+        if (messagesHTML === '') {
+          messagesHTML = `
+            <div class="d-flex align-items-start mb-3">
+              <div class="bg-gradient bg-primary rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; min-width: 36px;">
+                <i class="bi bi-robot text-white" style="font-size: 16px;"></i>
+              </div>
+              <div class="flex-grow-1">
+                <div class="bg-white rounded-3 p-3 shadow-sm border">
+                  <div class="d-flex align-items-center mb-2">
+                    <strong class="text-primary me-2">분석결과 상담 AI</strong>
+                    <span class="badge bg-success-subtle text-success">온라인</span>
+                  </div>
+                  <p class="mb-0">안녕하세요! 🎯 방금 완료된 상권 분석 결과에 대해 궁금한 점이 있으시면 언제든 물어보세요.<br><br>
+                  <strong>상담 가능한 내용:</strong><br>
+                  • 📊 AI 생존 확률 해석<br>
+                  • 👥 인구 및 고객층 분석<br>
+                  • 🏪 경쟁업체 현황<br>
+                  • 💰 수익성 전망<br>
+                  • 🚀 창업 전략 조언</p>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        if (pipChatMessages) {
+          pipChatMessages.innerHTML = messagesHTML;
+          // 스크롤을 맨 아래로
+          setTimeout(() => {
+            pipChatMessages.scrollTop = pipChatMessages.scrollHeight;
+          }, 100);
+        }
+
+        // 히스토리 업데이트 (활성 세션 표시)
+        updatePIPChatHistory();
+
+        // 메인 채팅도 동기화
+        const mainChatMessages = document.getElementById('chatMessages');
+        if (mainChatMessages) {
+          mainChatMessages.innerHTML = messagesHTML;
+          setTimeout(() => {
+            mainChatMessages.scrollTop = mainChatMessages.scrollHeight;
+          }, 100);
+        }
+
+      } catch (error) {
+        console.error('세션 로드 실패:', error);
+        if (pipChatMessages) {
+          pipChatMessages.innerHTML = `
+            <div class="text-center py-4">
+              <i class="bi bi-exclamation-triangle text-warning mb-3" style="font-size: 3rem;"></i>
+              <h6>대화 기록을 불러올 수 없습니다</h6>
+              <p class="text-muted">잠시 후 다시 시도해주세요.</p>
+            </div>
+          `;
+        }
+      }
+    }
+
+    // 히스토리 세션 HTML 생성
+    function createHistorySession(session, sessionNumber) {
+      const userMessage = session.find(msg => msg.type === 'user');
+      const aiMessage = session.find(msg => msg.type === 'ai');
+      
+      if (!userMessage) return '';
+
+      const userPreview = userMessage.text.length > 30 ? userMessage.text.substring(0, 30) + '...' : userMessage.text;
+      const aiPreview = aiMessage ? (aiMessage.text.length > 40 ? aiMessage.text.substring(0, 40) + '...' : aiMessage.text) : '응답 대기 중...';
+      
+      return `
+        <div class="border rounded p-2 mb-2 cursor-pointer hover-bg-light" onclick="scrollToPIPMessage(${sessionNumber})">
+          <div class="d-flex align-items-start">
+            <div class="bg-primary rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 24px; height: 24px; min-width: 24px;">
+              <i class="bi bi-person-fill text-white" style="font-size: 10px;"></i>
+            </div>
+            <div class="flex-grow-1" style="min-width: 0;">
+              <div class="small fw-bold text-primary mb-1">질문 ${sessionNumber}</div>
+              <div class="small text-dark mb-1" style="word-break: break-word;">${userPreview}</div>
+              <div class="small text-muted" style="word-break: break-word;">${aiPreview}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // PIP 메시지로 스크롤
+    function scrollToPIPMessage(sessionNumber) {
+      const pipChatMessages = document.getElementById('pipChatMessages');
+      if (!pipChatMessages) return;
+
+      const messages = pipChatMessages.querySelectorAll('.d-flex.mb-3');
+      let targetMessage = null;
+      let currentSessionCount = 0;
+
+      for (let message of messages) {
+        const isUser = message.querySelector('.ms-auto') !== null;
+        if (isUser) {
+          currentSessionCount++;
+          if (currentSessionCount === sessionNumber) {
+            targetMessage = message;
+            break;
+          }
+        }
+      }
+
+      if (targetMessage) {
+        targetMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // 잠시 하이라이트 효과
+        targetMessage.style.backgroundColor = 'rgba(13, 110, 253, 0.1)';
+        setTimeout(() => {
+          targetMessage.style.backgroundColor = '';
+        }, 2000);
+      }
+    }
+
+    // PIP 분석 요약 업데이트
+    function updatePIPAnalysisSummary() {
+      const summaryDiv = document.getElementById('pipAnalysisSummary');
+      if (!summaryDiv) return;
+
+      // 현재 분석 결과에서 주요 지표 가져오기
+      const address = document.getElementById('resultAddress')?.textContent || '-';
+      const businessType = document.getElementById('resultBusinessType')?.textContent || '-';
+      const survivalRate = document.getElementById('survivalPercentage')?.textContent || '-%';
+      const lifePop = document.getElementById('lifePop300')?.textContent || '-';
+      const workingPop = document.getElementById('workingPop300')?.textContent || '-';
+      const competitor = document.getElementById('competitor300')?.textContent || '-';
+      const landValue = document.getElementById('totalLandValue')?.innerHTML || '-';
+
+      summaryDiv.innerHTML = `
+        <div class="mb-3">
+          <h6 class="text-primary mb-2">📍 기본 정보</h6>
+          <div class="small">
+            <div class="mb-1"><strong>주소:</strong> ${address}</div>
+            <div class="mb-1"><strong>업종:</strong> ${businessType}</div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <h6 class="text-success mb-2">🎯 AI 생존 확률</h6>
+          <div class="text-center">
+            <div class="h4 text-primary mb-1">${survivalRate}</div>
+            <div class="progress mb-2" style="height: 8px;">
+              <div class="progress-bar ${getSurvivalBarClass(survivalRate)}" style="width: ${survivalRate}"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <h6 class="text-info mb-2">📊 핵심 지표</h6>
+          <div class="row g-2 small">
+            <div class="col-6">
+              <div class="bg-light rounded p-2 text-center">
+                <div class="fw-bold text-primary">${lifePop}</div>
+                <div class="text-muted" style="font-size: 0.75rem;">생활인구</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="bg-light rounded p-2 text-center">
+                <div class="fw-bold text-warning">${workingPop}</div>
+                <div class="text-muted" style="font-size: 0.75rem;">직장인구</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="bg-light rounded p-2 text-center">
+                <div class="fw-bold text-danger">${competitor}</div>
+                <div class="text-muted" style="font-size: 0.75rem;">경쟁업체</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="bg-light rounded p-2 text-center">
+                <div class="fw-bold text-secondary">${landValue}</div>
+                <div class="text-muted" style="font-size: 0.75rem;">공시지가</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="alert alert-info py-2 px-3">
+          <small>
+            <i class="bi bi-info-circle me-1"></i>
+            좌측 채팅에서 분석 결과에 대해 자세히 문의하실 수 있습니다.
+          </small>
+        </div>
+      `;
+    }
+
+    // 생존 확률에 따른 프로그레스 바 클래스 반환
+    function getSurvivalBarClass(survivalRate) {
+      const rate = parseInt(survivalRate);
+      if (rate >= 80) return 'bg-success';
+      if (rate >= 60) return 'bg-warning';
+      return 'bg-danger';
+    }
+
+    // PIP 채팅 메시지 전송
+    async function sendPIPMessage() {
+      const input = document.getElementById('pipChatInput');
+      const message = input.value.trim();
+      
+      if (!message || !chatSocket) return;
+      
+      // 새로운 세션이 필요한 경우 생성
+      if (!currentSessionId) {
+        try {
+          await createNewChatSession();
+        } catch (error) {
+          console.error('세션 생성 실패:', error);
+          addBotMessage('죄송합니다. 채팅 세션을 생성할 수 없습니다. 잠시 후 다시 시도해주세요.');
+          return;
+        }
+      }
+      
+      // 사용자 메시지 추가 (PIP와 원본 모두)
+      addPIPUserMessage(message);
+      addUserMessage(message);
+      
+      // 입력 필드 초기화
+      input.value = '';
+      document.getElementById('chatInput').value = '';
+      
+      // 분석 데이터를 포함한 컨텍스트 생성
+      const contextualMessage = createContextualMessage(message);
+      
+      // WebSocket으로 메시지 전송
+      chatSocket.send(JSON.stringify({
+        user_id: USER_ID,
+        session_id: currentSessionId,
+        question: contextualMessage,
+        collection: 'analysis_result_consultation'
+      }));
+      
+      // 봇 응답 준비 (PIP와 원본 모두)
+      preparePIPBotMessage();
+      prepareBotMessage();
+      
+      // 히스토리 업데이트
+      setTimeout(() => {
+        updatePIPChatHistory();
+      }, 100);
+    }
+
+    // PIP 사용자 메시지 추가
+    function addPIPUserMessage(message) {
+      const messagesContainer = document.getElementById('pipChatMessages');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'd-flex align-items-start mb-3 justify-content-end';
+      messageDiv.innerHTML = `
+        <div class="flex-grow-1 text-end me-2">
+          <div class="bg-primary text-white rounded-3 p-3 shadow-sm d-inline-block" style="max-width: 80%;">
+            <p class="mb-0">${escapeHtml(message)}</p>
+          </div>
+        </div>
+        <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; min-width: 40px;">
+          <i class="bi bi-person text-white" style="font-size: 18px;"></i>
+        </div>
+      `;
+      messagesContainer.appendChild(messageDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // PIP 봇 응답 준비
+    function preparePIPBotMessage() {
+      const messagesContainer = document.getElementById('pipChatMessages');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'd-flex align-items-start mb-4';
+      messageDiv.id = 'currentPIPBotMessage';
+      messageDiv.innerHTML = `
+        <div class="bg-gradient bg-primary rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; min-width: 40px;">
+          <i class="bi bi-robot text-white" style="font-size: 18px;"></i>
+        </div>
+        <div class="flex-grow-1">
+          <div class="bg-white rounded-3 p-4 shadow-sm border">
+            <div class="d-flex align-items-center mb-2">
+              <strong class="text-primary me-2">분석결과 상담 AI</strong>
+              <span class="badge bg-success-subtle text-success">온라인</span>
+            </div>
+            <div id="pipBotMessageContent">
+              <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+              답변을 생성하고 있습니다...
+            </div>
+          </div>
+        </div>
+      `;
+      messagesContainer.appendChild(messageDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    // HTML 이스케이프 함수
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+    
+    // 공시지가 포맷팅 함수
+    function formatLandValue(value) {
+      if (value >= 100000000) {
+        return `₩${(value / 100000000).toFixed(1)}억`;
+      } else if (value >= 10000) {
+        return `₩${(value / 10000).toFixed(0)}만`;
+      } else {
+        return `₩${value.toLocaleString()}`;
+      }
     }
 
     // 입력정보 전송
@@ -330,16 +1562,7 @@
       console.log("🚀 분석 시작 - 로딩 UI 표시");
       showAnalysisLoading();
 
-      console.log("전송할 데이터:", {
-        business_type_id: parseInt(business_type_id),
-        address: address,
-        area: parseFloat(area),
-        service_type: parseInt(service_type),
-        x_coord: parseFloat(x_coord),
-        y_coord: parseFloat(y_coord),
-        latitude: parseFloat(latitude),
-        longitude: parseFloat(longitude)
-      });
+      // 분석 데이터 전송 준비
       
       const paramData = {
         business_type_id: parseInt(business_type_id),
@@ -376,11 +1599,24 @@
           'X-CSRFToken': csrfToken
         },
         success: function(response) {
-          console.log("✅ 분석 요청 성공 응답:", response);
+          // 분석 요청 성공
           
-          if (response.success && response.request_id) {
-            console.log(`🔄 현재 페이지에서 결과 표시 시작 (request_id: ${response.request_id})`);
-            // 분석 결과를 가져와서 현재 페이지에 표시
+          if (response.success && response.is_guest) {
+            console.log("🔄 비회원 분석 결과 직접 표시");
+            // 비회원은 바로 결과 표시 (저장되지 않음)
+            displayAnalysisResults({
+              request: {
+                address: $('#address').val(),
+                business_type_id: parseInt($('#business_type_id').val()),
+                area: parseFloat($('#area').val()),
+                service_type: parseInt($('#service_type').val()),
+                created_at: new Date().toISOString()
+              },
+              result: response.result
+            });
+          } else if (response.success && response.request_id) {
+            console.log(`🔄 회원 분석 - 현재 페이지에서 결과 표시 시작 (request_id: ${response.request_id})`);
+            // 회원은 저장된 결과를 가져와서 표시
             fetchAndDisplayResults(response.request_id);
           } else if (response.request_id) {
             console.log(`🔄 request_id만 있는 경우 (request_id: ${response.request_id})`);
@@ -422,8 +1658,14 @@
           console.error("📊 응답 상태:", xhr.status);
           console.error("📄 응답 텍스트:", xhr.responseText);
           
-          // 404 오류가 아닌 경우에만 재시도 옵션 제공
-          if (xhr.status === 404) {
+          // 권한 오류 처리
+          if (xhr.status === 401) {
+            console.log("🔒 로그인이 필요함");
+            showAnalysisError(requestId, "로그인이 필요합니다. 페이지를 새로고침하여 로그인해주세요.");
+          } else if (xhr.status === 403) {
+            console.log("🚫 접근 권한 없음");
+            showAnalysisError(requestId, "이 분석 결과에 접근할 권한이 없습니다.");
+          } else if (xhr.status === 404) {
             console.log("🔄 결과가 아직 준비되지 않음, 잠시 후 재시도");
             setTimeout(() => {
               fetchAndDisplayResults(requestId);
@@ -599,6 +1841,9 @@
       const request = data.request;
       const result = data.result;
       
+      // 비회원인지 확인 (Django 템플릿에서 사용자 인증 상태 확인)
+      const isGuest = USER_AUTHENTICATED ? false : true;
+      
       // 기본 정보 설정
       document.getElementById('resultAddress').textContent = request.address;
       document.getElementById('resultBusinessType').textContent = getBusinessTypeName(request.business_type_id);
@@ -625,12 +1870,15 @@
       document.getElementById('survivalPercentage').textContent = survivalRate + '%';
       
       const survivalBar = document.getElementById('survivalBar');
+      const survivalBarText = document.getElementById('survivalBarText');
       const survivalAnalysis = document.getElementById('survivalAnalysis');
       
       survivalBar.style.width = survivalRate + '%';
       
       if (survivalRate >= 80) {
         survivalBar.className = 'progress-bar bg-success';
+        survivalBarText.className = 'badge bg-success fs-6';
+        survivalBarText.textContent = `${survivalRate}% (높음)`;
         survivalAnalysis.className = 'alert alert-success';
         survivalAnalysis.innerHTML = `
           <i class="bi bi-check-circle me-2"></i>
@@ -639,6 +1887,8 @@
         `;
       } else if (survivalRate >= 60) {
         survivalBar.className = 'progress-bar bg-warning';
+        survivalBarText.className = 'badge bg-warning fs-6';
+        survivalBarText.textContent = `${survivalRate}% (보통)`;
         survivalAnalysis.className = 'alert alert-warning';
         survivalAnalysis.innerHTML = `
           <i class="bi bi-exclamation-triangle me-2"></i>
@@ -647,6 +1897,8 @@
         `;
       } else {
         survivalBar.className = 'progress-bar bg-danger';
+        survivalBarText.className = 'badge bg-danger fs-6';
+        survivalBarText.textContent = `${survivalRate}% (낮음)`;
         survivalAnalysis.className = 'alert alert-danger';
         survivalAnalysis.innerHTML = `
           <i class="bi bi-times-circle me-2"></i>
@@ -670,12 +1922,15 @@
       
       if (competitorRatio <= 20) {
         competitionBar.className = 'progress-bar bg-success';
+        competitionLevel.className = 'badge bg-success fs-6';
         competitionLevel.textContent = `낮음 (${competitorRatio}%)`;
       } else if (competitorRatio <= 50) {
         competitionBar.className = 'progress-bar bg-warning';
+        competitionLevel.className = 'badge bg-warning fs-6';
         competitionLevel.textContent = `보통 (${competitorRatio}%)`;
       } else {
         competitionBar.className = 'progress-bar bg-danger';
+        competitionLevel.className = 'badge bg-danger fs-6';
         competitionLevel.textContent = `높음 (${competitorRatio}%)`;
       }
       
@@ -691,6 +1946,203 @@
         behavior: 'smooth',
         block: 'start'
       });
+      
+      // 외국인 관련 지표 표시 (통합된 섹션)
+      console.log('외국인 지표 데이터:', {
+        '2A_Temp_Total': result['2A_Temp_Total'],
+        '1A_Long_Total': result['1A_Long_Total'],
+        '2A_Long_CN': result['2A_Long_CN'],
+        temp_foreign_1000m: result.temp_foreign_1000m,
+        long_foreign_300m: result.long_foreign_300m,
+        long_foreign_cn_1000m: result.long_foreign_cn_1000m
+      });
+      
+      // 1. 단기체류 외국인 (1000m) - 2A_Temp_Total 사용
+      const tempTotal = result['2A_Temp_Total'] || result.temp_foreign_1000m || result.temp_foreign_total_1000m || 0;
+      document.getElementById('tempForeign1000').textContent = tempTotal > 0 ? Math.round(tempTotal).toLocaleString() + '명' : '0명';
+      
+      // 2. 장기체류 외국인 (300m) - 1A_Long_Total 사용
+      const longTotal300 = result['1A_Long_Total'] || result.long_foreign_300m || result.long_foreign_total_300m || 0;
+      document.getElementById('longForeign300').textContent = longTotal300 > 0 ? Math.round(longTotal300).toLocaleString() + '명' : '0명';
+      
+      // 3. 장기체류 중국인 비율 (1000m) - 2A_Long_CN 사용
+      const longCNRatio1000 = result['2A_Long_CN'] || result.long_foreign_cn_1000m || result.long_foreign_cn_ratio_1000m || 0; // 이미 비율(%)
+      document.getElementById('longForeignCNRatio300').textContent = longCNRatio1000 > 0 ? longCNRatio1000.toFixed(1) + '%' : '0.0%';
+      
+      // 인구 구성 파이차트 업데이트 (1000m 기준)
+      updateAgeChart(result);
+      
+      // 비회원일 때 PDF 버튼 비활성화
+      if (isGuest) {
+        document.getElementById('pdfSaveBtn').style.display = 'none';
+        document.getElementById('guestPdfMessage').style.display = 'block';
+      } else {
+        document.getElementById('pdfSaveBtn').style.display = 'inline-block';
+        document.getElementById('guestPdfMessage').style.display = 'none';
+      }
+      
+      // 분석결과 챗봇 활성화 (로그인 사용자만)
+      if (!isGuest) {
+        console.log('분석 완료 - 챗봇 활성화');
+        activateChatbot(data);
+      }
+    }
+    
+    // 연령대별 인구 파이차트 생성/업데이트 함수
+    let ageChart = null;
+    let previewAgeChart = null;
+    
+    // PDF 미리보기용 파이차트 업데이트 함수
+    function updatePreviewAgeChart(ageData) {
+      const chartData = {
+        labels: ['20대', '30대', '40대', '50대', '60대 이상'],
+        datasets: [{
+          data: ageData,
+          backgroundColor: [
+            '#FF6384',  // 20대 - 핑크
+            '#36A2EB',  // 30대 - 블루
+            '#FFCE56',  // 40대 - 옐로우
+            '#4BC0C0',  // 50대 - 시안
+            '#9966FF'   // 60대 - 퍼플
+          ],
+          borderColor: [
+            '#FF6384',
+            '#36A2EB',
+            '#FFCE56',
+            '#4BC0C0',
+            '#9966FF'
+          ],
+          borderWidth: 2
+        }]
+      };
+      
+      const chartConfig = {
+        type: 'pie',
+        data: chartData,
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          aspectRatio: 1,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                padding: 8,
+                usePointStyle: true,
+                font: {
+                  size: 10
+                }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = context.parsed || 0;
+                  return label + ': ' + value.toFixed(1) + '%';
+                }
+              }
+            }
+          },
+          layout: {
+            padding: 5
+          }
+        }
+      };
+      
+      // 기존 차트가 있으면 제거
+      if (previewAgeChart) {
+        previewAgeChart.destroy();
+      }
+      
+      // 새 차트 생성
+      const previewCtx = document.getElementById('previewAgeChart');
+      if (previewCtx) {
+        previewAgeChart = new Chart(previewCtx.getContext('2d'), chartConfig);
+      }
+    }
+    
+    function updateAgeChart(result) {
+      // 1000m 반경 연령대별 비율 데이터 (백엔드에서 제공)
+      const age20 = result['2A_20'] || result.life_pop_20_1000m || 0;
+      const age30 = result['2A_30'] || result.life_pop_30_1000m || 0;
+      const age40 = result['2A_40'] || result.life_pop_40_1000m || 0;
+      const age50 = result['2A_50'] || result.life_pop_50_1000m || 0;
+      const age60 = result['2A_60'] || result.life_pop_60_1000m || 0;
+      
+      // 연령대별 퍼센트 표시 업데이트
+      document.getElementById('age20Percent').textContent = age20.toFixed(1) + '%';
+      document.getElementById('age30Percent').textContent = age30.toFixed(1) + '%';
+      document.getElementById('age40Percent').textContent = age40.toFixed(1) + '%';
+      document.getElementById('age50Percent').textContent = age50.toFixed(1) + '%';
+      document.getElementById('age60Percent').textContent = age60.toFixed(1) + '%';
+      
+      // 차트 데이터 준비
+      const chartData = {
+        labels: ['20대', '30대', '40대', '50대', '60대 이상'],
+        datasets: [{
+          data: [age20, age30, age40, age50, age60],
+          backgroundColor: [
+            '#FF6384',  // 20대 - 핑크
+            '#36A2EB',  // 30대 - 블루
+            '#FFCE56',  // 40대 - 옐로우
+            '#4BC0C0',  // 50대 - 시안
+            '#9966FF'   // 60대 - 퍼플
+          ],
+          borderColor: [
+            '#FF6384',
+            '#36A2EB',
+            '#FFCE56',
+            '#4BC0C0',
+            '#9966FF'
+          ],
+          borderWidth: 2
+        }]
+      };
+      
+      // 차트 설정
+      const chartConfig = {
+        type: 'pie',
+        data: chartData,
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          aspectRatio: 1,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                padding: 10,
+                usePointStyle: true,
+                font: {
+                  size: 11
+                }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = context.parsed || 0;
+                  return label + ': ' + value.toFixed(1) + '%';
+                }
+              }
+            }
+          },
+          layout: {
+            padding: 10
+          }
+        }
+      };
+      
+      // 기존 차트가 있으면 제거
+      if (ageChart) {
+        ageChart.destroy();
+      }
+      
+      // 새 차트 생성
+      const ctx = document.getElementById('ageChart').getContext('2d');
+      ageChart = new Chart(ctx, chartConfig);
     }
     
     // 업종명 반환 함수
@@ -769,7 +2221,7 @@
 
     // PDF 미리보기 모달 표시 함수 (분석 기록용)
     function showPdfPreview(requestId) {
-      console.log('PDF 미리보기 요청:', requestId);
+              // PDF 미리보기 요청 처리
       
       // 모달 표시
       const previewModal = new bootstrap.Modal(document.getElementById('pdfPreviewModal'));
@@ -786,7 +2238,7 @@
       fetch(`/ai_analyzer/api/result/${requestId}/`, {
         method: 'GET',
         headers: {
-          'X-CSRFToken': '{{ csrf_token }}'
+          'X-CSRFToken': CSRF_TOKEN
         }
       })
       .then(response => {
@@ -796,7 +2248,7 @@
         return response.json();
       })
       .then(data => {
-        console.log('분석 결과 데이터:', data);
+        // 분석 결과 데이터 처리
         
                  // 로딩 숨기고 내용 표시
          document.getElementById('previewLoading').style.display = 'none';
@@ -882,6 +2334,65 @@
       }
       document.getElementById('previewLandPrice').textContent = landValueText;
       
+      // 경쟁강도 분석 (새로 추가된 필드들)
+      const competitorRatio = Math.round(result.competitor_ratio_300m || 0);
+      const businessDiversity = result.business_diversity_300m || 0;
+      const adjacentBiz = result.adjacent_biz_300m || 0;
+      
+      // 경쟁강도 미리보기 데이터 업데이트
+      document.getElementById('previewCompetitorCount').textContent = (result.competitor_300m || 0) + '개';
+      document.getElementById('previewAdjacentBiz').textContent = adjacentBiz + '개';
+      
+      // 경쟁강도 진행률 바 설정
+      const previewCompetitionBar = document.getElementById('previewCompetitionBar');
+      const previewCompetitionLevel = document.getElementById('previewCompetitionLevel');
+      
+      if (previewCompetitionBar && previewCompetitionLevel) {
+        previewCompetitionBar.style.width = competitorRatio + '%';
+        
+        if (competitorRatio <= 20) {
+          previewCompetitionBar.className = 'progress-bar bg-success';
+          previewCompetitionLevel.className = 'badge bg-success fs-6';
+          previewCompetitionLevel.textContent = `낮음 (${competitorRatio}%)`;
+        } else if (competitorRatio <= 50) {
+          previewCompetitionBar.className = 'progress-bar bg-warning';
+          previewCompetitionLevel.className = 'badge bg-warning fs-6';
+          previewCompetitionLevel.textContent = `보통 (${competitorRatio}%)`;
+        } else {
+          previewCompetitionBar.className = 'progress-bar bg-danger';
+          previewCompetitionLevel.className = 'badge bg-danger fs-6';
+          previewCompetitionLevel.textContent = `높음 (${competitorRatio}%)`;
+        }
+      }
+      
+      // 외국인 분석 데이터 (새로 추가된 필드들)
+      const tempTotal = result['2A_Temp_Total'] || result.temp_foreign_1000m || 0;
+      const longTotal300 = result['1A_Long_Total'] || result.long_foreign_300m || 0;
+      const longCNRatio1000 = result['2A_Long_CN'] || result.long_foreign_cn_1000m || 0;
+      
+      // 외국인 분석 미리보기 데이터 업데이트
+      document.getElementById('previewTempForeign').textContent = tempTotal > 0 ? Math.round(tempTotal).toLocaleString() + '명' : '0명';
+      document.getElementById('previewLongForeign').textContent = longTotal300 > 0 ? Math.round(longTotal300).toLocaleString() + '명' : '0명';
+      document.getElementById('previewChinaRatio').textContent = longCNRatio1000 > 0 ? longCNRatio1000.toFixed(1) + '%' : '0.0%';
+      
+      // 연령대별 인구 분석 (새로 추가된 필드들)
+      const age20 = result['2A_20'] || result.life_pop_20_1000m || 0;
+      const age30 = result['2A_30'] || result.life_pop_30_1000m || 0;
+      const age40 = result['2A_40'] || result.life_pop_40_1000m || 0;
+      const age50 = result['2A_50'] || result.life_pop_50_1000m || 0;
+      const age60 = result['2A_60'] || result.life_pop_60_1000m || 0;
+      
+      // 연령대별 미리보기 데이터 업데이트
+      document.getElementById('previewAge20').textContent = age20.toFixed(1) + '%';
+      document.getElementById('previewAge30').textContent = age30.toFixed(1) + '%';
+      document.getElementById('previewAge40').textContent = age40.toFixed(1) + '%';
+      document.getElementById('previewAge50').textContent = age50.toFixed(1) + '%';
+      document.getElementById('previewAge60').textContent = age60.toFixed(1) + '%';
+      
+      // PDF 미리보기용 파이차트 생성
+      const ageData = [age20, age30, age40, age50, age60];
+      updatePreviewAgeChart(ageData);
+      
              // 강점과 주의사항 분석
        populateStrengthsAndCautions(result);
        
@@ -893,6 +2404,9 @@
     function populateStrengthsAndCautions(result) {
       const strengths = [];
       const cautions = [];
+      
+      console.log('미리보기 강점/주의사항 분석 데이터:', result);
+      // 강점/주의사항 분석을 위한 데이터 처리
       
       // 생활인구 분석
       const lifePop300 = result.life_pop_300m || 0;
@@ -918,12 +2432,54 @@
         cautions.push('300m 반경 내 경쟁업체가 많아 치열한 경쟁이 예상됩니다 (' + competitor300 + '개)');
       }
       
+      // 경쟁강도 분석 (새로 추가)
+      const competitorRatio = result.competitor_ratio_300m || 0;
+      if (competitorRatio < 20) {
+        strengths.push('경쟁강도가 낮아 시장 진입이 유리합니다 (' + competitorRatio.toFixed(1) + '%)');
+      } else if (competitorRatio > 60) {
+        cautions.push('경쟁강도가 높아 치열한 경쟁이 예상됩니다 (' + competitorRatio.toFixed(1) + '%)');
+      }
+      
+      // 업종 다양성 분석 (새로 추가)
+      const businessDiversity = result.business_diversity_300m || 0;
+      if (businessDiversity > 15) {
+        strengths.push('주변 업종이 다양해 상권이 활성화되어 있습니다');
+      } else if (businessDiversity < 5) {
+        cautions.push('주변 업종 다양성이 부족해 상권 활력이 제한적일 수 있습니다');
+      }
+      
       // 공시지가 분석
       const landValue = result.total_land_value || 0;
       if (landValue < 50000000) { // 5천만원 미만
         strengths.push('상대적으로 낮은 공시지가로 임대료 부담이 적을 것으로 예상됩니다');
       } else if (landValue > 200000000) { // 2억 초과
         cautions.push('높은 공시지가로 인한 임대료 부담이 클 수 있습니다');
+      }
+      
+      // 외국인 고객층 분석 (새로 추가)
+      const tempForeign1000 = result['2A_Temp_Total'] || result.temp_foreign_1000m || 0;
+      const longForeign300 = result['1A_Long_Total'] || result.long_foreign_300m || 0;
+      
+      if (tempForeign1000 > 3000 || longForeign300 > 1000) {
+        strengths.push('외국인 고객층이 풍부해 다양한 고객 확보 가능');
+      }
+      
+      // 연령대별 인구 분석 (새로 추가)
+      const age20 = result['2A_20'] || result.life_pop_20_1000m || 0;
+      const age30 = result['2A_30'] || result.life_pop_30_1000m || 0;
+      const age40 = result['2A_40'] || result.life_pop_40_1000m || 0;
+      
+      if (age20 > 25 || age30 > 25) {
+        strengths.push('젊은 연령층 비율이 높아 트렌디한 업종에 유리');
+      } else if (age40 > 30) {
+        strengths.push('중장년층 비율이 높아 안정적인 소비 패턴 기대');
+      }
+      
+      // 유동인구 유발시설 분석
+      const publicBuilding = result.public_building_250m || 0;
+      const school = result.school_250m || 0;
+      if (publicBuilding > 0 || school > 0) {
+        strengths.push('주변 유동인구 유발시설이 있어 고객 유입에 유리');
       }
       
       // 생존 확률 분석
@@ -942,17 +2498,23 @@
         cautions.push('현재 상권 조건이 양호합니다');
       }
       
+      // 분석 완료
+      
       // HTML 생성
       const strengthsList = document.getElementById('previewStrengthsList').querySelector('ul');
       const cautionsList = document.getElementById('previewCautionsList').querySelector('ul');
       
+      if (strengthsList) {
       strengthsList.innerHTML = strengths.map(item => 
         `<li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>${item}</li>`
       ).join('');
+      }
       
+      if (cautionsList) {
              cautionsList.innerHTML = cautions.map(item => 
          `<li class="mb-2"><i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>${item}</li>`
        ).join('');
+      }
      }
 
     // 미리보기 모달에서 PDF 다운로드 함수 (고품질)
@@ -1141,111 +2703,87 @@
       }
     }
 
-    // 전역 변수로 현재 분석 결과 ID 저장
-    let currentRequestId = null;
+    // 챗봇 활성화 함수 (분석 완료 후 호출)
+    function activateChatbot(analysisData) {
+      // 분석 데이터 저장
+      currentAnalysisData = analysisData;
+      
+      // UI 상태 전환 - 비활성화 → 활성화
+      const inactiveElement = document.getElementById('chatbotInactive');
+      const activeElement = document.getElementById('chatbotActive');
+      
+      // 비활성화 상태 완전히 숨기기
+      if (inactiveElement) {
+        inactiveElement.style.setProperty('display', 'none', 'important');
+        inactiveElement.style.visibility = 'hidden';
+        inactiveElement.style.height = '0';
+        inactiveElement.style.overflow = 'hidden';
+      }
+      
+      // 활성화 상태 표시
+      if (activeElement) {
+        activeElement.style.setProperty('display', 'flex', 'important');
+        activeElement.style.visibility = 'visible';
+        activeElement.style.height = 'auto';
+      }
+      
+      const statusElement = document.getElementById('chatbotStatus');
+      if (statusElement) {
+        statusElement.textContent = '준비완료';
+        statusElement.className = 'badge bg-success';
+      }
+      
+      // 입력 필드 활성화
+      const chatInput = document.getElementById('chatInput');
+      const chatSendBtn = document.getElementById('chatSendBtn');
+      
+      if (chatInput) {
+        chatInput.disabled = false;
+        // Enter 키 이벤트 리스너 추가 (중복 방지)
+        chatInput.removeEventListener('keypress', handleChatKeyPress);
+        chatInput.addEventListener('keypress', handleChatKeyPress);
+      }
+      
+      if (chatSendBtn) {
+        chatSendBtn.disabled = false;
+        // 전송 버튼 이벤트 리스너 추가 (중복 방지)
+        chatSendBtn.removeEventListener('click', sendChatMessage);
+        chatSendBtn.addEventListener('click', sendChatMessage);
+      }
+    }
+
+    // 채팅 키 입력 핸들러
+    function handleChatKeyPress(e) {
+      if (e.key === 'Enter') {
+        sendChatMessage();
+      }
+    }
+
+    // 전역 변수로 현재 분석 결과 ID 저장 (중복 선언 제거 - 이미 상단에 선언됨)
+    // let currentRequestId = null; // 중복 선언 제거
     let currentPreviewRequestId = null;
 
-    // PDF 생성 함수 (jsPDF 사용)
+    // PDF 생성 함수 (최신 버전으로 업데이트)
     function generatePDF() {
-      if (!currentRequestId) {
-        alert('분석 결과가 없습니다. 먼저 상권 분석을 진행해주세요.');
+      // Django 템플릿에서 사용자 인증 상태 확인
+      const isAuthenticated = USER_AUTHENTICATED;
+      
+      if (!isAuthenticated) {
+        document.getElementById('guestPdfMessage').style.display = 'block';
         return;
       }
       
-      // 미리보기 데이터 채우기
-      updatePdfPreview();
+      // 현재 분석 결과를 사용하여 PDF 미리보기 표시
+      if (!currentRequestId) {
+        alert('분석 결과가 없습니다.');
+        return;
+      }
       
-      // PDF 모달 표시
-      const pdfModal = new bootstrap.Modal(document.getElementById('pdfModal'));
-      pdfModal.show();
-      
-      // 초기 상태로 설정 - 미리보기 표시
-      document.getElementById('pdfPreviewContainer').style.display = 'block';
-      document.getElementById('pdfGenerating').style.display = 'none';
-      document.getElementById('pdfError').style.display = 'none';
-      document.getElementById('downloadPdfBtn').style.display = 'inline-block';
-      document.getElementById('retryPdfBtn').style.display = 'none';
+      // 최신 PDF 미리보기 함수 호출
+      showPdfPreview(currentRequestId);
     }
     
-    // PDF 미리보기 데이터 업데이트
-    function updatePdfPreview() {
-      // 현재 화면에 표시된 데이터를 사용
-      document.getElementById('previewAddress').textContent = 
-        document.getElementById('resultAddress').textContent || '-';
-      document.getElementById('previewBusinessType').textContent = 
-        document.getElementById('resultBusinessType').textContent || '-';
-      document.getElementById('previewArea').textContent = 
-        document.getElementById('resultArea').textContent + '㎡' || '-';
-      document.getElementById('previewSurvival').textContent = 
-        document.getElementById('survivalPercentage').textContent || '-%';
-      document.getElementById('previewLifePop').textContent = 
-        document.getElementById('lifePop300').textContent + '명' || '-';
-      document.getElementById('previewWorkingPop').textContent = 
-        document.getElementById('workingPop300').textContent + '명' || '-';
-      document.getElementById('previewCompetitor').textContent = 
-        document.getElementById('competitor300').textContent + '개' || '-';
-      
-      // 공시지가 추가
-      const landValueElement = document.getElementById('totalLandValue');
-      if (landValueElement) {
-        document.getElementById('previewLandValue').textContent = landValueElement.textContent || '-';
-      }
-      
-      // 분석일시 추가
-      const currentDate = new Date().toLocaleDateString('ko-KR');
-      document.getElementById('previewDate').textContent = currentDate;
-      document.getElementById('previewReportDate').textContent = currentDate;
-        
-      // 생존 확률에 따른 색상 및 프로그레스 바 변경
-      const survivalText = document.getElementById('survivalPercentage').textContent;
-      const survivalRate = parseInt(survivalText.replace('%', ''));
-      const previewSurvival = document.getElementById('previewSurvival');
-      const previewSurvivalBar = document.getElementById('previewSurvivalBar');
-      const previewSurvivalText = document.getElementById('previewSurvivalText');
-      
-      // 프로그레스 바 설정
-      previewSurvivalBar.style.width = survivalRate + '%';
-      
-      if (survivalRate >= 80) {
-        previewSurvival.className = 'display-4 mb-3 text-success';
-        previewSurvivalBar.className = 'progress-bar bg-success';
-        previewSurvivalText.textContent = '높은 생존 가능성 - 장기적 사업 지속에 매우 좋은 조건';
-      } else if (survivalRate >= 60) {
-        previewSurvival.className = 'display-4 mb-3 text-warning';
-        previewSurvivalBar.className = 'progress-bar bg-warning';
-        previewSurvivalText.textContent = '보통 생존 가능성 - 적절한 조건이나 추가 전략 검토 필요';
-      } else {
-        previewSurvival.className = 'display-4 mb-3 text-danger';
-        previewSurvivalBar.className = 'progress-bar bg-danger';
-        previewSurvivalText.textContent = '낮은 생존 가능성 - 장기 사업 지속에 어려움 예상';
-      }
-      
-      // 강점/주의사항 업데이트
-      const strengthsList = document.getElementById('strengthsList');
-      const cautionsList = document.getElementById('cautionsList');
-      
-      if (strengthsList && strengthsList.children.length > 0) {
-        const previewStrengths = document.getElementById('previewStrengths').querySelector('ul');
-        previewStrengths.innerHTML = '';
-        Array.from(strengthsList.children).forEach(item => {
-          const li = document.createElement('li');
-          li.innerHTML = '<i class="bi bi-check-circle-fill text-success me-2"></i>' + item.textContent;
-          li.className = 'mb-2';
-          previewStrengths.appendChild(li);
-        });
-      }
-      
-      if (cautionsList && cautionsList.children.length > 0) {
-        const previewCautions = document.getElementById('previewCautions').querySelector('ul');
-        previewCautions.innerHTML = '';
-        Array.from(cautionsList.children).forEach(item => {
-          const li = document.createElement('li');
-          li.innerHTML = '<i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>' + item.textContent;
-          li.className = 'mb-2';
-          previewCautions.appendChild(li);
-        });
-      }
-    }
+    // 기존 PDF 미리보기 함수는 제거됨 - 최신 showPdfPreview 함수 사용
 
     // PDF 다운로드 함수 (jsPDF로 클라이언트 사이드 생성)
     function downloadPDF() {
@@ -1265,7 +2803,7 @@
       fetch(`/ai_analyzer/pdf-data/${currentRequestId}/`, {
         method: 'GET',
         headers: {
-          'X-CSRFToken': '{{ csrf_token }}'
+          'X-CSRFToken': CSRF_TOKEN
         }
       })
       .then(response => {
@@ -1311,7 +2849,7 @@
       fetch(`/ai_analyzer/pdf-data/${currentRequestId}/`, {
         method: 'GET',
         headers: {
-          'X-CSRFToken': '{{ csrf_token }}'
+          'X-CSRFToken': CSRF_TOKEN
         }
       })
       .then(response => {
@@ -1590,21 +3128,20 @@
         <div class="card p-4 shadow-sm">
           <h3 class="mb-3">
             <span data-lang="KOR">상권 정보입력</span>
-            <span data-lang="ENG">Enter Commercial Area Info</span>
-            <span data-lang="ESP">Ingresar Información del Área Comercial</span>
+            <span data-lang="ENG" style="display: none;">Enter Commercial Area Info</span>
+            <span data-lang="ESP" style="display: none;">Ingresar Información del Área Comercial</span>
           </h3>
 
           <form>
             <div class="row g-3">
               <!-- 업종 선택 -->
               <div class="col-md-3">
-                <label for="industry" class="form-label">
+                <label for="business_type_id" class="form-label">
                   <span data-lang="KOR">업종</span>
-                  <span data-lang="ENG">Industry</span>
-                  <span data-lang="ESP">Industria</span>
+                  <span data-lang="ENG" style="display: none;">Industry</span>
+                  <span data-lang="ESP" style="display: none;">Industria</span>
                 </label>
-                <!-- 한국어 업종 선택 -->
-                <select class="form-select" id="business_type_id" name="industry" data-lang="KOR" required>
+                <select class="form-select" id="business_type_id" name="business_type_id" data-lang="KOR" required>
                   <option selected disabled>업종을 선택해주세요</option>
                   <option value="0">감성주점</option>
                   <option value="1">경양식</option>
@@ -1645,152 +3182,141 @@
                   <option value="36">호프/통닭</option>
                   <option value="37">횟집</option>
                 </select>
-
+                
                 <!-- 영어 업종 선택 -->
-                <select class="form-select" id="industryEng" name="industry" data-lang="ENG" style="display: none;" required>
-                  <option selected disabled>Please select industry</option>
-                  <option value="0">Emotional Pub</option>
-                  <option value="1">Western-style</option>
-                  <option value="2">Tourist Hotel</option>
-                  <option value="3">Theater</option>
-                  <option value="4">Other</option>
-                  <option value="5">Other Snack Bar</option>
-                  <option value="6">Gimbap (Lunchbox)</option>
-                  <option value="7">Café</option>
-                  <option value="8">Naengmyeon House</option>
-                  <option value="9">Coffeehouse</option>
-                  <option value="10">Rice Cake Café</option>
-                  <option value="11">Live Café</option>
-                  <option value="12">Department Store</option>
-                  <option value="13">Blowfish Cuisine</option>
-                  <option value="14">Snack Bar</option>
+                <select class="form-select" id="industryEng" name="business_type_id" data-lang="ENG" style="display: none;" required>
+                  <option selected disabled>Please select an industry</option>
+                  <option value="0">Sentimental pub</option>
+                  <option value="1">Western restaurant</option>
+                  <option value="2">Tourist hotel</option>
+                  <option value="3">Theatre</option>
+                  <option value="4">Others</option>
+                  <option value="5">Other refreshment food</option>
+                  <option value="6">Kimbap(lunchbox)</option>
+                  <option value="7">Cafe</option>
+                  <option value="8">Cold noodle restaurant</option>
+                  <option value="9">Teahouse</option>
+                  <option value="10">Rice cake cafe</option>
+                  <option value="11">Live cafe</option>
+                  <option value="12">Department store</option>
+                  <option value="13">Pufferfish handling</option>
+                  <option value="14">Snack bar</option>
                   <option value="15">Buffet</option>
-                  <option value="16">Meat Grill (Charcoal)</option>
-                  <option value="17">Ice Cream</option>
-                  <option value="18">Foreign Cuisine (India, Thailand, etc.)</option>
-                  <option value="19">Amusement Area</option>
-                  <option value="20">General Food Sale</option>
-                  <option value="21">Japanese</option>
-                  <option value="22">Traditional Tea House</option>
-                  <option value="23">Soju Pub</option>
-                  <option value="24">Chinese</option>
-                  <option value="25">Train Station Interior</option>
+                  <option value="16">Meat(charcoal grill)</option>
+                  <option value="17">Ice cream</option>
+                  <option value="18">Foreign food specialty(Indian, Thai, etc.)</option>
+                  <option value="19">Amusement park</option>
+                  <option value="20">General cooking sales</option>
+                  <option value="21">Japanese food</option>
+                  <option value="22">Traditional tea house</option>
+                  <option value="23">Rice wine/draft beer/soju bar</option>
+                  <option value="24">Chinese food</option>
+                  <option value="25">Railway station</option>
                   <option value="26">Catering</option>
-                  <option value="27">Coffee Shop</option>
-                  <option value="28">Kids Café</option>
-                  <option value="29">Health Soup</option>
-                  <option value="30">Fried Chicken</option>
-                  <option value="31">Family Restaurant</option>
-                  <option value="32">Fast Food</option>
-                  <option value="33">Convenience Store</option>
-                  <option value="34">Food Truck</option>
-                  <option value="35">Korean</option>
-                  <option value="36">Pub/Chicken</option>
-                  <option value="37">Sashimi House</option>
+                  <option value="27">Coffee shop</option>
+                  <option value="28">Kids cafe</option>
+                  <option value="29">Soup(health food)</option>
+                  <option value="30">Whole chicken(fried chicken)</option>
+                  <option value="31">Family restaurant</option>
+                  <option value="32">Fast food</option>
+                  <option value="33">Convenience store</option>
+                  <option value="34">Food truck</option>
+                  <option value="35">Korean food</option>
+                  <option value="36">Beer/chicken pub</option>
+                  <option value="37">Raw fish restaurant</option>
                 </select>
-
+                
                 <!-- 스페인어 업종 선택 -->
-                <select class="form-select" id="industryEsp" name="industry" data-lang="ESP" style="display: none;" required>
-                  <option selected disabled>Seleccione una industria</option>
-                  <option value="0">Pub Emocional</option>
-                  <option value="1">Estilo Occidental</option>
-                  <option value="2">Hotel Turístico</option>
+                <select class="form-select" id="industryEsp" name="business_type_id" data-lang="ESP" style="display: none;" required>
+                  <option selected disabled>Por favor seleccione una industria</option>
+                  <option value="0">Pub sentimental</option>
+                  <option value="1">Restaurante occidental</option>
+                  <option value="2">Hotel turístico</option>
                   <option value="3">Teatro</option>
-                  <option value="4">Otro</option>
-                  <option value="5">Otros Bares de Refrigerios</option>
-                  <option value="6">Gimbap (Lonchera)</option>
+                  <option value="4">Otros</option>
+                  <option value="5">Otra comida refrescante</option>
+                  <option value="6">Kimbap(fiambrera)</option>
                   <option value="7">Café</option>
-                  <option value="8">Restaurante de Naengmyeon</option>
-                  <option value="9">Casa de Café</option>
-                  <option value="10">Café de Pastel de Arroz</option>
-                  <option value="11">Café en Vivo</option>
-                  <option value="12">Grandes Almacenes</option>
-                  <option value="13">Comida de Pez Globo</option>
-                  <option value="14">Comida Rápida Coreana</option>
+                  <option value="8">Restaurante de fideos fríos</option>
+                  <option value="9">Casa de té</option>
+                  <option value="10">Café de pastel de arroz</option>
+                  <option value="11">Café en vivo</option>
+                  <option value="12">Grandes almacenes</option>
+                  <option value="13">Manejo de pez globo</option>
+                  <option value="14">Bar de aperitivos</option>
                   <option value="15">Buffet</option>
-                  <option value="16">Carne a la Parrilla (Carbón)</option>
+                  <option value="16">Carne(parrilla de carbón)</option>
                   <option value="17">Helado</option>
-                  <option value="18">Comida Extranjera (India, Tailandia, etc.)</option>
-                  <option value="19">Zona de Recreo</option>
-                  <option value="20">Venta General de Alimentos</option>
-                  <option value="21">Japonesa</option>
-                  <option value="22">Casa de Té Tradicional</option>
-                  <option value="23">Bar de Soju</option>
-                  <option value="24">China</option>
-                  <option value="25">Interior de Estación de Tren</option>
+                  <option value="18">Especialidad de comida extranjera(India, Tailandia, etc.)</option>
+                  <option value="19">Parque de atracciones</option>
+                  <option value="20">Ventas de cocina general</option>
+                  <option value="21">Comida japonesa</option>
+                  <option value="22">Casa de té tradicional</option>
+                  <option value="23">Vino de arroz/cerveza de barril/bar de soju</option>
+                  <option value="24">Comida china</option>
+                  <option value="25">Estación de ferrocarril</option>
                   <option value="26">Catering</option>
-                  <option value="27">Tienda de Café</option>
-                  <option value="28">Café Infantil</option>
-                  <option value="29">Sopa Medicinal</option>
-                  <option value="30">Pollo Frito</option>
-                  <option value="31">Restaurante Familiar</option>
-                  <option value="32">Comida Rápida</option>
-                  <option value="33">Tienda de Conveniencia</option>
-                  <option value="34">Camión de Comida</option>
-                  <option value="35">Coreana</option>
-                  <option value="36">Pub/Pollo</option>
-                  <option value="37">Restaurante de Pescado Crudo</option>
+                  <option value="27">Cafetería</option>
+                  <option value="28">Café para niños</option>
+                  <option value="29">Sopa(comida saludable)</option>
+                  <option value="30">Pollo entero(pollo frito)</option>
+                  <option value="31">Restaurante familiar</option>
+                  <option value="32">Comida rápida</option>
+                  <option value="33">Tienda de conveniencia</option>
+                  <option value="34">Camión de comida</option>
+                  <option value="35">Comida coreana</option>
+                  <option value="36">Pub de cerveza/pollo</option>
+                  <option value="37">Restaurante de pescado crudo</option>
                 </select>
               </div>
 
               <!-- 주소 입력 -->
-              <div class="col-md-5">
+              <div class="col-md-3">
                 <input type="hidden" id="latitude" name="latitude">
                 <input type="hidden" id="longitude" name="longitude">
                 <input type="hidden" id="x_coord" name="x_coord">
                 <input type="hidden" id="y_coord" name="y_coord">
-                <!-- 한국어 주소 라벨 -->
+                
                 <label for="address" class="form-label" data-lang="KOR">주소</label>
-
-                <!-- 영어 주소 라벨 -->
                 <label for="address" class="form-label" data-lang="ENG" style="display: none;">Address</label>
-
-                <!-- 스페인어 주소 라벨 -->
                 <label for="address" class="form-label" data-lang="ESP" style="display: none;">Dirección</label>
-
+                
                 <div class="input-group">
-                  <!-- 한국어 -->
                   <input type="text" class="form-control lang-input" id="address" name="address" placeholder="주소를 입력해주세요" data-lang="KOR">
                   <button class="btn btn-outline-secondary lang-btn" type="button" onclick="openAddressSearch()" data-lang="KOR">검색</button>
-
-                  <!-- 영어 -->
-                  <input type="text" class="form-control lang-input" id="address-eng" name="address" placeholder="Please enter your address" data-lang="ENG" style="display: none;">
+                  
+                  <input type="text" class="form-control lang-input" id="addressEng" name="address" placeholder="Please enter your address" data-lang="ENG" style="display: none;">
                   <button class="btn btn-outline-secondary lang-btn" type="button" onclick="openAddressSearch()" data-lang="ENG" style="display: none;">Search</button>
-
-                  <!-- 스페인어 -->
-                  <input type="text" class="form-control lang-input" id="address-esp" name="address" placeholder="Por favor ingrese la dirección" data-lang="ESP" style="display: none;">
+                  
+                  <input type="text" class="form-control lang-input" id="addressEsp" name="address" placeholder="Por favor ingrese la dirección" data-lang="ESP" style="display: none;">
                   <button class="btn btn-outline-secondary lang-btn" type="button" onclick="openAddressSearch()" data-lang="ESP" style="display: none;">Buscar</button>
                 </div>
               </div>
 
               <!-- 점포 면적 입력 -->
-              <div class="col-md-2">
-                  <!-- 라벨 (Label) -->
-                  <label for="area" class="form-label" data-lang="KOR">점포 면적 (㎡)</label>
-                  <label for="area" class="form-label" data-lang="ENG" style="display: none;">Store Area (㎡)</label>
-                  <label for="area" class="form-label" data-lang="ESP" style="display: none;">Área del local (㎡)</label>
+              <div class="col-md-3">
+                <label for="area" class="form-label" data-lang="KOR">점포 면적 (㎡)</label>
+                <label for="area" class="form-label" data-lang="ENG" style="display: none;">Store Area (㎡)</label>
+                <label for="area" class="form-label" data-lang="ESP" style="display: none;">Área del local (㎡)</label>
                 <input type="number" class="form-control" id="area" name="area" placeholder="예: 33.2" required>
               </div>
 
               <!-- 주류 판매 여부 선택 -->
-              <div class="col-md-2">
-                <!-- 라벨 (언어별 span으로 구분) -->
-                <label for="service" class="form-label">
+              <div class="col-md-3">
+                <label for="service_type" class="form-label">
                   <span data-lang="KOR">주류 판매 여부</span>
                   <span data-lang="ENG" style="display: none;">Alcohol Sale</span>
                   <span data-lang="ESP" style="display: none;">Venta de alcohol</span>
                 </label>
-
-                <!-- 단 하나의 select -->
-                <select class="form-select" id="service_type" name="service" required>
+                <select class="form-select" id="service_type" name="service_type" required>
                   <option selected disabled data-lang="KOR">선택</option>
                   <option disabled style="display: none;" data-lang="ENG">Choose</option>
                   <option disabled style="display: none;" data-lang="ESP">Seleccionar</option>
-
+                  
                   <option value="1" data-lang="KOR">판매함</option>
                   <option value="1" data-lang="ENG" style="display: none;">Yes</option>
                   <option value="1" data-lang="ESP" style="display: none;">Sí</option>
-
+                  
                   <option value="0" data-lang="KOR">판매 안함</option>
                   <option value="0" data-lang="ENG" style="display: none;">No</option>
                   <option value="0" data-lang="ESP" style="display: none;">No</option>
@@ -1812,81 +3338,98 @@
       </div>
     </div>  <!-- 상권 정보 입력 카드 끝 -->
 
-    <!-- 📁 최근 분석 결과 -->
+    <!-- 📁 최근 분석 결과 (로그인한 사용자만) -->
+    {% if user.is_authenticated %}
     <div class="row mt-5">
       <div class="col-lg-12">
-        <div class="card p-4 shadow-sm mb-4">
-          <h4 class="mb-3">
-            <span data-lang="KOR">📁 내 최근 분석 기록</span>
-            <span data-lang="ENG" style="display: none;">📁 My Recent Analyses</span>
-            <span data-lang="ESP" style="display: none;">📁 Mis análisis recientes</span>
-          </h4>
+        <div class="accordion mb-4" id="analysisHistoryAccordion">
+          <div class="accordion-item shadow-sm">
+            <h2 class="accordion-header" id="analysisHistoryHeading">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#analysisHistoryCollapse" aria-expanded="false" aria-controls="analysisHistoryCollapse">
+                <i class="bi bi-person-check me-2"></i>
+                <strong>
+                  <span data-lang="KOR">📁 내 최근 분석 기록</span>
+                  <span data-lang="ENG" style="display: none;">📁 My Recent Analyses</span>
+                  <span data-lang="ESP" style="display: none;">📁 Mis análisis recientes</span>
+                </strong>
+                <small class="text-muted ms-2">({{ user.username }}님의 개인 기록{% if previous_docs %} - {{ previous_docs|length }}개{% endif %})</small>
+              </button>
+            </h2>
+            <div id="analysisHistoryCollapse" class="accordion-collapse collapse" aria-labelledby="analysisHistoryHeading" data-bs-parent="#analysisHistoryAccordion">
+              <div class="accordion-body">
           {% if previous_docs %}
-            <ul class="list-group">
+                  <ul class="list-group list-group-flush">
               {% for doc in previous_docs %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
+                      <li class="list-group-item d-flex justify-content-between align-items-center px-0">
                   <div>
-                    <strong>
-                      <span data-lang="KOR">분석 ID: </span>
-                      <span data-lang="ENG" style="display: none;">Analysis ID: </span>
-                      <span data-lang="ESP" style="display: none;">ID de Análisis: </span>
-                      {{ doc.request.id }}
-                    </strong>
-                    <br>
-
-                    <small>
-                      <span data-lang="KOR">주소: </span>
-                      <span data-lang="ENG" style="display: none;">Address: </span>
-                      <span data-lang="ESP" style="display: none;">Dirección: </span>
-                      {{ doc.request.address }}
-                    </small>
-                    <br>
-
-                    <small>
-                      <span data-lang="KOR">분석일: </span>
-                      <span data-lang="ENG" style="display: none;">Date: </span>
-                      <span data-lang="ESP" style="display: none;">Fecha: </span>
-                      {{ doc.created_at|date:"Y-m-d H:i" }}
-                    </small>
-                    <br>
-
-                    <small>
-                      <span data-lang="KOR">생존 확률: </span>
-                      <span data-lang="ENG" style="display: none;">Survival Rate: </span>
-                      <span data-lang="ESP" style="display: none;">Probabilidad de Supervivencia: </span>
-                      {{ doc.survival_percentage }}%
-                    </small>
+                          <strong>분석 ID: {{ doc.request.id }}</strong>
+                          <span class="badge bg-{% if doc.survival_percentage >= 80 %}success{% elif doc.survival_percentage >= 60 %}warning{% else %}danger{% endif %} ms-2">
+                            {{ doc.survival_percentage|floatformat:1 }}%
+                          </span>
+                          <br>
+                          <small class="text-muted">
+                            <i class="bi bi-geo-alt me-1"></i>{{ doc.request.address|truncatechars:50 }}
+                          </small><br>
+                          <small class="text-muted">
+                            <i class="bi bi-calendar me-1"></i>{{ doc.created_at|date:"Y-m-d H:i" }}
+                            <i class="bi bi-shop ms-3 me-1"></i>{{ doc.request.business_type.name }}
+                          </small>
                   </div>
-                  <button class="btn btn-sm btn-outline-primary" onclick="showPdfPreview('{{ doc.request.id }}')">
-                    <span data-lang="KOR">결과보기</span>
-                    <span data-lang="ENG" style="display: none;">View Result</span>
-                    <span data-lang="ESP" style="display: none;">Ver Resultado</span>
-                  </button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="showPdfPreview({{ doc.request.id }})">
+                          <i class="bi bi-eye me-1"></i>결과보기
+                        </button>
                 </li>
               {% endfor %}
             </ul>
+                  {% if previous_docs|length > 5 %}
+                    <div class="text-center mt-3">
+                      <small class="text-muted">최근 {{ previous_docs|length }}개 기록 중 일부만 표시됩니다.</small>
+                    </div>
+                  {% endif %}
           {% else %}
-            <p class="text-muted">
-              <span data-lang="KOR">아직 분석 결과가 없습니다.</span>
-              <span data-lang="ENG" style="display: none;">No analysis results yet.</span>
-              <span data-lang="ESP" style="display: none;">Aún no hay resultados de análisis.</span>
-            </p>
+                  <div class="text-center p-3">
+                    <i class="bi bi-folder2-open text-muted" style="font-size: 3rem;"></i>
+                    <p class="text-muted mt-2">아직 분석 결과가 없습니다.</p>
+                    <p class="text-muted small">위의 양식을 작성하여 첫 번째 상권 분석을 시작해보세요!</p>
+                  </div>
           {% endif %}
         </div>
       </div>
     </div>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <!-- 로그인하지 않은 사용자를 위한 안내 -->
+    <div class="row mt-5">
+      <div class="col-lg-12">
+        <div class="card p-4 shadow-sm mb-4 border-warning">
+          <h4 class="mb-3 text-warning">
+            <i class="bi bi-person-x me-2"></i>개인 분석 기록
+          </h4>
+          <div class="text-center p-3">
+            <i class="bi bi-lock text-warning" style="font-size: 3rem;"></i>
+            <p class="text-muted mt-2">분석 기록을 보려면 로그인이 필요합니다.</p>
+            <a href="{% url 'custom_auth:login' %}?next={{ request.get_full_path }}" class="btn btn-warning">
+              <i class="bi bi-box-arrow-in-right me-1"></i>로그인하기
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
 
   
     <!-- 본문: 분석 결과 + 챗봇 -->
     <div class="row">
       <!-- 왼쪽: 분석 리포트 -->
-      <div class="col-lg-8 mb-4">
+      <div class="col-lg-8 mb-4 analysis-container">
         <div class="card p-4 shadow-sm">
           <div class="d-flex justify-content-between align-items-center mb-2">
             <h4 class="mb-0">
               <span data-lang="KOR">상권 분석 결과</span>
-              <span data-lang="ENG">Commercial Area Analysis Result</span>
-              <span data-lang="ESP">Resultado del Análisis Comercial</span>
+              <span data-lang="ENG" style="display: none;">Commercial Area Analysis Result</span>
+              <span data-lang="ESP" style="display: none;">Resultado del Análisis Comercial</span>
             </h4>
             <!-- 모달 버튼 -->
             <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#explanationModal">
@@ -1894,95 +3437,77 @@
               <span data-lang="ENG" style="display: none;">Commercial Analysis Guide</span>
               <span data-lang="ESP" style="display: none;">Guía de Análisis Comercial</span>
             </button>
-                      
+            
             <!-- Bootstrap 모달 -->
             <div class="modal fade" id="explanationModal" tabindex="-1" aria-labelledby="explanationModalLabel" aria-hidden="true">
               <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content">
-
-                  <!-- 🇰🇷 한국어 -->
-                  <div data-lang="KOR">
-                    <div class="modal-header">
-                      <h5 class="modal-title">상권 분석이란 무엇인가?</h5>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
-                    </div>
-                    <div class="modal-body">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="explanationModalLabel">
+                      <span data-lang="KOR">상권 분석이란 무엇인가?</span>
+                      <span data-lang="ENG" style="display: none;">What is Commercial Area Analysis?</span>
+                      <span data-lang="ESP" style="display: none;">¿Qué es el Análisis de Zona Comercial?</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+                  </div>
+                  <div class="modal-body">
+                    <div data-lang="KOR">
                       상권분석은 특정 지역 내 점포나 사업장의 경제적 환경과 소비자 특성을 체계적으로 조사하여<br>
                       사업 성공 가능성을 높이기 위한 중요한 과정입니다.<br><br>
-
+              
                       <strong>왜 상권분석이 필요한가요?</strong><br>
                       - 상권의 소비 패턴과 유동 인구를 파악하여 효율적인 마케팅 전략을 세울 수 있습니다.<br>
                       - 경쟁 업체 현황과 고객 수요를 분석해 적절한 입지와 서비스를 결정할 수 있습니다.<br>
                       - 투자 위험을 최소화하고 안정적인 매출을 기대할 수 있습니다.<br><br>
-
+              
                       <strong>AI 기반 상권분석은 다음을 제공합니다:</strong><br>
                       - 점포의 생존 확률 예측<br>
                       - SHAP 요인 분석<br><br>
-
+              
                       성공적인 창업과 운영을 위해<br>
                       정확한 정보를 바탕으로 전략을 세워보세요!
                     </div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-                    </div>
-                  </div>
-
-                  <!-- 🇺🇸 영어 -->
-                  <div data-lang="ENG" style="display: none;">
-                    <div class="modal-header">
-                      <h5 class="modal-title">What is Commercial Area Analysis?</h5>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                      Commercial area analysis systematically investigates the economic environment and consumer characteristics
-                      of a specific region to increase the success rate of businesses.<br><br>
-
-                      <strong>Why is commercial analysis necessary?</strong><br>
-                      - Understand consumption patterns and foot traffic for effective marketing strategies.<br>
-                      - Analyze competitors and demand to determine optimal location and services.<br>
-                      - Minimize investment risks and expect stable revenue.<br><br>
-
-                      <strong>AI-based commercial analysis offers:</strong><br>
-                      - Prediction of store survival rate<br>
+                    
+                    <div data-lang="ENG" style="display: none;">
+                      Commercial area analysis is an important process that systematically investigates the economic environment and consumer characteristics of stores or businesses in a specific area to increase the chances of business success.<br><br>
+              
+                      <strong>Why is commercial area analysis necessary?</strong><br>
+                      - You can identify consumption patterns and foot traffic in the commercial area to establish efficient marketing strategies.<br>
+                      - You can analyze competitor status and customer demand to determine appropriate location and services.<br>
+                      - You can minimize investment risks and expect stable sales.<br><br>
+              
+                      <strong>AI-based commercial area analysis provides:</strong><br>
+                      - Store survival probability prediction<br>
                       - SHAP factor analysis<br><br>
-
-                      For a successful business,<br>
-                      develop strategies based on accurate data!
+              
+                      For successful startup and operation,<br>
+                      develop strategies based on accurate information!
                     </div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    </div>
-                  </div>
-
-                  <!-- 🇪🇸 스페인어 -->
-                  <div data-lang="ESP" style="display: none;">
-                    <div class="modal-header">
-                      <h5 class="modal-title">¿Qué es el análisis comercial?</h5>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                    </div>
-                    <div class="modal-body">
-                      El análisis comercial investiga sistemáticamente el entorno económico y las características del consumidor
-                      en una región específica para aumentar las posibilidades de éxito del negocio.<br><br>
-
-                      <strong>¿Por qué es necesario el análisis comercial?</strong><br>
-                      - Comprender los patrones de consumo y el flujo de personas para estrategias de marketing efectivas.<br>
-                      - Analizar la competencia y la demanda para determinar la ubicación y los servicios óptimos.<br>
-                      - Minimizar los riesgos de inversión y esperar ingresos estables.<br><br>
-
-                      <strong>El análisis comercial basado en IA ofrece:</strong><br>
-                      - Predicción de la tasa de supervivencia de la tienda<br>
+                    
+                    <div data-lang="ESP" style="display: none;">
+                      El análisis de zona comercial es un proceso importante que investiga sistemáticamente el entorno económico y las características del consumidor de tiendas o negocios en un área específica para aumentar las posibilidades de éxito empresarial.<br><br>
+              
+                      <strong>¿Por qué es necesario el análisis de zona comercial?</strong><br>
+                      - Puede identificar patrones de consumo y tráfico peatonal en la zona comercial para establecer estrategias de marketing eficientes.<br>
+                      - Puede analizar el estado de la competencia y la demanda del cliente para determinar la ubicación y servicios apropiados.<br>
+                      - Puede minimizar los riesgos de inversión y esperar ventas estables.<br><br>
+              
+                      <strong>El análisis de zona comercial basado en IA proporciona:</strong><br>
+                      - Predicción de probabilidad de supervivencia de la tienda<br>
                       - Análisis de factores SHAP<br><br>
-
-                      ¡Para un negocio exitoso,<br>
-                      desarrolle estrategias basadas en datos precisos!
-                    </div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+              
+                      Para una startup y operación exitosa,<br>
+                      ¡desarrolle estrategias basadas en información precisa!
                     </div>
                   </div>
-
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                      <span data-lang="KOR">닫기</span>
+                      <span data-lang="ENG" style="display: none;">Close</span>
+                      <span data-lang="ESP" style="display: none;">Cerrar</span>
+                    </button>
+                  </div>
                 </div>
-
               </div>
             </div>
           </div>
@@ -1991,29 +3516,23 @@
           <div id="analysisWaiting">
             <div class="text-center p-4">
               <i class="bi bi-analytics text-muted" style="font-size: 3rem;"></i>
-
               <h5 class="mt-3 text-muted">
                 <span data-lang="KOR">상권 분석을 시작하세요</span>
                 <span data-lang="ENG" style="display: none;">Start Commercial Analysis</span>
                 <span data-lang="ESP" style="display: none;">Inicie el análisis comercial</span>
               </h5>
-
               <p class="text-muted">
                 <span data-lang="KOR">
-                  위의 정보를 입력하고 '상권 분석하기' 버튼을 클릭하면<br>
-                  이 영역에 분석 결과가 표시됩니다.
+                  위의 정보를 입력하고 '상권 분석하기' 버튼을 클릭하면<br>이 영역에 분석 결과가 표시됩니다.
                 </span>
                 <span data-lang="ENG" style="display: none;">
-                  Enter the information above and click the "Analyze" button<br>
-                  to see the result here.
+                  Enter the information above and click the 'Analyze Commercial Area' button<br>to display analysis results in this area.
                 </span>
                 <span data-lang="ESP" style="display: none;">
-                  Ingrese la información arriba y haga clic en el botón "Analizar"<br>
-                  para ver el resultado aquí.
+                  Ingrese la información anterior y haga clic en el botón 'Analizar Zona Comercial'<br>para mostrar los resultados del análisis en esta área.
                 </span>
               </p>
-
-              <button class="btn btn-outline-secondary mt-3">
+              <button class="btn btn-outline-secondary mt-3" disabled>
                 <i class="bi bi-file-earmark-pdf me-2"></i>
                 <span data-lang="KOR">PDF로 저장</span>
                 <span data-lang="ENG" style="display: none;">Save as PDF</span>
@@ -2026,12 +3545,18 @@
           <div id="analysisProgress" class="analysis-progress" style="display: none;">
             <h5 class="text-center mb-4">
               <i class="bi bi-cpu me-2"></i>
-              AI가 상권을 분석하고 있습니다...
+              <span data-lang="KOR">AI가 상권을 분석하고 있습니다...</span>
+              <span data-lang="ENG" style="display: none;">AI is analyzing the commercial area...</span>
+              <span data-lang="ESP" style="display: none;">La IA está analizando la zona comercial...</span>
             </h5>
             
             <div class="overall-progress">
               <div class="d-flex justify-content-between mb-2">
-                <span class="text-muted">전체 진행률</span>
+                <span class="text-muted">
+                  <span data-lang="KOR">전체 진행률</span>
+                  <span data-lang="ENG" style="display: none;">Overall Progress</span>
+                  <span data-lang="ESP" style="display: none;">Progreso General</span>
+                </span>
                 <span id="overallPercent">0%</span>
               </div>
               <div class="progress">
@@ -2045,8 +3570,16 @@
                   <i class="bi bi-people"></i>
                 </div>
                 <div class="progress-text">
-                  <div class="progress-title">생활인구 분석</div>
-                  <div class="progress-detail">300m/1000m 반경 내 생활인구 및 연령대 분석</div>
+                  <div class="progress-title">
+                    <span data-lang="KOR">생활인구 분석</span>
+                    <span data-lang="ENG" style="display: none;">Resident Population Analysis</span>
+                    <span data-lang="ESP" style="display: none;">Análisis de Población Residente</span>
+                  </div>
+                  <div class="progress-detail">
+                    <span data-lang="KOR">300m/1000m 반경 내 생활인구 및 연령대 분석</span>
+                    <span data-lang="ENG" style="display: none;">Analysis of resident population and age groups within 300m/1000m radius</span>
+                    <span data-lang="ESP" style="display: none;">Análisis de población residente y grupos de edad dentro de un radio de 300m/1000m</span>
+                  </div>
                 </div>
               </div>
               
@@ -2055,8 +3588,16 @@
                   <i class="bi bi-briefcase"></i>
                 </div>
                 <div class="progress-text">
-                  <div class="progress-title">직장인구 분석</div>
-                  <div class="progress-detail">300m 반경 내 직장인구 분포 분석</div>
+                  <div class="progress-title">
+                    <span data-lang="KOR">직장인구 분석</span>
+                    <span data-lang="ENG" style="display: none;">Working Population Analysis</span>
+                    <span data-lang="ESP" style="display: none;">Análisis de Población Laboral</span>
+                  </div>
+                  <div class="progress-detail">
+                    <span data-lang="KOR">300m 반경 내 직장인구 분포 분석</span>
+                    <span data-lang="ENG" style="display: none;">Analysis of working population distribution within 300m radius</span>
+                    <span data-lang="ESP" style="display: none;">Análisis de distribución de población laboral dentro de un radio de 300m</span>
+                  </div>
                 </div>
               </div>
               
@@ -2065,8 +3606,16 @@
                   <i class="bi bi-globe"></i>
                 </div>
                 <div class="progress-text">
-                  <div class="progress-title">외국인 분석</div>
-                  <div class="progress-detail">단기/장기체류외국인 분포 분석</div>
+                  <div class="progress-title">
+                    <span data-lang="KOR">외국인 분석</span>
+                    <span data-lang="ENG" style="display: none;">Foreign Population Analysis</span>
+                    <span data-lang="ESP" style="display: none;">Análisis de Población Extranjera</span>
+                  </div>
+                  <div class="progress-detail">
+                    <span data-lang="KOR">단기/장기체류외국인 분포 분석</span>
+                    <span data-lang="ENG" style="display: none;">Analysis of short-term/long-term foreign resident distribution</span>
+                    <span data-lang="ESP" style="display: none;">Análisis de distribución de extranjeros de corta/larga estancia</span>
+                  </div>
                 </div>
               </div>
               
@@ -2075,8 +3624,16 @@
                   <i class="bi bi-building"></i>
                 </div>
                 <div class="progress-text">
-                  <div class="progress-title">주변시설 분석</div>
-                  <div class="progress-detail">학교, 공공건물 등 유동인구 시설 분석</div>
+                  <div class="progress-title">
+                    <span data-lang="KOR">주변시설 분석</span>
+                    <span data-lang="ENG" style="display: none;">Surrounding Facilities Analysis</span>
+                    <span data-lang="ESP" style="display: none;">Análisis de Instalaciones Circundantes</span>
+                  </div>
+                  <div class="progress-detail">
+                    <span data-lang="KOR">학교, 공공건물 등 유동인구 시설 분석</span>
+                    <span data-lang="ENG" style="display: none;">Analysis of foot traffic facilities such as schools and public buildings</span>
+                    <span data-lang="ESP" style="display: none;">Análisis de instalaciones de tráfico peatonal como escuelas y edificios públicos</span>
+                  </div>
                 </div>
               </div>
               
@@ -2085,8 +3642,16 @@
                   <i class="bi bi-shop"></i>
                 </div>
                 <div class="progress-text">
-                  <div class="progress-title">경쟁업체 분석</div>
-                  <div class="progress-detail">동일업종 및 요식업체 경쟁강도 분석</div>
+                  <div class="progress-title">
+                    <span data-lang="KOR">경쟁업체 분석</span>
+                    <span data-lang="ENG" style="display: none;">Competitor Analysis</span>
+                    <span data-lang="ESP" style="display: none;">Análisis de Competidores</span>
+                  </div>
+                  <div class="progress-detail">
+                    <span data-lang="KOR">동일업종 및 요식업체 경쟁강도 분석</span>
+                    <span data-lang="ENG" style="display: none;">Analysis of competition intensity for same industry and food businesses</span>
+                    <span data-lang="ESP" style="display: none;">Análisis de intensidad de competencia para la misma industria y negocios de alimentos</span>
+                  </div>
                 </div>
               </div>
               
@@ -2095,8 +3660,16 @@
                   <i class="bi bi-currency-dollar"></i>
                 </div>
                 <div class="progress-text">
-                  <div class="progress-title">공시지가 분석</div>
-                  <div class="progress-detail">토지가치 및 임대료 추정</div>
+                  <div class="progress-title">
+                    <span data-lang="KOR">공시지가 분석</span>
+                    <span data-lang="ENG" style="display: none;">Land Value Analysis</span>
+                    <span data-lang="ESP" style="display: none;">Análisis de Valor del Terreno</span>
+                  </div>
+                  <div class="progress-detail">
+                    <span data-lang="KOR">토지가치 및 임대료 추정</span>
+                    <span data-lang="ENG" style="display: none;">Land value and rental cost estimation</span>
+                    <span data-lang="ESP" style="display: none;">Estimación de valor del terreno y costo de alquiler</span>
+                  </div>
                 </div>
               </div>
               
@@ -2105,8 +3678,16 @@
                   <i class="bi bi-cpu"></i>
                 </div>
                 <div class="progress-text">
-                  <div class="progress-title">AI 예측 분석</div>
-                  <div class="progress-detail">머신러닝 모델을 통한 생존확률 예측</div>
+                  <div class="progress-title">
+                    <span data-lang="KOR">AI 예측 분석</span>
+                    <span data-lang="ENG" style="display: none;">AI Prediction Analysis</span>
+                    <span data-lang="ESP" style="display: none;">Análisis de Predicción de IA</span>
+                  </div>
+                  <div class="progress-detail">
+                    <span data-lang="KOR">머신러닝 모델을 통한 생존확률 예측</span>
+                    <span data-lang="ENG" style="display: none;">Survival probability prediction using machine learning model</span>
+                    <span data-lang="ESP" style="display: none;">Predicción de probabilidad de supervivencia usando modelo de aprendizaje automático</span>
+                  </div>
                 </div>
               </div>
               
@@ -2115,8 +3696,16 @@
                   <i class="bi bi-check-lg"></i>
                 </div>
                 <div class="progress-text">
-                  <div class="progress-title">분석 완료</div>
-                  <div class="progress-detail">결과를 표시하고 있습니다...</div>
+                  <div class="progress-title">
+                    <span data-lang="KOR">분석 완료</span>
+                    <span data-lang="ENG" style="display: none;">Analysis Complete</span>
+                    <span data-lang="ESP" style="display: none;">Análisis Completo</span>
+                  </div>
+                  <div class="progress-detail">
+                    <span data-lang="KOR">결과를 표시하고 있습니다...</span>
+                    <span data-lang="ENG" style="display: none;">Displaying results...</span>
+                    <span data-lang="ESP" style="display: none;">Mostrando resultados...</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -2154,14 +3743,21 @@
             <!-- 핵심 지표 -->
             <div class="mb-4">
               <h5 class="text-primary border-bottom border-primary pb-2 mb-3">
-                <i class="bi bi-speedometer me-2"></i>핵심 지표
+                <i class="bi bi-speedometer me-2"></i>
+                <span data-lang="KOR">핵심 지표</span>
+                <span data-lang="ENG" style="display: none;">Key Indicators</span>
+                <span data-lang="ESP" style="display: none;">Indicadores Clave</span>
               </h5>
               <div class="row g-3">
                 <div class="col-md-3">
                   <div class="card border text-center" style="background-color: white; border-color: #dee2e6;">
                     <div class="card-body">
                       <h3 id="lifePop300" class="fw-bold" style="color: #1e3a8a;">-</h3>
-                      <small style="color: #1e3a8a;">300m 내 생활인구</small>
+                      <small style="color: #1e3a8a;">
+                        <span data-lang="KOR">300m 내 생활인구</span>
+                        <span data-lang="ENG" style="display: none;">Resident Pop. within 300m</span>
+                        <span data-lang="ESP" style="display: none;">Pobl. Residente dentro de 300m</span>
+                      </small>
                     </div>
                   </div>
                 </div>
@@ -2202,8 +3798,11 @@
                   <div class="text-center">
                     <div class="display-1 fw-bold mb-3" id="survivalPercentage">-%</div>
                     <h4 class="mb-3">장기 생존 확률</h4>
-                    <div class="progress" style="height: 20px;">
-                      <div id="survivalBar" class="progress-bar" style="width: 0%"></div>
+                    <div class="progress" style="height: 25px;">
+                      <div id="survivalBar" class="progress-bar" style="width: 0%; transition: width 0.6s ease;"></div>
+                    </div>
+                    <div class="mt-2">
+                      <span id="survivalBarText" class="badge fs-6" style="font-size: 1rem; font-weight: 500;">분석중...</span>
                     </div>
                   </div>
                 </div>
@@ -2247,15 +3846,119 @@
               </div>
               
               <div class="mt-4">
-                <h6>경쟁 강도 분석</h6>
-                <div class="progress" style="height: 25px;">
-                  <div id="competitionBar" class="progress-bar" style="width: 0%">
-                    <span id="competitionLevel">분석중...</span>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h6 class="mb-0">경쟁 강도 분석</h6>
+                  <span id="competitionLevel" class="badge fs-6" style="font-size: 1.1rem; font-weight: 500;">분석중...</span>
                   </div>
+                <div class="progress" style="height: 40px;">
+                  <div id="competitionBar" class="progress-bar" style="width: 0%; transition: width 0.6s ease;"></div>
                 </div>
                 <small class="text-muted mt-2 d-block">
                   경쟁업체 비율이 20% 이하면 낮음, 20-50%는 보통, 50% 이상은 높음으로 분류됩니다.
                 </small>
+              </div>
+            </div>
+
+            <!-- 인구 구성 분석 -->
+            <div class="mb-4">
+              <h5 class="text-primary border-bottom border-primary pb-2 mb-3">
+                <i class="bi bi-people me-2"></i>인구 구성 분석 (1000m 반경)
+              </h5>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="card h-100">
+                    <div class="card-body text-center">
+                      <h6 class="card-title mb-3">연령대별 인구 비율</h6>
+                      <div style="position: relative; height: 300px; width: 100%;">
+                        <canvas id="ageChart" style="max-height: 300px; max-width: 100%;"></canvas>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="card h-100">
+                    <div class="card-body">
+                      <h6 class="card-title mb-3">연령대별 상세 정보</h6>
+                      <div class="row g-2">
+                        <div class="col-6">
+                          <div class="text-center p-2 border rounded">
+                            <div class="fw-bold" style="color: #FF6384;" id="age20Percent">-%</div>
+                            <small class="text-muted">20대</small>
+                          </div>
+                        </div>
+                        <div class="col-6">
+                          <div class="text-center p-2 border rounded">
+                            <div class="fw-bold" style="color: #36A2EB;" id="age30Percent">-%</div>
+                            <small class="text-muted">30대</small>
+                          </div>
+                        </div>
+                        <div class="col-6">
+                          <div class="text-center p-2 border rounded">
+                            <div class="fw-bold" style="color: #FFCE56;" id="age40Percent">-%</div>
+                            <small class="text-muted">40대</small>
+                          </div>
+                        </div>
+                        <div class="col-6">
+                          <div class="text-center p-2 border rounded">
+                            <div class="fw-bold" style="color: #4BC0C0;" id="age50Percent">-%</div>
+                            <small class="text-muted">50대</small>
+                          </div>
+                        </div>
+                        <div class="col-12">
+                          <div class="text-center p-2 border rounded">
+                            <div class="fw-bold" style="color: #9966FF;" id="age60Percent">-%</div>
+                            <small class="text-muted">60대 이상</small>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="mt-3 text-center">
+                        <small class="text-muted">
+                          <i class="bi bi-info-circle me-1"></i>
+                          1000m 반경 내 생활인구 기준
+                        </small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 외국인 분석 -->
+            <div class="mb-4">
+              <h5 class="text-primary border-bottom border-primary pb-2 mb-3">
+                <i class="bi bi-globe me-2"></i>외국인 분석
+              </h5>
+              <div class="row g-3 text-center">
+                <div class="col-md-4">
+                  <div class="card h-100">
+                    <div class="card-body">
+                      <i class="bi bi-airplane text-primary mb-2" style="font-size: 2rem;"></i>
+                      <h6>단기체류 외국인</h6>
+                      <div class="h4 text-primary" id="tempForeign1000">-</div>
+                      <small class="text-muted">1000m 반경</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="card h-100">
+                    <div class="card-body">
+                      <i class="bi bi-house text-success mb-2" style="font-size: 2rem;"></i>
+                      <h6>장기체류 외국인</h6>
+                      <div class="h4 text-success" id="longForeign300">-</div>
+                      <small class="text-muted">300m 반경</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="card h-100">
+                    <div class="card-body">
+                      <i class="bi bi-flag text-warning mb-2" style="font-size: 2rem;"></i>
+                      <h6>장기체류 중국인 비율</h6>
+                      <div class="h4 text-warning" id="longForeignCNRatio300">-</div>
+                      <small class="text-muted">1000m 반경</small>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -2286,56 +3989,115 @@
 
             <!-- PDF 저장 버튼 -->
             <div class="text-center">
-              <button class="btn btn-primary" onclick="generatePDF()">
+              <button id="pdfSaveBtn" class="btn btn-primary" onclick="generatePDF()">
                 <i class="bi bi-file-earmark-pdf me-2"></i>PDF로 저장
               </button>
+              <div id="guestPdfMessage" style="display: none;" class="alert alert-info mt-3">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>비회원 제한:</strong> PDF 저장 기능은 회원만 사용할 수 있습니다. 
+                <a href="{% url 'custom_auth:login' %}?next={{ request.get_full_path }}" class="btn btn-sm btn-outline-primary ms-2">로그인하기</a>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 오른쪽: 챗봇 -->
+      <!-- 오른쪽: 분석결과 챗봇 -->
       <div class="col-lg-4">
-        <div class="card p-4 shadow-sm">
-          <div class="chat-interface-container">
-            <div class="chat-messages-area" id="chatMessagesArea">
-              <!-- 메시지가 여기에 동적으로 추가됩니다 -->
-              <div class="chat-welcome-message text-center py-3">
-                <div class="mb-2">
-                  <i class="fas fa-robot fa-2x text-primary"></i>
+        <div class="card p-4 shadow-sm chatbot-sticky" style="height: 750px; max-height: 750px; overflow: hidden;">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">분석결과 상담</h5>
+            <span class="badge bg-secondary" id="chatbotStatus">대기중</span>
+          </div>
+          
+          <!-- 챗봇 컨테이너 -->
+          <div id="chatbotContainer" class="d-flex flex-column h-100">
+            
+            <!-- 비활성화 상태 (기본) - 간단한 안내만 -->
+            <div id="chatbotInactive" class="text-center d-flex flex-column justify-content-center h-100">
+              <i class="bi bi-chat-dots text-muted mb-3" style="font-size: 4rem;"></i>
+              <h5 class="text-muted mb-3">분석결과 상담 AI</h5>
+              {% if not user.is_authenticated %}
+                <p class="text-muted mb-3">상권 분석 결과에 대해<br>AI와 상담하려면 로그인이 필요합니다.</p>
+                <a href="{% url 'custom_auth:login' %}?next={{ request.get_full_path }}" class="btn btn-primary btn-sm">
+                  <i class="bi bi-box-arrow-in-right me-2"></i>로그인하기
+                </a>
+              {% else %}
+                <p class="text-muted mb-3">상권 분석을 완료하면<br>AI 상담 서비스를 이용할 수 있습니다.</p>
+                <div class="d-flex align-items-center justify-content-center">
+                  <i class="bi bi-lock me-2 text-secondary"></i>
+                  <span class="text-secondary small">분석 완료 후 자동 활성화</span>
                 </div>
-                <h5 class="text-primary mb-2">분석 결과 챗봇</h5>
-                <p class="text-muted mb-3">상권 분석과 관련된 질문을 자유롭게 해보세요.</p>
+              {% endif %}
+          </div>
 
-                <!-- 예시 질문 버튼 -->
-                <div class="mb-3">
-                  <span class="text-muted">추천 질문</span><br>
-                  <button class="btn btn-sm btn-outline-secondary me-1 mt-1" onclick="fillExampleQuestion('이 상권의 유동 인구 특징은 어떤가요?')">유동 인구</button>
-                  <button class="btn btn-sm btn-outline-secondary me-1 mt-1" onclick="fillExampleQuestion('이 지역의 경쟁 업체 수는 얼마나 되나요?')">경쟁 업체</button>
-                  <button class="btn btn-sm btn-outline-secondary me-1 mt-1" onclick="fillExampleQuestion('이 지역은 창업 위험이 높은 편인가요?')">창업 위험</button>
-                  <button class="btn btn-sm btn-outline-secondary me-1 mt-1" onclick="fillExampleQuestion('주변 상권 중 가장 활발한 업종은 무엇인가요?')">인기 업종</button>
+            <!-- 활성화 상태 (분석 완료 후) - 완전한 챗봇 UI -->
+            <div id="chatbotActive" class="d-flex flex-column h-100" style="display: none !important;">
+              
+              <!-- 추천 질문 버튼 -->
+              <div class="mb-3">
+                <small class="text-muted">💡 추천 질문</small>
+                <div class="mt-2">
+                  <button class="btn btn-sm btn-outline-primary me-1 mb-1" onclick="fillExampleQuestion('이 상권의 생존 확률이 높은 이유는 무엇인가요?')">
+                    <i class="bi bi-graph-up me-1"></i>생존 확률
+                  </button>
+                  <button class="btn btn-sm btn-outline-warning me-1 mb-1" onclick="fillExampleQuestion('경쟁업체가 많은 편인가요?')">
+                    <i class="bi bi-shop me-1"></i>경쟁 현황
+                  </button>
+                  <button class="btn btn-sm btn-outline-success me-1 mb-1" onclick="fillExampleQuestion('창업 시 주의해야 할 점은 무엇인가요?')">
+                    <i class="bi bi-exclamation-triangle me-1"></i>주의사항
+                  </button>
+                </div>
+          </div>
+
+              <!-- 채팅 메시지 영역 -->
+              <div id="chatMessages" class="flex-grow-1 overflow-auto mb-3 border rounded p-3" style="background-color: #f8f9fa; min-height: 420px;">
+                <div class="d-flex align-items-start mb-3">
+                  <div class="bg-gradient bg-primary rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; min-width: 36px;">
+                    <i class="bi bi-robot text-white" style="font-size: 16px;"></i>
+        </div>
+                  <div class="flex-grow-1">
+                    <div class="bg-white rounded-3 p-3 shadow-sm border">
+                      <div class="d-flex align-items-center mb-2">
+                        <strong class="text-primary me-2">분석결과 상담 AI</strong>
+                        <span class="badge bg-success-subtle text-success">온라인</span>
+                      </div>
+                      <p class="mb-0">안녕하세요! 🎯 방금 완료된 상권 분석 결과에 대해 궁금한 점이 있으시면 언제든 물어보세요.<br><br>
+                      <strong>상담 가능한 내용:</strong><br>
+                      • 📊 AI 생존 확률 해석<br>
+                      • 👥 인구 및 고객층 분석<br>
+                      • 🏪 경쟁업체 현황<br>
+                      • 💰 수익성 전망<br>
+                      • 🚀 창업 전략 조언</p>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div id="typingIndicator" class="message-entry typing-indicator-message" style="display: none;">
-              <div class="message-bubble">
-                답변을 생성 중입니다... 
-                <span class="spinner-border spinner-border-sm ms-1" role="status" aria-hidden="true"></span>
+              <!-- 입력 영역 -->
+              <div class="mt-auto">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <small class="text-muted">
+                    <i class="bi bi-shield-check me-1"></i>
+                    현재 분석 세션 결과를 기반으로 답변
+                  </small>
+                  <button class="btn btn-sm btn-outline-secondary" onclick="openChatbotPIP()" title="확대 보기">
+                    <i class="bi bi-arrows-fullscreen"></i>
+                  </button>
+                </div>
+                <div class="input-group">
+                  <input type="text" id="chatInput" class="form-control" placeholder="분석 결과에 대해 궁금한 점을 물어보세요..." disabled>
+                  <button class="btn btn-primary" id="chatSendBtn" type="button" disabled>
+                    <i class="bi bi-send-fill"></i>
+                  </button>
+                </div>
+                <div id="chatConnectionStatus" class="mt-2" style="display: none;">
+                  <small class="text-primary">
+                    <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                    AI 연결 중...
+                  </small>
+                </div>
               </div>
-            </div>
-
-            <div class="chat-input-area">
-              <textarea
-                id="messageInput"
-                class="form-control"
-                placeholder="메시지를 입력하세요..."
-                rows="1"
-                aria-label="메시지 입력"
-              ></textarea>
-              <button id="sendButton" class="btn btn-primary" type="button" aria-label="메시지 전송">
-                <i class="fas fa-paper-plane"></i>
-              </button>
             </div>
           </div>
         </div>
@@ -2343,140 +4105,246 @@
     </div>
   </div>
 
-  <!-- CSRF 토큰 (API 호출용) -->
-  {% csrf_token %}
-
-  <!-- 사용자 정보 JSON 데이터 -->
-  {{ user_info|json_script:"user-info-data" }}
-
-  <!-- DEBUG 확인용 콘솔 로그 -->
-  <script>
-    console.log("🧪 Template user_id:", "{{ request.user.id|safe }}");
-    console.log("🧪 User info:", JSON.parse(document.getElementById('user-info-data').textContent));
-  </script>
-{% endblock content %}
-
-{% block extra_js %}
-<script src="{% static 'js/chat_main.js' %}"></script>
-<script src="{% static 'js/chat_list.js' %}"></script>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
-<script>
-  // chatListManager 초기화 (chat_list.js에 정의되어 있음)
-  document.addEventListener('DOMContentLoaded', function() {
-    window.chatListManager = new ChatListManager();
-
-    // fillExampleQuestion 함수 정의: 챗봇 입력 필드(messageInput)에 질문을 채움
-    window.fillExampleQuestion = function(text) {
-      const messageInput = document.getElementById('messageInput');
-      if (messageInput) {
-        messageInput.value = text;
-        messageInput.focus();
-      }
-    };
-  });
-</script>
-{% endblock extra_js %}
-{% block pdf %}
-<!-- PDF 미리보기 모달 (분석 기록용) -->
-<div class="modal fade" id="pdfPreviewModal" tabindex="-1" aria-labelledby="pdfPreviewModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-xl modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="pdfPreviewModalLabel">
-          <i class="bi bi-file-earmark-pdf me-2"></i>분석 결과 미리보기
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
-        <div id="previewLoading" class="text-center">
-          <div class="spinner-border text-primary mb-3" role="status">
-            <span class="visually-hidden">로딩 중...</span>
-          </div>
-          <h6>분석 결과를 불러오고 있습니다...</h6>
-          <p class="text-muted">잠시만 기다려 주세요.</p>
+  <!-- PDF 미리보기 모달 (분석 기록용) -->
+  <div class="modal fade" id="pdfPreviewModal" tabindex="-1" aria-labelledby="pdfPreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="pdfPreviewModalLabel">
+            <i class="bi bi-file-earmark-pdf me-2"></i>분석 결과 미리보기
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        
-        <div id="previewError" style="display: none;" class="text-center">
-          <i class="bi bi-exclamation-triangle text-warning mb-3" style="font-size: 3rem;"></i>
-          <h6>분석 결과를 불러올 수 없습니다</h6>
-          <p class="text-muted" id="previewErrorMessage">잠시 후 다시 시도해 주세요.</p>
-        </div>
-        
-        <!-- PDF 스타일 미리보기 내용 -->
-        <div id="previewContent" style="display: none; background: white; padding: 30px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: 'Nanum Gothic', Arial, sans-serif;">
-          <!-- 헤더 -->
-          <div class="text-center mb-4" style="border-bottom: 3px solid #1e3a8a; padding-bottom: 20px;">
-            <h2 class="text-primary mb-1" style="font-weight: 800; font-size: 24px;">AI 상권분석 보고서</h2>
-            <p class="text-muted mb-0" style="font-size: 14px;">인공지능 기반 상업지구 분석 결과</p>
+        <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
+          <div id="previewLoading" class="text-center">
+            <div class="spinner-border text-primary mb-3" role="status">
+              <span class="visually-hidden">로딩 중...</span>
+            </div>
+            <h6>분석 결과를 불러오고 있습니다...</h6>
+            <p class="text-muted">잠시만 기다려 주세요.</p>
           </div>
           
-          <!-- 기본 정보 -->
-          <div class="mb-4" style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #1e3a8a;">
-            <h5 class="text-primary mb-3"><i class="bi bi-geo-alt me-2"></i>분석 대상 정보</h5>
-            <div class="row">
-              <div class="col-md-6">
-                <p><strong>주소:</strong> <span id="previewAddr">-</span></p>
-                <p><strong>업종:</strong> <span id="previewBizType">-</span></p>
-              </div>
-              <div class="col-md-6">
-                <p><strong>면적:</strong> <span id="previewAreaSize">-</span>㎡</p>
-                <p><strong>분석일시:</strong> <span id="previewAnalysisDate">-</span></p>
+          <div id="previewError" style="display: none;" class="text-center">
+            <i class="bi bi-exclamation-triangle text-warning mb-3" style="font-size: 3rem;"></i>
+            <h6>분석 결과를 불러올 수 없습니다</h6>
+            <p class="text-muted" id="previewErrorMessage">잠시 후 다시 시도해 주세요.</p>
+          </div>
+          
+          <!-- PDF 스타일 미리보기 내용 -->
+          <div id="previewContent" style="display: none; background: white; padding: 30px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: 'Nanum Gothic', Arial, sans-serif;">
+            <!-- 헤더 -->
+            <div class="text-center mb-4" style="border-bottom: 3px solid #1e3a8a; padding-bottom: 20px;">
+              <h2 class="text-primary mb-1" style="font-weight: 800; font-size: 24px;">AI 상권분석 보고서</h2>
+              <p class="text-muted mb-0" style="font-size: 14px;">인공지능 기반 상업지구 분석 결과</p>
+            </div>
+            
+            <!-- 기본 정보 -->
+            <div class="mb-4" style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #1e3a8a;">
+              <h5 class="text-primary mb-3"><i class="bi bi-geo-alt me-2"></i>분석 대상 정보</h5>
+              <div class="row">
+                <div class="col-md-6">
+                  <p><strong>주소:</strong> <span id="previewAddr">-</span></p>
+                  <p><strong>업종:</strong> <span id="previewBizType">-</span></p>
+                </div>
+                <div class="col-md-6">
+                  <p><strong>면적:</strong> <span id="previewAreaSize">-</span>㎡</p>
+                  <p><strong>분석일시:</strong> <span id="previewAnalysisDate">-</span></p>
+                </div>
               </div>
             </div>
-          </div>
-          
-          <!-- AI 생존 확률 -->
-          <div class="mb-4" style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;">
-            <h5 class="text-success mb-3"><i class="bi bi-robot me-2"></i>AI 생존 확률</h5>
-            <div class="display-4 mb-3 text-primary" id="previewSurvivalRate" style="font-weight: 800;">-%</div>
-            <div class="progress mb-3" style="height: 20px;">
-              <div class="progress-bar" id="previewSurvivalProgressBar" role="progressbar" style="width: 0%"></div>
+            
+            <!-- AI 생존 확률 -->
+            <div class="mb-4" style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;">
+              <h5 class="text-success mb-3"><i class="bi bi-robot me-2"></i>AI 생존 확률</h5>
+              <div class="display-4 mb-3 text-primary" id="previewSurvivalRate" style="font-weight: 800;">-%</div>
+              <div class="progress mb-3" style="height: 20px;">
+                <div class="progress-bar" id="previewSurvivalProgressBar" role="progressbar" style="width: 0%"></div>
+              </div>
+              <p class="text-muted mb-0" id="previewSurvivalComment">분석 중...</p>
             </div>
-            <p class="text-muted mb-0" id="previewSurvivalComment">분석 중...</p>
-          </div>
-          
-          <!-- 핵심 지표 -->
-          <div class="mb-4">
-            <h5 class="text-primary border-bottom border-primary pb-2 mb-3"><i class="bi bi-speedometer me-2"></i>핵심 지표</h5>
-            <div class="row">
-              <div class="col-md-3">
-                <div class="card border-info h-100 text-center">
-                  <div class="card-body">
-                    <i class="bi bi-people text-info mb-2" style="font-size: 2rem;"></i>
-                    <h6 class="card-title">생활인구</h6>
-                    <p class="card-text fw-bold text-primary" id="previewLifePopulation">-</p>
-                    <small class="text-muted">300m 반경</small>
+            
+            <!-- 핵심 지표 -->
+            <div class="mb-4">
+              <h5 class="text-primary border-bottom border-primary pb-2 mb-3"><i class="bi bi-speedometer me-2"></i>핵심 지표</h5>
+              <div class="row">
+                <div class="col-md-3">
+                  <div class="card border-info h-100 text-center">
+                    <div class="card-body">
+                      <i class="bi bi-people text-info mb-2" style="font-size: 2rem;"></i>
+                      <h6 class="card-title">생활인구</h6>
+                      <p class="card-text fw-bold text-primary" id="previewLifePopulation">-</p>
+                      <small class="text-muted">300m 반경</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="card border-warning h-100 text-center">
+                    <div class="card-body">
+                      <i class="bi bi-briefcase text-warning mb-2" style="font-size: 2rem;"></i>
+                      <h6 class="card-title">직장인구</h6>
+                      <p class="card-text fw-bold text-primary" id="previewWorkingPopulation">-</p>
+                      <small class="text-muted">300m 반경</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="card border-danger h-100 text-center">
+                    <div class="card-body">
+                      <i class="bi bi-shop text-danger mb-2" style="font-size: 2rem;"></i>
+                      <h6 class="card-title">경쟁업체</h6>
+                      <p class="card-text fw-bold text-primary" id="previewCompetitors">-</p>
+                      <small class="text-muted">300m 반경</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="card border-secondary h-100 text-center">
+                    <div class="card-body">
+                      <i class="bi bi-currency-dollar text-secondary mb-2" style="font-size: 2rem;"></i>
+                      <h6 class="card-title">공시지가</h6>
+                      <p class="card-text fw-bold text-primary" id="previewLandPrice">-</p>
+                      <small class="text-muted">총 공시지가</small>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div class="col-md-3">
-                <div class="card border-warning h-100 text-center">
-                  <div class="card-body">
-                    <i class="bi bi-briefcase text-warning mb-2" style="font-size: 2rem;"></i>
-                    <h6 class="card-title">직장인구</h6>
-                    <p class="card-text fw-bold text-primary" id="previewWorkingPopulation">-</p>
-                    <small class="text-muted">300m 반경</small>
+            </div>
+            
+            <!-- 경쟁강도 분석 -->
+            <div class="mb-4">
+              <h5 class="text-primary border-bottom border-primary pb-2 mb-3"><i class="bi bi-shop me-2"></i>경쟁강도 분석</h5>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="card h-100">
+                    <div class="card-body">
+                      <h6 class="card-title">경쟁업체 현황</h6>
+                      <div class="row g-2 text-center">
+                        <div class="col-6">
+                          <div class="p-2 border rounded">
+                            <div class="h5 text-danger" id="previewCompetitorCount">-</div>
+                            <small class="text-muted">동일업종</small>
+                          </div>
+                        </div>
+                        <div class="col-6">
+                          <div class="p-2 border rounded">
+                            <div class="h5 text-warning" id="previewAdjacentBiz">-</div>
+                            <small class="text-muted">인접업체</small>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="card h-100">
+                    <div class="card-body">
+                      <h6 class="card-title">경쟁 강도</h6>
+                      <div class="progress mb-2" style="height: 30px;">
+                                                 <div id="previewCompetitionBar" class="progress-bar" style="width: 0%;"></div>
+                      </div>
+                      <div class="text-center">
+                        <span id="previewCompetitionLevel" class="badge fs-6">분석중...</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div class="col-md-3">
-                <div class="card border-danger h-100 text-center">
-                  <div class="card-body">
-                    <i class="bi bi-shop text-danger mb-2" style="font-size: 2rem;"></i>
-                    <h6 class="card-title">경쟁업체</h6>
-                    <p class="card-text fw-bold text-primary" id="previewCompetitors">-</p>
-                    <small class="text-muted">300m 반경</small>
+            </div>
+
+            <!-- 외국인 분석 -->
+            <div class="mb-4">
+              <h5 class="text-primary border-bottom border-primary pb-2 mb-3"><i class="bi bi-globe me-2"></i>외국인 분석</h5>
+              <div class="row g-3 text-center">
+                <div class="col-md-4">
+                  <div class="card h-100">
+                    <div class="card-body">
+                      <i class="bi bi-airplane text-primary mb-2" style="font-size: 1.5rem;"></i>
+                      <h6>단기체류 외국인</h6>
+                      <div class="h5 text-primary" id="previewTempForeign">-</div>
+                      <small class="text-muted">1000m 반경</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="card h-100">
+                    <div class="card-body">
+                      <i class="bi bi-house text-success mb-2" style="font-size: 1.5rem;"></i>
+                      <h6>장기체류 외국인</h6>
+                      <div class="h5 text-success" id="previewLongForeign">-</div>
+                      <small class="text-muted">300m 반경</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="card h-100">
+                    <div class="card-body">
+                      <i class="bi bi-flag text-warning mb-2" style="font-size: 1.5rem;"></i>
+                      <h6>중국인 비율</h6>
+                      <div class="h5 text-warning" id="previewChinaRatio">-</div>
+                      <small class="text-muted">1000m 반경</small>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div class="col-md-3">
-                <div class="card border-secondary h-100 text-center">
-                  <div class="card-body">
-                    <i class="bi bi-currency-dollar text-secondary mb-2" style="font-size: 2rem;"></i>
-                    <h6 class="card-title">공시지가</h6>
-                    <p class="card-text fw-bold text-primary" id="previewLandPrice">-</p>
-                    <small class="text-muted">총 공시지가</small>
+            </div>
+
+            <!-- 연령대별 인구 분석 -->
+            <div class="mb-4">
+              <h5 class="text-primary border-bottom border-primary pb-2 mb-3"><i class="bi bi-people me-2"></i>연령대별 인구 분석 (1000m 반경)</h5>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="card h-100">
+                    <div class="card-body text-center">
+                      <h6 class="card-title mb-3">연령대별 인구 비율</h6>
+                      <div style="position: relative; height: 250px; width: 100%;">
+                        <canvas id="previewAgeChart" style="max-height: 250px; max-width: 100%;"></canvas>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="card h-100">
+                    <div class="card-body">
+                      <h6 class="card-title mb-3">연령대별 상세 정보</h6>
+                      <div class="row g-2">
+                        <div class="col-6">
+                          <div class="text-center p-2 border rounded">
+                            <div class="fw-bold" style="color: #FF6384;" id="previewAge20">-%</div>
+                            <small class="text-muted">20대</small>
+                          </div>
+                        </div>
+                        <div class="col-6">
+                          <div class="text-center p-2 border rounded">
+                            <div class="fw-bold" style="color: #36A2EB;" id="previewAge30">-%</div>
+                            <small class="text-muted">30대</small>
+                          </div>
+                        </div>
+                        <div class="col-6">
+                          <div class="text-center p-2 border rounded">
+                            <div class="fw-bold" style="color: #FFCE56;" id="previewAge40">-%</div>
+                            <small class="text-muted">40대</small>
+                          </div>
+                        </div>
+                        <div class="col-6">
+                          <div class="text-center p-2 border rounded">
+                            <div class="fw-bold" style="color: #4BC0C0;" id="previewAge50">-%</div>
+                            <small class="text-muted">50대</small>
+                          </div>
+                        </div>
+                        <div class="col-12">
+                          <div class="text-center p-2 border rounded">
+                            <div class="fw-bold" style="color: #9966FF;" id="previewAge60">-%</div>
+                            <small class="text-muted">60대 이상</small>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="mt-3 text-center">
+                        <small class="text-muted">
+                          <i class="bi bi-info-circle me-1"></i>
+                          1000m 반경 내 생활인구 기준
+                        </small>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -2652,6 +4520,131 @@
               </div>
             </div>
             
+            <!-- 경쟁강도 분석 -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <div class="card border-warning">
+                  <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0"><i class="bi bi-shop me-2"></i>경쟁강도 분석</h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <h6>경쟁업체 현황</h6>
+                        <div class="row g-2 text-center mb-3">
+                          <div class="col-6">
+                            <div class="p-2 border rounded">
+                              <div class="h6 text-danger" id="pdfPreviewCompetitorCount">-</div>
+                              <small class="text-muted">동일업종</small>
+                            </div>
+                          </div>
+                          <div class="col-6">
+                            <div class="p-2 border rounded">
+                              <div class="h6 text-warning" id="pdfPreviewAdjacentBiz">-</div>
+                              <small class="text-muted">인접업체</small>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <h6>경쟁 강도</h6>
+                        <div class="progress mb-2" style="height: 25px;">
+                                                     <div id="pdfPreviewCompetitionBar" class="progress-bar" style="width: 0%;"></div>
+                        </div>
+                        <div class="text-center">
+                          <span id="pdfPreviewCompetitionLevel" class="badge fs-6">분석중...</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 외국인 분석 -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <div class="card border-info">
+                  <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-globe me-2"></i>외국인 분석</h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="row g-3 text-center">
+                      <div class="col-md-4">
+                        <div class="p-3 border rounded">
+                          <i class="bi bi-airplane text-primary mb-2" style="font-size: 1.5rem;"></i>
+                          <h6>단기체류 외국인</h6>
+                          <div class="h6 text-primary" id="pdfPreviewTempForeign">-</div>
+                          <small class="text-muted">1000m 반경</small>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="p-3 border rounded">
+                          <i class="bi bi-house text-success mb-2" style="font-size: 1.5rem;"></i>
+                          <h6>장기체류 외국인</h6>
+                          <div class="h6 text-success" id="pdfPreviewLongForeign">-</div>
+                          <small class="text-muted">300m 반경</small>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="p-3 border rounded">
+                          <i class="bi bi-flag text-warning mb-2" style="font-size: 1.5rem;"></i>
+                          <h6>중국인 비율</h6>
+                          <div class="h6 text-warning" id="pdfPreviewChinaRatio">-</div>
+                          <small class="text-muted">1000m 반경</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 연령대별 인구 분석 -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <div class="card border-secondary">
+                  <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="bi bi-people me-2"></i>연령대별 인구 분석 (1000m 반경)</h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="row g-2 text-center">
+                      <div class="col">
+                        <div class="p-2 border rounded">
+                          <div class="fw-bold text-danger" id="pdfPreviewAge20">-%</div>
+                          <small class="text-muted">20대</small>
+                        </div>
+                      </div>
+                      <div class="col">
+                        <div class="p-2 border rounded">
+                          <div class="fw-bold text-primary" id="pdfPreviewAge30">-%</div>
+                          <small class="text-muted">30대</small>
+                        </div>
+                      </div>
+                      <div class="col">
+                        <div class="p-2 border rounded">
+                          <div class="fw-bold text-warning" id="pdfPreviewAge40">-%</div>
+                          <small class="text-muted">40대</small>
+                        </div>
+                      </div>
+                      <div class="col">
+                        <div class="p-2 border rounded">
+                          <div class="fw-bold text-info" id="pdfPreviewAge50">-%</div>
+                          <small class="text-muted">50대</small>
+                        </div>
+                      </div>
+                      <div class="col">
+                        <div class="p-2 border rounded">
+                          <div class="fw-bold text-secondary" id="pdfPreviewAge60">-%</div>
+                          <small class="text-muted">60대+</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
             <!-- 강점/주의사항 -->
             <div class="row mb-4">
               <div class="col-md-6">
@@ -2702,4 +4695,26 @@
       </div>
     </div>
   </div>
-{% endblock pdf %}  
+
+  <!-- 주소 검색 PIP 팝업 모달 -->
+  <div id="addressSearchModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 10000; pointer-events: none;">
+    <div style="position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+      <!-- 모달 헤더 -->
+      <div style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); z-index: 10001; background: white; padding: 10px 20px; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+        <h5 style="margin: 0; color: #333;">
+          <i class="bi bi-search me-2"></i>주소 검색
+          <button onclick="closeAddressSearch()" style="float: right; background: none; border: none; font-size: 1.5rem; color: #999; cursor: pointer; margin-left: 20px;">&times;</button>
+        </h5>
+      </div>
+      
+      <!-- 주소 검색 컨테이너 -->
+      <div id="addressSearchContainer" style="width: 90%; max-width: 600px; height: 80%; max-height: 500px; background: white; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); margin-top: 60px; z-index: 10002; position: relative; pointer-events: auto;"></div>
+      
+      <!-- 닫기 버튼 (배경 클릭) -->
+      <div onclick="closeAddressSearch()" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 9998; pointer-events: none; display: none;"></div>
+    </div>
+  </div>
+
+  <!-- 챗봇 PIP 확대 모달 (동적 생성) -->
+  
+{% endblock %}  

@@ -36,6 +36,8 @@ load_dotenv(dotenv_path=BASE_DIR / ".env")
 # 비밀 키 (환경변수에서 로드, 프로덕션에서는 반드시 설정)
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-your-secret-key")
 FERNET_KEY = os.getenv("FERNET_KEY")
+if not FERNET_KEY:
+    raise ValueError("FERNET_KEY 환경변수가 설정되지 않았습니다. .env 파일에 FERNET_KEY를 추가해주세요.")
 
 # 디버그 모드 (프로덕션에서는 반드시 False)
 DEBUG = os.getenv("DEBUG", "True").lower() in ("true", "1", "yes", "on")
@@ -234,6 +236,17 @@ USE_TZ = True
 LOGIN_URL = "custom_auth:login"
 LOGIN_REDIRECT_URL = "border:inquiry_list"
 LOGOUT_REDIRECT_URL = "border:inquiry_list"
+
+# CSRF 설정
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]
+
+# 세션 설정
+SESSION_COOKIE_AGE = 86400  # 24시간
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 # ============================================================================
 # 외부 서비스 API 설정

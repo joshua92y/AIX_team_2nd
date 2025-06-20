@@ -17,6 +17,7 @@ from .models import (
     EditableStorePoint,
     EditablePublicBuilding,
     AdministrativeDistrict,
+    SeoulDistrict,
 )
 from .widgets import KakaoPointWidget, KakaoPolygonWidget
 from .forms import (
@@ -730,6 +731,62 @@ class AdministrativeDistrictAdmin(BaseGISAdmin):
         return qs.defer('geom')
 
 
+class SeoulDistrictAdmin(BaseGISAdmin):
+    """서울시 구별 경계면 관리"""
+    
+    form = AdministrativeDistrictForm  # 기존의 폴리곤 형태를 재사용
+    list_display = (
+        "id",
+        "adm_sect_c", 
+        "district_name_only",
+        "sgg_nm",
+        "area_sqkm",
+        "get_geometry_info",
+        "updated_at",
+    )
+    list_display_links = ("id", "district_name_only")
+    list_filter = ("adm_sect_c",)
+    search_fields = ("adm_sect_c", "sgg_nm")
+    readonly_fields = ("created_at", "updated_at", "get_coordinate_detail", "area_sqkm")
+    ordering = ("adm_sect_c",)
+    
+    # 서울 전체 지역 최적화
+    default_zoom = 9
+    
+    fieldsets = (
+        ("구별 정보", {
+            "fields": ("adm_sect_c", "sgg_nm", "sgg_oid", "col_adm_se")
+        }),
+        ("통계 정보", {
+            "fields": ("area_sqkm",), 
+            "classes": ("collapse",)
+        }),
+        ("좌표 정보", {
+            "fields": ("get_coordinate_detail",), 
+            "classes": ("collapse",)
+        }),
+        ("지리 정보", {
+            "fields": ("geom",)
+        }),
+        ("메타 정보", {
+            "fields": ("created_at", "updated_at"), 
+            "classes": ("collapse",)
+        }),
+    )
+    
+    def area_sqkm(self, obj):
+        """구면적 표시 (제곱킬로미터)"""
+        return f"{obj.area_sqkm} km²"
+    area_sqkm.short_description = "면적"
+    area_sqkm.admin_order_field = "adm_sect_c"
+    
+    def get_queryset(self, request):
+        """성능 최적화를 위한 쿼리셋 최적화"""
+        qs = super().get_queryset(request)
+        # 지오메트리 데이터는 필요할 때만 로드
+        return qs.defer('geom')
+
+
 # 공간 데이터 통계 정보를 위한 커스텀 뷰
 class SpatialDataStatsView:
     """공간 데이터 통계 관리 뷰"""
@@ -799,3 +856,4 @@ admin.site.register(LandValue, LandValueAdmin)
 admin.site.register(EditableStorePoint, EditableStorePointAdmin)
 admin.site.register(EditablePublicBuilding, EditablePublicBuildingAdmin)
 admin.site.register(AdministrativeDistrict, AdministrativeDistrictAdmin)
+admin.site.register(SeoulDistrict, SeoulDistrictAdmin)
