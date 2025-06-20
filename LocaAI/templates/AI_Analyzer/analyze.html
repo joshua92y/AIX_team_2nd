@@ -1,207 +1,37 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}상권 분석{% endblock %}
+<<<<<<< HEAD
+{% block title %}상권분석 LocaAI{% endblock %}
 
-{% block content %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/chat_styles.css' %}">
+{% endblock css %}
+
+{% block header %}
 {% include 'includes/header.html' %}
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-customfonts@0.0.4/dist/jspdf-customfonts.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.0/marked.min.js"></script>
+{% endblock header %}
 
-  <style>
-    /* 기본 primary 버튼 disabled 시 커스텀 스타일 */
-    .btn-primary.custom {
-      color: #fff;
-      background-color: #0d6efd; /* 원래 primary 색 */
-      opacity: 0.65;  /* 투명도 조절로 흐릿하게 표시 */
-    }
-    
-    /* 분석 진행 상황 스타일 */
-    .analysis-progress {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      border-radius: 15px;
-      padding: 2rem;
-      margin-top: 1rem;
-      border: 2px solid rgba(102, 126, 234, 0.2);
-    }
-    
-    .progress-step {
-      display: flex;
-      align-items: center;
-      margin-bottom: 1rem;
-      padding: 10px;
-      border-radius: 8px;
-      transition: all 0.3s ease;
-    }
-    
-    .progress-step.active {
-      background: rgba(102, 126, 234, 0.1);
-      border-left: 4px solid #667eea;
-    }
-    
-    .progress-step.completed {
-      background: rgba(34, 197, 94, 0.1);
-      border-left: 4px solid #22c55e;
-    }
-    
-    .progress-step.error {
-      background: rgba(239, 68, 68, 0.1);
-      border-left: 4px solid #ef4444;
-    }
-    
-    .progress-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-right: 15px;
-      font-size: 16px;
-    }
-    
-    .progress-step.active .progress-icon {
-      background: #667eea;
-      color: white;
-      animation: pulse 1.5s infinite;
-    }
-    
-    .progress-step.completed .progress-icon {
-      background: #22c55e;
-      color: white;
-    }
-    
-    .progress-step.error .progress-icon {
-      background: #ef4444;
-      color: white;
-    }
-    
-    .progress-step:not(.active):not(.completed):not(.error) .progress-icon {
-      background: #e5e7eb;
-      color: #9ca3af;
-    }
-    
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-      100% { transform: scale(1); }
-    }
-    
-    .progress-text {
-      flex: 1;
-    }
-    
-    .progress-title {
-      font-weight: 600;
-      margin-bottom: 2px;
-    }
-    
-    .progress-detail {
-      font-size: 0.9rem;
-      color: #6b7280;
-    }
-    
-    .overall-progress {
-      margin-bottom: 1.5rem;
-    }
-    
-    .progress-bar {
-      height: 8px;
-      border-radius: 4px;
-      transition: width 0.3s ease;
-    }
-    
-    /* 공시지가 카드 폰트 크기 조정 */
-    #totalLandValue {
-      font-size: 1.8rem !important;
-      line-height: 1.2;
-    }
-    
-    @media (max-width: 768px) {
-      #totalLandValue {
-        font-size: 1.5rem !important;
-      }
-    }
-
-    /* 챗봇 스타일 */
-    .chat-interface-container {
-      display: flex;
-      flex-direction: column;
-      height: 500px;
-    }
-
-    .chat-messages-area {
-      flex: 1;
-      overflow-y: auto;
-      padding: 1rem;
-      background-color: #f8f9fa;
-      border-radius: 0.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .chat-welcome-message {
-      text-align: center;
-      padding: 1rem;
-    }
-
-    .message-entry {
-      margin-bottom: 1rem;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .message-bubble {
-      padding: 0.75rem 1rem;
-      border-radius: 1rem;
-      max-width: 80%;
-      word-wrap: break-word;
-    }
-
-    .user-message {
-      align-items: flex-end;
-    }
-
-    .user-message .message-bubble {
-      background-color: #007bff;
-      color: white;
-    }
-
-    .bot-message {
-      align-items: flex-start;
-    }
-
-    .bot-message .message-bubble {
-      background-color: #e9ecef;
-      color: #212529;
-    }
-
-    .typing-indicator-message .message-bubble {
-      background-color: #e9ecef;
-      color: #6c757d;
-    }
-
-    .chat-input-area {
-      display: flex;
-      gap: 0.5rem;
-      padding: 0.5rem;
-      background-color: white;
-      border-radius: 0.5rem;
-    }
-
-    .chat-input-area textarea {
-      resize: none;
-      border: 1px solid #ced4da;
-      border-radius: 0.5rem;
-      padding: 0.5rem;
-    }
-
-    .chat-input-area button {
-      padding: 0.5rem 1rem;
-    }
-  </style>
-
-  <!-- Daum 우편번호 서비스 -->
-  <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+{% block analyzes_list %}
+<div class="container-fluid mt-3 mb-3">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">LocaAI 상권분석</h3>
+    <div class="btn-group" id="navigationButtons" style="display: none;">
+      <button type="button" class="btn btn-outline-secondary" onclick="backToAnalysisList()">
+        <i class="fas fa-arrow-left me-1"></i>목록으로
+      </button>
+      <button type="button" class="btn btn-outline-primary" onclick="startNewAnalysis()">
+        <i class="fas fa-plus me-1"></i>새 분석
+      </button>
+    </div>
+  </div>
   
+<<<<<<< HEAD
   <!-- jsPDF 라이브러리 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <!-- 한국어 폰트 지원 -->
@@ -1873,12 +1703,25 @@
             </p>
           {% endif %}
         </div>
+=======
+  <div id="main-analysis-container">
+    <div id="user-check-section" style="display: none">
+      <div id="analysis-list-section" style="display: none">
+        <h5 class="mb-3">📊 최근 분석 목록</h5>
+        <ul id="analysisList" class="list-group mb-3"></ul>
+        <nav id="analysisPagination" aria-label="분석 리스트 페이지네이션"></nav>
+>>>>>>> e6213a527f74c761a8a4b261f48a60fabd0f3754
       </div>
     </div>
+  </div>
+</div>
+{% endblock analyzes_list %}
 
-  
-    <!-- 본문: 분석 결과 + 챗봇 -->
+{% block analysis_report %}
+<div id="analysis-report-section" style="display: none">
+  <div class="container-fluid">
     <div class="row">
+<<<<<<< HEAD
       <!-- 왼쪽: 분석 리포트 -->
       <div class="col-lg-8 mb-4">
         <div class="card p-4 shadow-sm">
@@ -2292,414 +2135,109 @@
             </div>
           </div>
         </div>
+=======
+      <div class="col-lg-8">
+        <div id="analysisReportContainer" class="card p-3"></div>
+>>>>>>> e6213a527f74c761a8a4b261f48a60fabd0f3754
       </div>
-
-      <!-- 오른쪽: 챗봇 -->
       <div class="col-lg-4">
-        <div class="card p-4 shadow-sm">
-          <div class="chat-interface-container">
-            <div class="chat-messages-area" id="chatMessagesArea">
-              <!-- 메시지가 여기에 동적으로 추가됩니다 -->
-              <div class="chat-welcome-message text-center py-3">
-                <div class="mb-2">
-                  <i class="fas fa-robot fa-2x text-primary"></i>
-                </div>
-                <h5 class="text-primary mb-2">분석 결과 챗봇</h5>
-                <p class="text-muted mb-3">상권 분석과 관련된 질문을 자유롭게 해보세요.</p>
-
-                <!-- 예시 질문 버튼 -->
-                <div class="mb-3">
-                  <span class="text-muted">추천 질문</span><br>
-                  <button class="btn btn-sm btn-outline-secondary me-1 mt-1" onclick="fillExampleQuestion('이 상권의 유동 인구 특징은 어떤가요?')">유동 인구</button>
-                  <button class="btn btn-sm btn-outline-secondary me-1 mt-1" onclick="fillExampleQuestion('이 지역의 경쟁 업체 수는 얼마나 되나요?')">경쟁 업체</button>
-                  <button class="btn btn-sm btn-outline-secondary me-1 mt-1" onclick="fillExampleQuestion('이 지역은 창업 위험이 높은 편인가요?')">창업 위험</button>
-                  <button class="btn btn-sm btn-outline-secondary me-1 mt-1" onclick="fillExampleQuestion('주변 상권 중 가장 활발한 업종은 무엇인가요?')">인기 업종</button>
-                </div>
-              </div>
+        <div class="chat-interface-container">
+          <div class="chat-messages-area" id="chatMessagesArea"></div>
+          <div id="typingIndicator" class="message-entry typing-indicator-message" style="display: none;">
+            <div class="message-bubble">
+              답변을 생성 중입니다...
+              <span class="spinner-border spinner-border-sm ms-1" role="status" aria-hidden="true"></span>
             </div>
+          </div>
+          <div class="chat-input-area">
+            <textarea id="messageInput" class="form-control" placeholder="메시지를 입력하세요..." rows="1"></textarea>
+            <button id="sendButton" class="btn btn-primary" type="button">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock analysis_report %}
 
-            <div id="typingIndicator" class="message-entry typing-indicator-message" style="display: none;">
-              <div class="message-bubble">
-                답변을 생성 중입니다... 
-                <span class="spinner-border spinner-border-sm ms-1" role="status" aria-hidden="true"></span>
-              </div>
-            </div>
-
-            <div class="chat-input-area">
-              <textarea
-                id="messageInput"
-                class="form-control"
-                placeholder="메시지를 입력하세요..."
-                rows="1"
-                aria-label="메시지 입력"
-              ></textarea>
-              <button id="sendButton" class="btn btn-primary" type="button" aria-label="메시지 전송">
-                <i class="fas fa-paper-plane"></i>
+{% block chat_history %}
+<div id="analysis-chat-section" style="display: none">
+  <div class="container-fluid mt-4">
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">💬 관련 대화 내용</h6>
+            <div class="btn-group">
+              <button type="button" class="btn btn-outline-secondary btn-sm" id="exportChatBtn">
+                <i class="fas fa-download me-1"></i>내보내기
+              </button>
+              <button type="button" class="btn btn-outline-primary btn-sm" id="addSearchBtn">
+                <i class="fas fa-search me-1"></i>검색
               </button>
             </div>
           </div>
+          <div class="card-body">
+            <div id="chatHistoryContainer" class="chat-messages-area"></div>
+          </div>
         </div>
       </div>
     </div>
   </div>
+</div>
+{% endblock chat_history %}
 
-  <!-- CSRF 토큰 (API 호출용) -->
-  {% csrf_token %}
+{% block new_analysis %}
+<div id="new-analysis-sequence" style="display: none">
+  <!-- 입력 폼: 업종/주소/면적/주류 여부/시작 버튼 -->
+</div>
+{% endblock new_analysis %}
 
-  <!-- 사용자 정보 JSON 데이터 -->
-  {{ user_info|json_script:"user-info-data" }}
+{% block chatbot %}
+<!-- 채팅 인터페이스는 analysis_report 섹션에 통합됨 -->
+{% endblock chatbot %}
 
-  <!-- DEBUG 확인용 콘솔 로그 -->
-  <script>
-    console.log("🧪 Template user_id:", "{{ request.user.id|safe }}");
-    console.log("🧪 User info:", JSON.parse(document.getElementById('user-info-data').textContent));
-  </script>
-{% endblock content %}
+{% block footer %}
+{% csrf_token %}
+<script type="application/json" id="user-info-data">{{ user_info_json|safe }}</script>
+<script type="application/json" id="previous-docs-data">{{ previous_docs_json|safe }}</script>
+{% endblock footer %}
 
-{% block extra_js %}
-<script src="{% static 'js/chat_main.js' %}"></script>
-<script src="{% static 'js/chat_list.js' %}"></script>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
+{% block js %}
+<script type="module" src="{% static 'js/main_service.js' %}"></script>
 <script>
-  // chatListManager 초기화 (chat_list.js에 정의되어 있음)
+  // 전역 함수들 (모듈에서 export한 함수들을 전역으로 노출)
   document.addEventListener('DOMContentLoaded', function() {
-    window.chatListManager = new ChatListManager();
-
-    // fillExampleQuestion 함수 정의: 챗봇 입력 필드(messageInput)에 질문을 채움
-    window.fillExampleQuestion = function(text) {
-      const messageInput = document.getElementById('messageInput');
-      if (messageInput) {
-        messageInput.value = text;
-        messageInput.focus();
+    // 네비게이션 버튼 표시/숨김 함수
+    window.showNavigationButtons = function(show = true) {
+      const navButtons = document.getElementById('navigationButtons');
+      if (navButtons) {
+        navButtons.style.display = show ? 'block' : 'none';
       }
     };
+    
+    // 채팅 히스토리 내보내기 버튼 이벤트
+    const exportChatBtn = document.getElementById('exportChatBtn');
+    if (exportChatBtn) {
+      exportChatBtn.addEventListener('click', function() {
+        const currentSession = window.stateManager?.getStateValue('currentSession');
+        if (currentSession?.id) {
+          window.exportChatHistory?.(currentSession.id);
+        } else {
+          alert('내보낼 채팅 히스토리가 없습니다.');
+        }
+      });
+    }
+    
+    // 채팅 히스토리 검색 버튼 이벤트
+    const addSearchBtn = document.getElementById('addSearchBtn');
+    if (addSearchBtn) {
+      addSearchBtn.addEventListener('click', function() {
+        window.addChatHistorySearch?.();
+      });
+    }
   });
 </script>
-{% endblock extra_js %}
-{% block pdf %}
-<!-- PDF 미리보기 모달 (분석 기록용) -->
-<div class="modal fade" id="pdfPreviewModal" tabindex="-1" aria-labelledby="pdfPreviewModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-xl modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="pdfPreviewModalLabel">
-          <i class="bi bi-file-earmark-pdf me-2"></i>분석 결과 미리보기
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
-        <div id="previewLoading" class="text-center">
-          <div class="spinner-border text-primary mb-3" role="status">
-            <span class="visually-hidden">로딩 중...</span>
-          </div>
-          <h6>분석 결과를 불러오고 있습니다...</h6>
-          <p class="text-muted">잠시만 기다려 주세요.</p>
-        </div>
-        
-        <div id="previewError" style="display: none;" class="text-center">
-          <i class="bi bi-exclamation-triangle text-warning mb-3" style="font-size: 3rem;"></i>
-          <h6>분석 결과를 불러올 수 없습니다</h6>
-          <p class="text-muted" id="previewErrorMessage">잠시 후 다시 시도해 주세요.</p>
-        </div>
-        
-        <!-- PDF 스타일 미리보기 내용 -->
-        <div id="previewContent" style="display: none; background: white; padding: 30px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: 'Nanum Gothic', Arial, sans-serif;">
-          <!-- 헤더 -->
-          <div class="text-center mb-4" style="border-bottom: 3px solid #1e3a8a; padding-bottom: 20px;">
-            <h2 class="text-primary mb-1" style="font-weight: 800; font-size: 24px;">AI 상권분석 보고서</h2>
-            <p class="text-muted mb-0" style="font-size: 14px;">인공지능 기반 상업지구 분석 결과</p>
-          </div>
-          
-          <!-- 기본 정보 -->
-          <div class="mb-4" style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #1e3a8a;">
-            <h5 class="text-primary mb-3"><i class="bi bi-geo-alt me-2"></i>분석 대상 정보</h5>
-            <div class="row">
-              <div class="col-md-6">
-                <p><strong>주소:</strong> <span id="previewAddr">-</span></p>
-                <p><strong>업종:</strong> <span id="previewBizType">-</span></p>
-              </div>
-              <div class="col-md-6">
-                <p><strong>면적:</strong> <span id="previewAreaSize">-</span>㎡</p>
-                <p><strong>분석일시:</strong> <span id="previewAnalysisDate">-</span></p>
-              </div>
-            </div>
-          </div>
-          
-          <!-- AI 생존 확률 -->
-          <div class="mb-4" style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;">
-            <h5 class="text-success mb-3"><i class="bi bi-robot me-2"></i>AI 생존 확률</h5>
-            <div class="display-4 mb-3 text-primary" id="previewSurvivalRate" style="font-weight: 800;">-%</div>
-            <div class="progress mb-3" style="height: 20px;">
-              <div class="progress-bar" id="previewSurvivalProgressBar" role="progressbar" style="width: 0%"></div>
-            </div>
-            <p class="text-muted mb-0" id="previewSurvivalComment">분석 중...</p>
-          </div>
-          
-          <!-- 핵심 지표 -->
-          <div class="mb-4">
-            <h5 class="text-primary border-bottom border-primary pb-2 mb-3"><i class="bi bi-speedometer me-2"></i>핵심 지표</h5>
-            <div class="row">
-              <div class="col-md-3">
-                <div class="card border-info h-100 text-center">
-                  <div class="card-body">
-                    <i class="bi bi-people text-info mb-2" style="font-size: 2rem;"></i>
-                    <h6 class="card-title">생활인구</h6>
-                    <p class="card-text fw-bold text-primary" id="previewLifePopulation">-</p>
-                    <small class="text-muted">300m 반경</small>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-3">
-                <div class="card border-warning h-100 text-center">
-                  <div class="card-body">
-                    <i class="bi bi-briefcase text-warning mb-2" style="font-size: 2rem;"></i>
-                    <h6 class="card-title">직장인구</h6>
-                    <p class="card-text fw-bold text-primary" id="previewWorkingPopulation">-</p>
-                    <small class="text-muted">300m 반경</small>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-3">
-                <div class="card border-danger h-100 text-center">
-                  <div class="card-body">
-                    <i class="bi bi-shop text-danger mb-2" style="font-size: 2rem;"></i>
-                    <h6 class="card-title">경쟁업체</h6>
-                    <p class="card-text fw-bold text-primary" id="previewCompetitors">-</p>
-                    <small class="text-muted">300m 반경</small>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-3">
-                <div class="card border-secondary h-100 text-center">
-                  <div class="card-body">
-                    <i class="bi bi-currency-dollar text-secondary mb-2" style="font-size: 2rem;"></i>
-                    <h6 class="card-title">공시지가</h6>
-                    <p class="card-text fw-bold text-primary" id="previewLandPrice">-</p>
-                    <small class="text-muted">총 공시지가</small>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <!-- 강점/주의사항 -->
-            <div class="row mb-4">
-              <div class="col-md-6">
-                <div class="card border-success h-100">
-                  <div class="card-header bg-light">
-                    <h6 class="mb-0 text-success"><i class="bi bi-check-circle me-2"></i>강점</h6>
-                  </div>
-                  <div class="card-body" id="previewStrengthsList">
-                    <ul class="list-unstyled mb-0">
-                      <li class="text-muted">분석 중...</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="card border-warning h-100">
-                  <div class="card-header bg-light">
-                    <h6 class="mb-0 text-warning"><i class="bi bi-exclamation-triangle me-2"></i>주의사항</h6>
-                  </div>
-                  <div class="card-body" id="previewCautionsList">
-                    <ul class="list-unstyled mb-0">
-                      <li class="text-muted">분석 중...</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <!-- 보고서 하단 -->
-            <div class="text-center text-muted" style="border-top: 1px solid #dee2e6; padding-top: 20px;">
-              <small>
-                본 보고서는 AI 기반 상권분석 시스템에 의해 생성되었습니다.<br>
-                분석 기준일: <span id="previewReportGeneratedDate"></span>
-              </small>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-          <div class="btn-group">
-            <button type="button" class="btn btn-primary" id="previewDownloadPdfBtn" onclick="downloadPreviewPDF()" style="display: none;">
-              <i class="bi bi-download me-2"></i>고품질 PDF (이미지)
-            </button>
-            <button type="button" class="btn btn-outline-primary" id="previewDownloadLightPdfBtn" onclick="downloadPreviewLightweightPDF()" style="display: none;">
-              <i class="bi bi-file-text me-2"></i>경량 PDF (텍스트)
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- PDF 다운로드 모달 -->
-  <div class="modal fade" id="pdfModal" tabindex="-1" aria-labelledby="pdfModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="pdfModalLabel">
-            <i class="bi bi-file-earmark-pdf me-2"></i>AI 상권분석 보고서 미리보기
-          </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <div id="pdfGenerating" style="display: none;" class="text-center">
-            <div class="spinner-border text-primary mb-3" role="status">
-              <span class="visually-hidden">생성 중...</span>
-            </div>
-            <h6>PDF 보고서를 생성하고 있습니다...</h6>
-            <p class="text-muted">잠시만 기다려 주세요.</p>
-          </div>
-          
-          <div id="pdfError" style="display: none;" class="text-center">
-            <i class="bi bi-exclamation-triangle text-warning mb-3" style="font-size: 3rem;"></i>
-            <h6>PDF 생성 중 오류가 발생했습니다</h6>
-            <p class="text-muted" id="pdfErrorMessage">잠시 후 다시 시도해 주세요.</p>
-          </div>
-          
-          <!-- PDF 미리보기 내용 -->
-          <div id="pdfPreviewContainer" style="background: white; padding: 30px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <div class="text-center mb-4">
-              <h2 class="text-primary mb-1" style="font-weight: 700;">AI 상권분석 보고서</h2>
-              <p class="text-muted mb-0">인공지능 기반 상업지구 분석 결과</p>
-              <hr class="my-3" style="border-color: #1e3a8a; border-width: 2px;">
-            </div>
-            
-            <!-- 기본 정보 -->
-            <div class="row mb-4">
-              <div class="col-12">
-                <div class="card border-primary">
-                  <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="bi bi-geo-alt me-2"></i>분석 대상 정보</h5>
-                  </div>
-                  <div class="card-body">
-                    <div class="row">
-                      <div class="col-md-6">
-                        <p><strong>주소:</strong> <span id="previewAddress">-</span></p>
-                        <p><strong>업종:</strong> <span id="previewBusinessType">-</span></p>
-                      </div>
-                      <div class="col-md-6">
-                        <p><strong>면적:</strong> <span id="previewArea">-</span></p>
-                        <p><strong>분석일시:</strong> <span id="previewDate">-</span></p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <!-- AI 생존 확률 -->
-            <div class="row mb-4">
-              <div class="col-12">
-                <div class="card border-success">
-                  <div class="card-header bg-success text-white">
-                    <h5 class="mb-0"><i class="bi bi-robot me-2"></i>AI 생존 확률</h5>
-                  </div>
-                  <div class="card-body text-center">
-                    <div class="display-4 mb-3" id="previewSurvival">-%</div>
-                    <div class="progress mb-3" style="height: 20px;">
-                      <div class="progress-bar" id="previewSurvivalBar" role="progressbar" style="width: 0%"></div>
-                    </div>
-                    <p class="text-muted mb-0" id="previewSurvivalText">분석 중...</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <!-- 핵심 지표 -->
-            <div class="row mb-4">
-              <div class="col-md-3">
-                <div class="card border-info h-100">
-                  <div class="card-body text-center">
-                    <i class="bi bi-people text-info mb-2" style="font-size: 2rem;"></i>
-                    <h6 class="card-title">생활인구</h6>
-                    <p class="card-text fw-bold" id="previewLifePop">-</p>
-                    <small class="text-muted">300m 반경</small>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-3">
-                <div class="card border-warning h-100">
-                  <div class="card-body text-center">
-                    <i class="bi bi-briefcase text-warning mb-2" style="font-size: 2rem;"></i>
-                    <h6 class="card-title">직장인구</h6>
-                    <p class="card-text fw-bold" id="previewWorkingPop">-</p>
-                    <small class="text-muted">300m 반경</small>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-3">
-                <div class="card border-danger h-100">
-                  <div class="card-body text-center">
-                    <i class="bi bi-shop text-danger mb-2" style="font-size: 2rem;"></i>
-                    <h6 class="card-title">경쟁업체</h6>
-                    <p class="card-text fw-bold" id="previewCompetitor">-</p>
-                    <small class="text-muted">300m 반경</small>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-3">
-                <div class="card border-secondary h-100">
-                  <div class="card-body text-center">
-                    <i class="bi bi-currency-dollar text-secondary mb-2" style="font-size: 2rem;"></i>
-                    <h6 class="card-title">공시지가</h6>
-                    <p class="card-text fw-bold" id="previewLandValue">-</p>
-                    <small class="text-muted">총 공시지가</small>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <!-- 강점/주의사항 -->
-            <div class="row mb-4">
-              <div class="col-md-6">
-                <div class="card border-success h-100">
-                  <div class="card-header bg-light">
-                    <h6 class="mb-0 text-success"><i class="bi bi-check-circle me-2"></i>강점</h6>
-                  </div>
-                  <div class="card-body" id="previewStrengths">
-                    <ul class="list-unstyled mb-0"></ul>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="card border-warning h-100">
-                  <div class="card-header bg-light">
-                    <h6 class="mb-0 text-warning"><i class="bi bi-exclamation-triangle me-2"></i>주의사항</h6>
-                  </div>
-                  <div class="card-body" id="previewCautions">
-                    <ul class="list-unstyled mb-0"></ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <!-- 보고서 하단 -->
-            <div class="text-center text-muted" style="border-top: 1px solid #dee2e6; padding-top: 20px;">
-              <small>
-                본 보고서는 AI 기반 상권분석 시스템에 의해 생성되었습니다.<br>
-                분석 기준일: <span id="previewReportDate"></span>
-              </small>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-          <div class="btn-group">
-            <button type="button" class="btn btn-primary" id="downloadPdfBtn" onclick="downloadPDF()">
-              <i class="bi bi-download me-2"></i>고품질 PDF (이미지)
-            </button>
-            <button type="button" class="btn btn-outline-primary" id="downloadLightPdfBtn" onclick="downloadLightweightPDF()">
-              <i class="bi bi-file-text me-2"></i>경량 PDF (텍스트)
-            </button>
-          </div>
-          <button type="button" class="btn btn-primary" id="retryPdfBtn" onclick="downloadPDF()" style="display: none;">
-            <i class="bi bi-arrow-clockwise me-2"></i>다시 시도
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-{% endblock pdf %}  
+{% endblock js %}
