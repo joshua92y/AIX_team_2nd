@@ -90,7 +90,8 @@ class NewsletterSubscribeSerializer(serializers.ModelSerializer):
 
             print("✅ 재구독 정보 저장 완료")
 
-            send_subscription_email(subscriber)
+            request = self.context.get("request")
+            send_subscription_email(request, subscriber)
             print("📬 환영 메일 전송 시도 완료")
 
             return subscriber
@@ -101,7 +102,8 @@ class NewsletterSubscribeSerializer(serializers.ModelSerializer):
                 name=name,
                 user=matching_user
             )
-            send_subscription_email(new_subscriber)
+            request = self.context.get("request")
+            send_subscription_email(request, new_subscriber)
             print("📬 환영 메일 전송 완료 (신규)")
 
             return new_subscriber

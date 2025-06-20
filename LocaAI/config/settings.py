@@ -229,6 +229,18 @@ MEDIA_ROOT = BASE_DIR / "media"
 # ============================================================================
 
 LANGUAGE_CODE = "ko-kr"
+
+# 지원 언어 설정
+LANGUAGES = [
+    ('ko', 'Korean'),
+    ('en', 'English'),
+    ('es', 'Spanish'),
+]
+
+LOCALE_PATHS = [
+    os.path.join(BASE_DIR, 'locale'),
+]
+
 TIME_ZONE = "Asia/Seoul"
 USE_I18N = True
 USE_TZ = True
