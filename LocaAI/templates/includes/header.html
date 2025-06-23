@@ -15,7 +15,7 @@
         <li><a href="{% url 'shopdash:dashboard' %}">Data</a></li>
         <li><a href="{% url 'border:portfolio_list' %}">Portfolio</a></li>
         <li><a href="/#contact">Contact Us</a></li>
-        <li class="dropdown"><a href="javascript:void(0);"><span>Support</span><i class="bi bi-chevron-down toggle-dropdown"></i></a>
+        <li class="dropdown"><a href="javascript:void(0);" onclick="event.preventDefault(); event.stopPropagation(); toggleDropdown(this);"><span>Support</span><i class="bi bi-chevron-down toggle-dropdown"></i></a>
           <ul>
             <li><a href="{% url 'guidebook' %}">guide book</a></li>
             <li><a href="{% url 'border:notice_list' %}">notice</a></li>
@@ -23,7 +23,7 @@
           </ul>
         </li>
         <li class="dropdown">
-          <a href="javascript:void(0);"><span>Language</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+          <a href="javascript:void(0);" onclick="event.preventDefault(); event.stopPropagation(); toggleDropdown(this);"><span>Language</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
           <ul> 
             <li><a href="#" onclick="setSelectedLangValue('KOR'); return false;">🇰🇷 한국어</a></li>
             <li><a href="#" onclick="setSelectedLangValue('ENG'); return false;">🇺🇸 영어</a></li>
@@ -45,4 +45,10 @@
 
   </div>
   
+<script>
+  function toggleDropdown(element) {
+    const parent = element.closest('li.dropdown');
+    parent.classList.toggle('open');
+  }
+</script>
 </header>
