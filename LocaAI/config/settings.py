@@ -239,9 +239,6 @@ STORAGES = {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
-
-print("S3 KEY:", AWS_ACCESS_KEY_ID)
-print("S3 BUCKET:", AWS_STORAGE_BUCKET_NAME)
 # ============================================================================
 # 국제화 및 현지화 설정
 # ============================================================================
