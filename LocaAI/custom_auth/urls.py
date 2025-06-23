@@ -12,6 +12,9 @@ urlpatterns = [
     ), name='login'),
     path('logout/', views.logout_view, name='logout'),
     
+    # 마이페이지
+    path('mypage/', views.mypage, name='mypage'),
+    
     # 회원가입
     path('register/', views.register, name='register'),
     

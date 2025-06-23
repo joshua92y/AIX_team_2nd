@@ -1,148 +1,276 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block title %}가이드북 - LocaAI{% endblock %}
+
 {% block content %}
 <div class="container my-5 d-flex flex-column align-items-center justify-content-center text-center">
   <div class="text-center mb-4">
-    <h2 class="display-6 fw-bold text-primary">Loca AI 사용 가이드북 📘</h2>
-    <p>소상공인을 위한 맞춤 AI 비즈니스 솔루션</p>
+      <h2 class="display-6 fw-bold text-primary">
+        <i class="bi bi-journal-bookmark-fill text-primary me-2"></i>
+        <span data-lang="KOR">Loca AI 가이드북</span>
+        <span data-lang="ENG">Loca AI Guidebook</span>
+        <span data-lang="ESP">Guía de Loca AI</span>
+      </h2>
+
+      <p class="mb-3">
+        <span data-lang="KOR">단계별 안내로 복잡한 상권 분석도 누구나 쉽게 시작 가능</span>
+        <span data-lang="ENG">Step-by-step guide to make complex market analysis easy for everyone</span>
+        <span data-lang="ESP">Guía paso a paso para facilitar el análisis comercial a cualquiera</span>
+      </p>
   </div>
 
-  <div class="accordion w-100" id="guideAccordion" style="max-width: 800px;">
+  <div class="accordion w-100" id="guideAccordion" style="max-width: 1000px;">
 
     <!-- 1. 소개 -->
     <div class="accordion-item">
-    <h2 class="accordion-header" id="headingOne">
+      <h2 class="accordion-header" id="headingOne">
         <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
-        1. 소개
+          <span data-lang="KOR">1. 소개</span>
+          <span data-lang="ENG">1. Introduction</span>
+          <span data-lang="ESP">1. Introducción</span>
         </button>
-    </h2>
-    <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#guideAccordion">
+      </h2>
+
+      <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#guideAccordion">
         <div class="accordion-body">
 
-        <div class="card border-0 shadow-sm mx-auto" style="max-width: 800px;">
+          <div class="card border-0 shadow-sm mx-auto" style="max-width: 1000px;">
             <div class="card-body text-center">
 
-            <img src="{% static 'assets/img/guide01.png' %}" class="img-fluid rounded mb-4" alt="소개 이미지" style="max-width: 500px;">
+              <img src="{% static 'assets/img/guide01.png' %}" class="img-fluid rounded mb-4" alt="소개 이미지" style="max-width: 500px;">
 
-            <h4 class="card-title mb-3">
+              <h4 class="card-title mb-3">
                 <i class="bi bi-geo-alt-fill text-primary me-2"></i>
-                상권 분석 전문 AI <strong class="text-primary">LocaAI</strong>
-            </h4>
+                <span data-lang="KOR">상권 분석 <strong class="text-primary">Loca AI</strong></span>
+                <span data-lang="ENG" style="display: none;">Commercial Analysis with <strong class="text-primary">Loca AI</strong></span>
+                <span data-lang="ESP" style="display: none;">Análisis Comercial con <strong class="text-primary">Loca AI</strong></span>
+              </h4>
 
-            <p class="text-muted mb-3">
-                데이터 기반으로 
-                <span class="px-2 py-1 rounded fw-bold" style="background-color: #e6f4ea; color: #198754;">
-                    창업 성공률
-                </span>
-                을 높이세요!
-            </p>
+              <p class="text-muted mb-3">
+                <span data-lang="KOR">소상공인을 위한 맞춤 AI 비즈니스 솔루션</span>
+                <span data-lang="ENG" style="display: none;">Customized AI Business Solution for Small Businesses</span>
+                <span data-lang="ESP" style="display: none;">Solución Empresarial de IA Personalizada para Pequeños Negocios</span>
+              </p>
 
-            <hr class="my-4">
+              <hr class="my-4">
 
-            <!-- 설명 영역 -->
-            <div class="text-start">
+              <!-- 설명 영역 -->
+              <div class="text-start">
 
+                <!-- 상권 분석이란 -->
                 <h5 class="mb-2">
-                <i class="bi bi-question-circle text-primary me-2"></i>
-                상권 분석이란?
+                  <i class="bi bi-question-circle text-success me-2"></i>
+                  <span data-lang="KOR">상권 분석이란 ?</span>
+                  <span data-lang="ENG" style="display: none;">What is Commercial Area Analysis?</span>
+                  <span data-lang="ESP" style="display: none;">¿Qué es el Análisis de Zona Comercial?</span>
                 </h5>
                 <p class="mb-4">
-                특정 위치를 중심으로 유동 인구, 경쟁 업체, 소비 패턴 등 다양한 정보를 분석하여
-                <strong>사업 가능성과 생존률</strong>을 판단하는 과정입니다.
+                  <span data-lang="KOR">
+                    상권 분석은 특정 지역의 유동 인구, 경쟁 업종, 소비 성향 등<br>
+                    다양한 상업 정보를 종합해 <strong>입지의 상업적 특성과 가능성</strong>을 파악하는 분석 과정입니다.
+                  </span>
+                  <span data-lang="ENG" style="display: none;">
+                    Commercial area analysis is the process of identifying the <strong>commercial characteristics and potential</strong> of a location by comprehensively analyzing factors such as floating population, competing businesses, and consumer trends in a specific area.
+                  </span>
+                  <span data-lang="ESP" style="display: none;">
+                    El análisis de zona comercial es el proceso de identificar las <strong>características y el potencial comercial</strong> de una ubicación analizando integralmente factores como la afluencia de personas, la competencia y las tendencias de consumo en una zona específica.
+                  </span>
                 </p>
 
+                <!-- 왜 필요한가요? -->
                 <h5 class="mb-2">
-                <i class="bi bi-exclamation-circle text-warning me-2"></i>
-                왜 필요한가요?
+                  <i class="bi bi-exclamation-circle text-warning me-2"></i>
+                  <span data-lang="KOR">왜 필요한가요 ?</span>
+                  <span data-lang="ENG" style="display: none;">Why is it necessary?</span>
+                  <span data-lang="ESP" style="display: none;">¿Por qué es necesario?</span>
                 </h5>
                 <p class="mb-4">
-                창업은 큰 투자입니다.
-                <strong>객관적인 데이터</strong>를 바탕으로 입지 선택과 업종 결정을 하여
-                실패 확률을 줄이고 <strong>성공 가능성</strong>을 높이세요.
+                  <span data-lang="KOR">
+                    창업은 단순한 도전이 아닌, 인생의 중요한 선택입니다.<br>
+                    방대한 상권 데이터를 분석하여 <strong>창업의 불확실성</strong>을 줄이고, <strong>성공 가능성</strong>을 높여드립니다.
+                  </span>
+                  <span data-lang="ENG" style="display: none;">
+                    Starting a business is not just a challenge—it’s a significant life decision.<br>
+                    By analyzing extensive commercial area data, we help reduce the <strong>uncertainties of entrepreneurship</strong> and increase the <strong>likelihood of success</strong>.
+                  </span>
+                  <span data-lang="ESP" style="display: none;">
+                    Emprender no es solo un desafío, sino una decisión importante en la vida.<br>
+                    Analizando una gran cantidad de datos comerciales, ayudamos a reducir la <strong>incertidumbre del emprendimiento</strong> y aumentar la <strong>posibilidad de éxito</strong>.
+                  </span>
                 </p>
-
+                <!-- LocaAI가 도와드립니다 -->
                 <h5 class="mb-3">
-                <i class="bi bi-lightning-charge-fill text-primary me-2"></i>
-                LocaAI가 도와드립니다!
+                  <i class="bi bi-lightning-charge-fill text-primary me-2"></i>
+                  <span data-lang="KOR"><strong>Loca AI</strong> 가 도와드립니다!</span>
+                  <span data-lang="ENG" style="display: none;"><strong>Loca AI</strong> is here to help!</span>
+                  <span data-lang="ESP" style="display: none;"><strong>¡Loca AI</strong> está aquí para ayudarte!</span>
                 </h5>
                 <p>
-                다음 정보를 입력하시면 자동 분석 리포트를 생성해 드립니다:
+                  <span data-lang="KOR">아래 4가지만 입력하면, 상권 분석 리포트를 받아보실 수 있습니다 :</span>
+                  <span data-lang="ENG" style="display: none;">Just enter the 4 items below to receive your commercial area analysis report:</span>
+                  <span data-lang="ESP" style="display: none;">Solo ingrese los 4 elementos a continuación para recibir su informe de análisis de zona comercial:</span>
                 </p>
 
-                <!-- 입력 정보 안내 (가로 정렬된 카드 스타일) -->
+                <!-- 입력 정보 안내 -->
                 <div class="row text-center justify-content-center my-4">
-
-                <div class="col-6 col-md-3 mb-3" data-aos="fade-up" data-aos-delay="100">
+                  <div class="col-6 col-md-3 mb-3" data-aos="fade-up" data-aos-delay="100">
                     <div class="border rounded py-3 px-2 h-100 d-flex flex-column align-items-center bg-light">
-                    <i class="bi bi-check-circle-fill text-success fs-4 mb-2"></i>
-                    <div class="fw-semibold">업종</div>
+                      <i class="bi bi-check-circle-fill text-success fs-4 mb-2"></i>
+                      <div class="fw-semibold">
+                        <span data-lang="KOR">업종</span>
+                        <span data-lang="ENG" style="display: none;">Business Type</span>
+                        <span data-lang="ESP" style="display: none;">Tipo de Negocio</span>
+                      </div>
                     </div>
-                </div>
+                  </div>
 
-                <div class="col-6 col-md-3 mb-3" data-aos="fade-up" data-aos-delay="200">
+                  <div class="col-6 col-md-3 mb-3" data-aos="fade-up" data-aos-delay="200">
                     <div class="border rounded py-3 px-2 h-100 d-flex flex-column align-items-center bg-light">
-                    <i class="bi bi-check-circle-fill text-success fs-4 mb-2"></i>
-                    <div class="fw-semibold">주소</div>
+                      <i class="bi bi-check-circle-fill text-success fs-4 mb-2"></i>
+                      <div class="fw-semibold">
+                        <span data-lang="KOR">주소</span>
+                        <span data-lang="ENG" style="display: none;">Address</span>
+                        <span data-lang="ESP" style="display: none;">Dirección</span>
+                      </div>
                     </div>
-                </div>
+                  </div>
 
-                <div class="col-6 col-md-3 mb-3" data-aos="fade-up" data-aos-delay="300">
+                  <div class="col-6 col-md-3 mb-3" data-aos="fade-up" data-aos-delay="300">
                     <div class="border rounded py-3 px-2 h-100 d-flex flex-column align-items-center bg-light">
-                    <i class="bi bi-check-circle-fill text-success fs-4 mb-2"></i>
-                    <div class="fw-semibold">점포 면적</div>
+                      <i class="bi bi-check-circle-fill text-success fs-4 mb-2"></i>
+                      <div class="fw-semibold">
+                        <span data-lang="KOR">점포 면적</span>
+                        <span data-lang="ENG" style="display: none;">Store Area</span>
+                        <span data-lang="ESP" style="display: none;">Área del Local</span>
+                      </div>
                     </div>
-                </div>
+                  </div>
 
-                <div class="col-6 col-md-3 mb-3" data-aos="fade-up" data-aos-delay="400">
+                  <div class="col-6 col-md-3 mb-3" data-aos="fade-up" data-aos-delay="400">
                     <div class="border rounded py-3 px-2 h-100 d-flex flex-column align-items-center bg-light">
-                    <i class="bi bi-check-circle-fill text-success fs-4 mb-2"></i>
-                    <div class="fw-semibold">주류 판매 여부</div>
+                      <i class="bi bi-check-circle-fill text-success fs-4 mb-2"></i>
+                      <div class="fw-semibold">
+                        <span data-lang="KOR">주류 판매 여부</span>
+                        <span data-lang="ENG" style="display: none;">Alcohol Sales</span>
+                        <span data-lang="ESP" style="display: none;">Venta de Alcohol</span>
+                      </div>
                     </div>
+                  </div>
                 </div>
 
-                </div>
-
+                <!-- 결과 안내 -->
                 <p class="mb-4">
-                입력하신 정보를 바탕으로 <strong class="text-primary">LocaAI</strong>는 최신 빅데이터 분석을 통해<br>
-                해당 위치의 
-                <span style="padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-weight: bold; background-color: #e6f4ea; color: #198754;">
-                    장기 생존률
-                </span>
-                을 예측하고<br>
-                <strong>맞춤형 상권 분석 리포트</strong>를 PDF로 제공합니다.
+                  <span data-lang="KOR">
+                    입력된 정보를 바탕으로 <strong class="text-primary">LocaAI</strong>는 최신 빅데이터를 분석하여 <br>
+                    해당 입지의 <strong>장기 생존률</strong>을 예측하고, <strong>맞춤형 리포트</strong>를 PDF로 제공해드립니다.
+                  </span>
+                  <span data-lang="ENG" style="display: none;">
+                    Based on the entered information, <strong class="text-primary">LocaAI</strong> analyzes the latest big data to <br>
+                    predict the <strong>long-term survival rate</strong> of the location and provides a <strong>customized report</strong> in PDF format.
+                  </span>
+                  <span data-lang="ESP" style="display: none;">
+                    Con la información ingresada, <strong class="text-primary">LocaAI</strong> analiza los datos más recientes <br>
+                    para predecir la <strong>tasa de supervivencia a largo plazo</strong> del lugar y proporciona un <strong>informe personalizado</strong> en formato PDF.
+                  </span>
                 </p>
 
-                <div class="alert alert-primary mt-4" role="alert">
-                <strong>복잡한 상권 분석, 이제는 LocaAI와 함께 손쉽게 시작하세요!</strong><br>
-                데이터 기반의 의사결정으로 성공적인 창업을 응원합니다.
+                <!-- 캐치프레이즈 -->
+                <div class="alert alert-primary mt-4 text-center" role="alert">
+                  <span data-lang="KOR">
+                    <strong>이제 감이 아닌, 데이터로 시작하세요! LocaAI가 함께합니다.</strong><br>
+                    <strong>빅데이터 기반의 상권분석으로 성공적인 창업을 도와드립니다.</strong>
+                  </span>
+                  <span data-lang="ENG" style="display: none;">
+                    <strong>Start with data, not just intuition! LocaAI is here with you.</strong><br>
+                    <strong>We help you launch successfully with big data-driven commercial area analysis.</strong>
+                  </span>
+                  <span data-lang="ESP" style="display: none;">
+                    <strong>¡Empieza con datos, no solo con intuición! LocaAI está contigo.</strong><br>
+                    <strong>Te ayudamos a emprender con éxito mediante análisis de zonas comerciales basados en big data.</strong>
+                  </span>
                 </div>
-
-                <p class="text-muted text-center mt-4"><em>– 상권 분석 AI, LocaAI –</em></p>
-
-            </div>
-            </div>
-        </div>
-
-        </div>
-    </div>
-    </div>
-
-
+            
+              </div> <!-- 설명 영역 -->
+            </div> <!-- card-body -->
+          </div> <!-- card -->
+        </div> <!-- accordion-body -->
+      </div> <!-- accordion-collapse -->
+    </div> <!-- accordion-item -->
 
     <!-- 2. 회원가입 및 로그인 -->
     <div class="accordion-item">
       <h2 class="accordion-header" id="headingTwo">
         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
-          2. 회원가입 및 로그인
+          <span data-lang="KOR">2. 회원가입 및 로그인</span>
+          <span data-lang="ENG" style="display: none;">2. Sign Up and Login</span>
+          <span data-lang="ESP" style="display: none;">2. Registro e Inicio de Sesión</span>
         </button>
       </h2>
       <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#guideAccordion">
         <div class="accordion-body">
-          <ol class="text-start mx-auto" style="max-width: 600px;">
-            <li>상단 우측 <strong>“Sign Up” 또는 “Login”</strong> 클릭</li>
-            <li>간단한 정보 입력 후 로그인 완료</li>
-          </ol>
+
+          <div class="card border-0 shadow-sm mx-auto" style="max-width: 1000px;">
+            <div class="card-body text-center">
+
+              <img src="{% static 'assets/img/guide02.png' %}" class="img-fluid rounded mb-4" alt="회원가입 이미지" style="max-width: 500px;">
+
+              <h4 class="card-title mb-3">
+                <i class="bi bi-person-check-fill text-primary me-2"></i>
+                <span data-lang="KOR"><strong class="text-primary">Loca AI</strong> 회원가입 안내</span>
+                <span data-lang="ENG" style="display: none;"><strong class="text-primary">Loca AI</strong> Sign-Up Guide</span>
+                <span data-lang="ESP" style="display: none;"><strong class="text-primary">Loca AI</strong> Guía de Registro</span>
+              </h4>
+
+              <p class="text-muted mb-3">
+                <span data-lang="KOR">누구나 3단계로 간편하게 가입할 수 있습니다.</span>
+                <span data-lang="ENG" style="display: none;">Anyone can easily sign up in 3 simple steps.</span>
+                <span data-lang="ESP" style="display: none;">Cualquiera puede registrarse fácilmente en 3 simples pasos.</span>
+              </p>
+              <hr class="my-4">
+
+              <!-- 설명 영역 -->
+              <div class="text-start mx-auto" style="max-width: 1000px;">
+
+                <h5 class="mb-2">
+                  <i class="bi bi-box-arrow-in-right text-success me-2"></i>
+                  <span data-lang="KOR">가입 절차 안내</span>
+                  <span data-lang="ENG" style="display: none;">Sign-Up Procedure Guide</span>
+                  <span data-lang="ESP" style="display: none;">Guía del Proceso de Registro</span>
+                </h5>
+
+                <ol class="mb-4">
+                  <li>
+                    <span data-lang="KOR">상단 우측 <strong>“Get Started”</strong> 클릭 후 <strong>“Sign Up”</strong> 선택</span>
+                    <span data-lang="ENG" style="display: none;">Click <strong>“Get Started”</strong> at the top right, then select <strong>“Sign Up”</strong></span>
+                    <span data-lang="ESP" style="display: none;">Haga clic en <strong>“Get Started”</strong> en la esquina superior derecha, luego seleccione <strong>“Sign Up”</strong></span>
+                  </li>
+                  <li>
+                    <span data-lang="KOR"><strong>Username, Email, Password</strong> 입력</span>
+                    <span data-lang="ENG" style="display: none;">Enter <strong>Username, Email, Password</strong></span>
+                    <span data-lang="ESP" style="display: none;">Ingrese <strong>Nombre de usuario, correo electrónico, contraseña</strong></span>
+                  </li>
+                  <li>
+                    <span data-lang="KOR">가입 후 <strong>즉시 서비스 이용 가능</strong></span>
+                    <span data-lang="ENG" style="display: none;">You can start using the service immediately after signing up</span>
+                    <span data-lang="ESP" style="display: none;">Puede comenzar a usar el servicio inmediatamente después de registrarse</span>
+                  </li>
+                </ol>
+
+                <div class="alert alert-primary mt-4 text-center" role="alert">
+                  <span data-lang="KOR">
+                    복잡한 인증 없이, <strong>3가지 정보만 입력하면 간단하게 가입 완료!</strong><br>
+                  </span>
+                  <span data-lang="ENG" style="display: none;">
+                    No complicated verification needed, <strong>just enter 3 pieces of information to complete sign-up easily!</strong><br>
+                  </span>
+                  <span data-lang="ESP" style="display: none;">
+                    Sin verificación complicada, <strong>¡solo ingrese 3 datos para completar el registro fácilmente!</strong><br>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -151,17 +279,105 @@
     <div class="accordion-item">
       <h2 class="accordion-header" id="headingThree">
         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
-          3. 상권 정보 입력 방법
+          <span data-lang="KOR">3. 상권 정보 입력 방법</span>
+          <span data-lang="ENG" style="display: none;">3. How to Enter Commercial Area Information</span>
+          <span data-lang="ESP" style="display: none;">3. Cómo ingresar información de la zona comercial</span>
         </button>
       </h2>
       <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#guideAccordion">
         <div class="accordion-body">
-          <ol class="text-start mx-auto" style="max-width: 600px;">
-            <li>업종을 선택</li>
-            <li>주소 입력 후 <strong>검색</strong> 클릭</li>
-            <li>점포 면적과 주류 판매 여부 입력</li>
-            <li><strong>“상권 분석하기”</strong> 클릭</li>
-          </ol>
+          <div class="card border-0 shadow-sm mx-auto" style="max-width: 1000px;">
+            <div class="card-body text-center">
+
+              <!-- 📷 이미지 -->
+              <img src="{% static 'assets/img/guide03.png' %}" 
+                class="rounded mb-4" 
+                alt="상권 정보 입력 화면 예시" 
+                style="width: 100%; height: auto; object-fit: contain;">
+
+              <!-- 🔹 제목 -->
+              <h4 class="card-title mb-3">
+                <i class="bi bi-pencil-square text-primary me-2"></i>
+                <span data-lang="KOR"><strong class="text-primary">상권 정보</strong> 입력 방법</span>
+                <span data-lang="ENG" style="display: none;"><strong class="text-primary">Commercial Area Information</strong> Entry Method</span>
+                <span data-lang="ESP" style="display: none;"><strong class="text-primary">Información de la Zona Comercial</strong> Método de Ingreso</span>
+              </h4>
+
+              <p class="text-muted mb-3">
+                <span data-lang="KOR">아래 항목들을 입력하면 상권 분석이 시작됩니다.</span>
+                <span data-lang="ENG" style="display: none;">Enter the items below to start the commercial area analysis.</span>
+                <span data-lang="ESP" style="display: none;">Ingrese los elementos a continuación para comenzar el análisis de la zona comercial.</span>
+              </p>
+
+              <hr class="my-4">
+
+              <!-- 설명 -->
+              <div class="text-start mx-auto" style="max-width: 1000px;">
+                <h5 class="mb-2">
+                  <i class="bi bi-info-circle-fill text-success me-2"></i>
+                  <span data-lang="KOR">입력 항목 안내</span>
+                  <span data-lang="ENG" style="display: none;">Input Item Guide</span>
+                  <span data-lang="ESP" style="display: none;">Guía de Elementos de Entrada</span>
+                </h5>
+
+                <ol class="mb-4" style="line-height: 1.8;">
+                  <li>
+                    <span data-lang="KOR"><strong>업종</strong>을 선택해주세요.</span>
+                    <span data-lang="ENG" style="display: none;">Please select the <strong>business type</strong>.</span>
+                    <span data-lang="ESP" style="display: none;">Por favor, seleccione el <strong>tipo de negocio</strong>.</span>
+                  </li>
+                  <li>
+                    <span data-lang="KOR"><strong>검색</strong> 버튼을 누른 후 <strong>주소</strong>를 입력해주세요.</span>
+                    <span data-lang="ENG" style="display: none;">After clicking the <strong>search</strong> button, please enter the <strong>address</strong>.</span>
+                    <span data-lang="ESP" style="display: none;">Después de hacer clic en el botón de <strong>búsqueda</strong>, ingrese la <strong>dirección</strong>.</span>
+                  </li>
+                  <li>
+                    <span data-lang="KOR"><strong>점포 면적</strong>을 숫자로 입력해주세요.</span>
+                    <span data-lang="ENG" style="display: none;">Please enter the <strong>store area</strong> as a number.</span>
+                    <span data-lang="ESP" style="display: none;">Por favor, ingrese el <strong>área del local</strong> en números.</span>
+                  </li>
+                  <li>
+                    <span data-lang="KOR"><strong>주류 판매 여부</strong>를 선택해주세요.</span>
+                    <span data-lang="ENG" style="display: none;">Please select whether <strong>alcohol sales</strong> are available.</span>
+                    <span data-lang="ESP" style="display: none;">Por favor, seleccione si hay <strong>venta de alcohol</strong>.</span>
+                  </li>
+                  <li>
+                    <span data-lang="KOR">모든 정보를 입력한 후 <strong>“상권 분석하기”</strong> 버튼을 클릭하면 분석이 시작됩니다.</span>
+                    <span data-lang="ENG" style="display: none;">After entering all information, click the <strong>“Analyze Commercial Area”</strong> button to start the analysis.</span>
+                    <span data-lang="ESP" style="display: none;">Después de ingresar toda la información, haga clic en el botón <strong>“Analizar Zona Comercial”</strong> para iniciar el análisis.</span>
+                  </li>
+                </ol>
+
+                <!-- 알림 -->
+                <div class="alert alert-primary mt-4 text-center" role="alert">
+                  <span data-lang="KOR">
+                    <strong>상권 분석 서비스는 로그인 후 이용 가능합니다.</strong><br>
+                    지금 로그인하고 <strong>LocaAI</strong>의 분석 서비스를 바로 이용해보세요!<br>
+                    <a href="{% url 'custom_auth:login' %}?next={{ request.path }}" 
+                      class="text-decoration-underline fw-semibold text-primary">
+                      로그인 하러 가기 <i class="bi bi-arrow-right-circle ms-1"></i>
+                    </a>
+                  </span>
+                  <span data-lang="ENG" style="display: none;">
+                    <strong>The commercial area analysis service is available after login.</strong><br>
+                    Log in now and start using <strong>LocaAI</strong>'s analysis service right away!<br>
+                    <a href="{% url 'custom_auth:login' %}?next={{ request.path }}" 
+                      class="text-decoration-underline fw-semibold text-primary">
+                      Go to Login <i class="bi bi-arrow-right-circle ms-1"></i>
+                    </a>
+                  </span>
+                  <span data-lang="ESP" style="display: none;">
+                    <strong>El servicio de análisis de zona comercial está disponible después de iniciar sesión.</strong><br>
+                    ¡Inicie sesión ahora y comience a usar el servicio de análisis de <strong>LocaAI</strong> de inmediato!<br>
+                    <a href="{% url 'custom_auth:login' %}?next={{ request.path }}" 
+                      class="text-decoration-underline fw-semibold text-primary">
+                      Ir a Iniciar Sesión <i class="bi bi-arrow-right-circle ms-1"></i>
+                    </a>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -211,76 +427,222 @@
         </div>
       </div>
     </div>
-
-    <!-- 7. FAQ -->
+    
+    <!-- 7. 요금제 및 이용 제한 안내 -->
     <div class="accordion-item">
-      <h2 class="accordion-header" id="headingSeven">
-        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSeven">
-          7. 자주 묻는 질문 (FAQ)
+      <h2 class="accordion-header" id="headingNine">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNine">
+          7. 이용 플랜 안내
         </button>
       </h2>
-      <div id="collapseSeven" class="accordion-collapse collapse" data-bs-parent="#guideAccordion">
+
+      <div id="collapseNine" class="accordion-collapse collapse" data-bs-parent="#guideAccordion">
         <div class="accordion-body">
-          <ul class="text-start mx-auto" style="max-width: 600px;">
-            <li><strong>분석은 무료인가요?</strong> → 네! 로그인 시 무료로 이용 가능</li>
-            <li><strong>PDF 오류가 생겨요</strong> → 크롬 또는 엣지 브라우저 권장</li>
-          </ul>
-        </div>
+
+          <div class="card border-0 shadow-sm mx-auto" style="max-width: 1200px;">
+            <div class="card-body">
+
+              <h4 class="card-title mb-3">
+                <i class="bi bi-cash-coin text-primary me-2"></i>
+                <strong class="text-primary">Loca AI</strong> 이용 플랜 & 혜택
+              </h4>
+
+              <p class="text-muted mb-3">
+                비즈니스에 꼭 맞는 요금제를 선택해 상권 분석 기능을 효율적으로 활용해보세요.
+              </p>
+
+              <hr class="my-4">
+
+              <div class="row row-cols-1 row-cols-md-4 g-4 text-center">
+
+                <!-- Free Plan -->
+                <div class="col">
+                  <div class="border rounded p-4 h-100 shadow-sm">
+                    <h5 class="text-success">Free Plan</h5>
+                    <h3 class="my-2">$0 <small class="text-muted fs-6">/ mo</small></h3>
+                    <div class="my-3">
+                      <i class="bi bi-box-seam fs-1 text-success"></i>
+                    </div>
+                    <p class="mb-1 fw-medium">Newsletter 정기발송</p>
+                    <p class="text-muted">상권분석 <span class="text-success fw-bold">1회</span></p>
+                    <p class="text-muted"><del>보고서출력</del></p>
+                    <p class="text-muted"><del>이전 분석기록 조회</del></p>
+                  </div>
+                </div>
+
+                <!-- Starter Plan -->
+                <div class="col">
+                  <div class="border rounded p-4 h-100 shadow-sm position-relative">
+                    <h5 class="text-info">Starter Plan</h5>
+                    <h3 class="my-2">$9.9 <small class="text-muted fs-6">/ mo</small></h3>
+                    <div class="my-3">
+                      <i class="bi bi-send fs-1 text-info"></i>
+                    </div>
+                    <p class="mb-1 fw-medium">Newsletter 정기발송</p>
+                    <p>상권분석 <span class="text-info fw-bold">10회</span></p>
+                    <p>보고서출력 <span class="fw-bold">5회</span></p>
+                    <p class="text-muted"><del>이전 분석기록 조회</del></p>
+                  </div>
+                </div>
+
+                <!-- Business Plan -->
+                <div class="col">
+                  <div class="border rounded p-4 h-100 shadow-sm">
+                    <h5 class="text-warning">Business Plan</h5>
+                    <h3 class="my-2">$19 <small class="text-muted fs-6">/ mo</small></h3>
+                    <div class="my-3">
+                      <i class="bi bi-airplane fs-1 text-warning"></i>
+                    </div>
+                    <p class="mb-1 fw-medium">Newsletter 정기발송</p>
+                    <p>상권분석 <span class="text-warning fw-bold">30회</span></p>
+                    <p>보고서출력 <span class="fw-bold">10회</span></p>
+                    <p>최근 <span class="fw-bold text-warning">5회</span> 이전 <br>분석기록 조회</p>
+                  </div>
+                </div>
+
+                <!-- Ultimate Plan -->
+                <div class="col">
+                  <div class="border rounded p-4 h-100 shadow-sm">
+                    <h5 class="text-primary">Ultimate Plan</h5>
+                    <h3 class="my-2">$39 <small class="text-muted fs-6">/ mo</small></h3>
+                    <div class="my-3">
+                      <i class="bi bi-rocket-takeoff fs-1 text-primary"></i>
+                    </div>
+                    <p class="mb-1 fw-medium">Newsletter 정기발송</p>
+                    <p>상권분석 <span class="text-primary fw-bold">무제한</span></p>
+                    <p>보고서출력 <span class="text-primary fw-bold">무제한</span></p>
+                    <p>최근 <span class="fw-bold text-primary">10회</span> 이전 <br>분석기록 조회</p>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+       </div>
       </div>
     </div>
 
-    <!-- 9. 요금제 및 이용 제한 안내 -->
+    <!-- 8. 자주 묻는 질문 (FAQ) -->
     <div class="accordion-item">
-    <h2 class="accordion-header" id="headingNine">
-        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNine">
-        9. 요금제 및 이용 제한 안내
+      <h2 class="accordion-header" id="headingSeven">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSeven">
+          8. 자주 묻는 질문 (FAQ)
         </button>
-    </h2>
-    <div id="collapseNine" class="accordion-collapse collapse" data-bs-parent="#guideAccordion">
-        <div class="accordion-body text-start mx-auto" style="max-width: 600px;">
-        <table class="table table-bordered">
-            <thead>
-            <tr>
-                <th>플랜</th>
-                <th>뉴스레터 정기발송</th>
-                <th>상권분석</th>
-                <th>보고서 출력</th>
-                <th>이전 분석기록 조회</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>Free Plan</td>
-                <td>정기발송</td>
-                <td>1회</td>
-                <td>–</td>
-                <td>–</td>
-            </tr>
-            <tr>
-                <td>Starter Plan</td>
-                <td>정기발송</td>
-                <td>10회</td>
-                <td>5회</td>
-                <td>–</td>
-            </tr>
-            <tr>
-                <td>Business Plan</td>
-                <td>정기발송</td>
-                <td>30회</td>
-                <td>10회</td>
-                <td>최근 5회</td>
-            </tr>
-            <tr>
-                <td>Ultimate Plan</td>
-                <td>정기발송 무제한</td>
-                <td>무제한</td>
-                <td>무제한</td>
-                <td>최근 10회</td>
-            </tr>
-            </tbody>
-        </table>
+      </h2>
+
+      <div id="collapseSeven" class="accordion-collapse collapse" data-bs-parent="#guideAccordion">
+        <div class="accordion-body">
+
+          <div class="card border-0 shadow-sm mx-auto" style="max-width: 1000px;">
+            <div class="card-body text-start">
+
+              <h4 class="card-title mb-3 text-center">
+                <i class="bi bi-question-diamond-fill text-primary me-2"></i>
+                자주 묻는 질문 (FAQ)
+              </h4>
+
+              <p class="text-muted mb-3 text-center">
+                자주 묻는 질문을 통해 궁금한 내용을 빠르게 확인해보세요.
+              </p>
+
+              <hr class="my-4">
+
+              <!-- FAQ 항목들 -->
+              <div class="faq-list">
+
+                <!-- FAQ 1 -->
+                <div class="mb-4 p-3 border rounded shadow-sm bg-light">
+                  <h5 class="fw-semibold text-primary mb-2">
+                    <i class="bi bi-lightbulb-fill me-2 text-warning"></i>
+                    LocaAI는 어떤 방식으로 상권 분석을 하나요?
+                  </h5>
+                  <div class="ps-4 text-dark">
+                    공공 데이터, 유동 인구, 업종 분포, 매출 예측 등의 <strong>다양한 빅데이터를 AI가 학습</strong>하여 <br>
+                    <strong>해당 입지의 상업적 가능성과 생존률</strong>을 예측합니다.
+                  </div>
+                </div>
+
+                <!-- FAQ 2 -->
+                <div class="mb-4 p-3 border rounded shadow-sm bg-light">
+                  <h5 class="fw-semibold text-primary mb-2">
+                    <i class="bi bi-bar-chart-fill me-2 text-info"></i>
+                    정확도는 얼마나 되나요?
+                  </h5>
+                  <div class="ps-4 text-dark">
+                    <strong>평균 80~90% </strong>수준의 예측 정확도를 유지하고 있으며, <strong>최신 상권 데이터와 머신러닝 알고리즘 기반</strong>으로 분석됩니다.
+                  </div>
+                </div>
+
+                <!-- FAQ 3 -->
+                <div class="mb-4 p-3 border rounded shadow-sm bg-light">
+                  <h5 class="fw-semibold text-primary mb-2">
+                    <i class="bi bi-stopwatch-fill me-2 text-warning"></i>
+                    분석 결과가 나오기까지 얼마나 걸리나요?
+                  </h5>
+                  <div class="ps-4 text-dark">
+                    상권 분석은 평균적으로 <strong>30초 이내</strong>에 완료되며, <strong>복잡한 데이터 입력 시 다소 시간이 소요</strong>될 수 있습니다. <br>
+                    결과가 생성되면 즉시 화면에 표시되며, PDF로 바로 저장 가능합니다.
+                  </div>
+                </div>
+
+                <!-- FAQ 4 -->
+                <div class="mb-4 p-3 border rounded shadow-sm bg-light">
+                  <h5 class="fw-semibold text-primary mb-2">
+                    <i class="bi bi-file-earmark-pdf-fill me-2 text-danger"></i>
+                    분석 리포트는 어떻게 받을 수 있나요?
+                  </h5>
+                  <div class="ps-4 text-dark">
+                    업종, 주소, 점포 면적, 주류 판매 여부를 입력하고 상권 분석하기 버튼을 클릭하면 <br>
+                    <strong>맞춤형 리포트</strong>가 자동 생성되며 <strong>PDF</strong> 다운로드도 가능합니다.
+                  </div>
+                </div>
+
+                <!-- FAQ 5 -->
+                <div class="mb-4 p-3 border rounded shadow-sm bg-light">
+                  <h5 class="fw-semibold text-primary mb-2">
+                    <i class="bi bi-person-x-fill me-2 text-secondary"></i>
+                    회원가입 없이도 분석이 가능한가요?
+                  </h5>
+                  <div class="ps-4 text-dark">
+                    서비스의 주요 기능인 <strong>상권 분석 및 PDF 리포트 생성</strong>은 <strong>로그인 후 이용</strong>하실 수 있습니다.<br>
+                    다만, <strong class="text-primary">[Data] </strong>페이지에서는 회원가입 없이도 상권 관련 통계 자료를 열람하실 수 있습니다.
+                  </div>
+                </div>
+
+                <!-- FAQ 6 -->
+                <div class="mb-4 p-3 border rounded shadow-sm bg-light">
+                  <h5 class="fw-semibold text-primary mb-2">
+                    <i class="bi bi-tags-fill me-2 text-info"></i>
+                    요금제는 어떻게 구성되어 있나요?
+                  </h5>
+                  <div class="ps-4 text-dark">
+                    무료부터 무제한 플랜까지 있으며, <strong>분석 횟수 및 출력 횟수 등에 따라 차등</strong> 제공됩니다. <br>
+                    <button
+                      data-bs-target="#collapseNine"
+                      data-bs-toggle="collapse"
+                      data-bs-parent="#guideAccordion"
+                      class="accordion-button bg-transparent border-0 p-0 fw-semibold text-primary text-decoration-underline">
+                      7. 이용 플랜 안내 에서 바로 확인해보세요 <i class="bi bi-arrow-right-circle ms-1"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- FAQ 7 -->
+                <div class="mb-4 p-3 border rounded shadow-sm bg-light">
+                  <h5 class="fw-semibold text-primary mb-2">
+                    <i class="bi bi-journal-check me-2 text-primary"></i>
+                    내 분석 기록은 어디서 확인하나요?
+                  </h5>
+                  <div class="ps-4 text-dark">
+                    <strong>Business Plan 이상 요금제</strong> 이용 시, 분석 기록 조회가 가능합니다. <br>
+                    로그인 후 <strong class="text-primary">[Services]</strong> 화면에서 <strong>‘내 최근 분석기록’</strong>을 확인하실 수 있습니다.
+                  </div>
+                </div>
+              </div><!-- /faq-list -->
+            </div>
+          </div>
         </div>
-    </div>
+      </div>
     </div>
 
 
@@ -293,13 +655,42 @@
       </h2>
       <div id="collapseEight" class="accordion-collapse collapse" data-bs-parent="#guideAccordion">
         <div class="accordion-body">
-        궁금한 점은 
-        <a href="{% url 'border:inquiry_list' %}" class="btn btn-outline-primary btn-sm">
-            문의 게시판으로 이동
-        </a> 해주세요.
+          <div class="card border-0 shadow-sm mx-auto" style="max-width: 1000px;">
+            <div class="card-body text-center">
+
+              <!-- 🔹 제목 -->
+              <h4 class="card-title mb-3">
+                <i class="bi bi-question-circle-fill text-primary me-2"></i>
+                <strong class="text-primary">LocaAI</strong> 문의하기
+              </h4>
+
+              <p class="text-muted mb-3">
+                궁금한 점이 있다면 언제든지 문의해주세요.
+              </p>
+
+              <hr class="my-4">
+
+              <!-- 설명 -->
+              <div class="text-start mx-auto" style="max-width: 1000px;">
+                <h5 class="mb-3">
+                  <i class="bi bi-envelope-open-fill text-success me-2"></i>
+                  문의 방법 안내
+                </h5>
+                <p class="mb-4">
+                  서비스 이용 중 불편한 점이나 궁금한 사항은 아래 버튼을 통해 <strong>문의 게시판</strong>에 글을 남겨주세요.<br>
+                  담당자가 빠르게 확인 후 답변드리겠습니다.
+                </p>
+
+                <a href="{% url 'border:inquiry_list' %}" class="btn btn-outline-primary mt-2">
+                  문의 게시판으로 이동 <i class="bi bi-arrow-right-circle ms-1"></i>
+                </a>
+
+            </div>
+          </div>
         </div>
       </div>
     </div>
+
   </div>
 
   <!-- 알림 -->
@@ -325,4 +716,8 @@
     font-size: 1rem;
   }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/accordion-scroll.js' %}"></script>
 {% endblock %}

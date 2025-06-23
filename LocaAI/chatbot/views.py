@@ -8,6 +8,9 @@ from rest_framework.decorators import api_view
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.utils.crypto import get_random_string
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from AI_Analyzer.models import AnalysisResult
 
 
 @login_required
@@ -43,6 +46,7 @@ def chatbot_view(request):
 
 
 # 새 채팅 세션 생성 API
+@csrf_exempt
 @api_view(["POST"])
 def create_session(request, user_id):
     try:
@@ -74,6 +78,7 @@ def create_session(request, user_id):
 
 
 # 세션 제목 업데이트 API
+@csrf_exempt
 @api_view(["PATCH"])
 def update_session_title(request, user_id, session_id):
     try:
@@ -106,6 +111,7 @@ def update_session_title(request, user_id, session_id):
         )
 
 
+@csrf_exempt
 @api_view(["DELETE"])
 def delete_session(request, user_id, session_id):
     try:
@@ -119,6 +125,7 @@ def delete_session(request, user_id, session_id):
         )
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class ChatLogView(APIView):
     def get(self, request, user_id, session_id):
         try:
@@ -133,13 +140,22 @@ class ChatLogView(APIView):
                         "status": "ok",
                         "session_id": session.session_id,
                         "title": session.title,
-                        "log": chatlog.log,
+                        "chat_log": chatlog.log,
+                        "log": chatlog.log,  # 호환성을 위해 두 필드 모두 제공
                         "created_at": session.created_at,
                     }
                 )
             except ChatLog.DoesNotExist:
                 return Response(
-                    {"status": "ok", "log": [], "message": "아직 대화 로그가 없습니다."}
+                    {
+                        "status": "ok", 
+                        "session_id": session.session_id,
+                        "title": session.title,
+                        "chat_log": [], 
+                        "log": [], 
+                        "message": "아직 대화 로그가 없습니다.",
+                        "created_at": session.created_at,
+                    }
                 )
 
         except ChatSession.DoesNotExist:
@@ -149,6 +165,7 @@ class ChatLogView(APIView):
             )
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class SessionListView(APIView):
     def get(self, request, user_id):
         try:
@@ -197,3 +214,68 @@ class SessionListView(APIView):
                 {"status": "error", "message": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+
+class ResultSessionListView(APIView):
+    def get(self, request, result_id):
+        try:
+            sessions = ChatSession.objects.filter(analysis_result_id=result_id).order_by(
+                "-lastload_at", "-created_at"
+            )
+            result = []
+            for session in sessions:
+                try:
+                    chat_log = session.log
+                    latest_message = chat_log.log[-1] if chat_log.log else None
+                    preview = (
+                        latest_message["content"][:50] + "..."
+                        if latest_message
+                        else "새로운 대화를 시작해보세요..."
+                    )
+                except:
+                    preview = "새로운 대화를 시작해보세요..."
+
+                summary = (
+                    ChatMemory.objects.filter(session=session, memory_type="summary")
+                    .order_by("-created_at")
+                    .first()
+                )
+
+                result.append(
+                    {
+                        "session_id": session.session_id,
+                        "title": session.title or "새 채팅",
+                        "preview": preview,
+                        "created_at": session.created_at.isoformat(),
+                        "lastload_at": session.lastload_at.isoformat(),
+                        "latest_summary": summary.content["text"] if summary else None,
+                    }
+                )
+            return Response({"status": "ok", "count": len(result), "sessions": result})
+        except Exception as e:
+            return Response(
+                {"status": "error", "message": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+@api_view(["POST"])
+def result_create_session(request, user_id, result_id):
+    try:
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        user = User.objects.get(id=user_id)
+        analysis_result = AnalysisResult.objects.get(pk=result_id)
+        session = ChatSession.objects.create(user=user, analysis_result=analysis_result)
+        return Response({
+            "status": "ok",
+            "session_id": session.session_id,
+            "title": session.title,
+            "created_at": session.created_at.isoformat(),
+        })
+    except User.DoesNotExist:
+        return Response({"status": "error", "message": "사용자를 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+    except AnalysisResult.DoesNotExist:
+        return Response({"status": "error", "message": "분석 결과를 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({"status": "error", "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -1,4 +1,3 @@
-#LocaAI/smtp/serializers.py
 from rest_framework import serializers
 from .models import EmailMessage,NewsletterSubscriber
 from django.contrib.auth import get_user_model
@@ -95,6 +94,7 @@ class NewsletterSubscribeSerializer(serializers.ModelSerializer):
             print("📬 환영 메일 전송 시도 완료")
 
             return subscriber
+
         except NewsletterSubscriber.DoesNotExist:
             print("🆕 신규 구독자 생성 중")
             new_subscriber = NewsletterSubscriber.objects.create(
@@ -107,13 +107,6 @@ class NewsletterSubscribeSerializer(serializers.ModelSerializer):
             print("📬 환영 메일 전송 완료 (신규)")
 
             return new_subscriber
-        
-        except NewsletterSubscriber.DoesNotExist:
-            return NewsletterSubscriber.objects.create(
-                email=email,
-                name=name,
-                user=matching_user
-            )
 
 
 

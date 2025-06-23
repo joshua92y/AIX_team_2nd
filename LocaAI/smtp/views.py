@@ -75,9 +75,6 @@ class NewsletterSubscribeView(APIView):
         serializer = NewsletterSubscribeSerializer(data=request.data, context={"request": request})
         if serializer.is_valid():
             subscriber = serializer.save()
-            print(f"📧 send_subscription_email 호출 with: request={request}, subscriber={subscriber}")
-            send_subscription_email(request, subscriber)
-            print("✅ 메일 함수 실행 완료")
             print("==== 뉴스레터 구독 처리 완료 ====")
             return Response(
                 {'message': f"{subscriber.email} 님, 구독이 완료되었습니다."},

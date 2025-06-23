@@ -37,7 +37,8 @@ load_dotenv(dotenv_path=BASE_DIR / ".env")
 # 비밀 키 (환경변수에서 로드, 프로덕션에서는 반드시 설정)
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-your-secret-key")
 FERNET_KEY = os.getenv("FERNET_KEY")
-print(f"[INFO] 비밀 키 로드: {'설정됨' if FERNET_KEY else '없음'}")
+if not FERNET_KEY:
+    raise ValueError("FERNET_KEY 환경변수가 설정되지 않았습니다. .env 파일에 FERNET_KEY를 추가해주세요.")
 
 # 디버그 모드 (프로덕션에서는 반드시 False)
 DEBUG = os.getenv("DEBUG", "True").lower() in ("true", "1", "yes", "on")
@@ -207,23 +208,45 @@ elif platform.system() == "Darwin":  # macOS
 # 정적 파일 및 미디어 설정
 # ============================================================================
 
-# 정적 파일 설정
 STATIC_URL = "static/"
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
+STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# Static files finders
 STATICFILES_FINDERS = [
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
 ]
 
-# 미디어 파일 설정
-MEDIA_URL = "media/"
-MEDIA_ROOT = BASE_DIR / "media"
+# S3 미디어 스토리지 설정
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME", "aix-701-14")
+AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", "ap-northeast-3")
+AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
 
+MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
+
+STORAGES = {
+    "default": {
+        "BACKEND": "config.storage_backends.MediaStorage",
+        "OPTIONS": {
+            "access_key": AWS_ACCESS_KEY_ID,
+            "secret_key": AWS_SECRET_ACCESS_KEY,
+            "bucket_name": AWS_STORAGE_BUCKET_NAME,
+            "region_name": AWS_S3_REGION_NAME,
+            "default_acl": None,
+            "file_overwrite": False,
+            "querystring_auth": False,
+            "location": "media",  # 버킷 내 media/ 하위로 저장됨
+        },
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
+print("S3 KEY:", AWS_ACCESS_KEY_ID)
+print("S3 BUCKET:", AWS_STORAGE_BUCKET_NAME)
 # ============================================================================
 # 국제화 및 현지화 설정
 # ============================================================================
@@ -252,6 +275,17 @@ USE_TZ = True
 LOGIN_URL = "custom_auth:login"
 LOGIN_REDIRECT_URL = "border:inquiry_list"
 LOGOUT_REDIRECT_URL = "border:inquiry_list"
+
+# CSRF 설정
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]
+
+# 세션 설정
+SESSION_COOKIE_AGE = 86400  # 24시간
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 # ============================================================================
 # 외부 서비스 API 설정

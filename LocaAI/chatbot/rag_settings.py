@@ -1,7 +1,7 @@
 # LocaAI/chatbot/rag_settings.py
 # ✅ RAG 전반 설정
 RAG_SETTINGS = {
-    "COLLECTIONS": ["workpeople_zones"],  # 필요시 "zone_rent" 등 추가
+    "COLLECTIONS": ["workpeople_zones", "analysis_result_consultation"],  # 필요시 "zone_rent" 등 추가
     "EMBEDDING_MODEL": "upskyy/bge-m3-korean",
     "LLM_MODEL": "gpt-4o-mini",  # LLM 모델명도 설정으로 관리
     "MEMORY_K": 5,
