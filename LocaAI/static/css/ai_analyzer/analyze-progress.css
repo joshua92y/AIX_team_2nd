@@ -1,0 +1,124 @@
+/* Progress Bar 강화 CSS - 완전히 채워지도록 */
+.progress-bar {
+  height: 100% !important;
+  min-height: 100% !important;
+  max-height: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: inherit !important;
+  line-height: 1 !important;
+  box-sizing: border-box !important;
+}
+
+.progress-bar span {
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  color: white !important;
+  font-weight: 500 !important;
+}
+
+/* Progress 컨테이너 설정 */
+.progress {
+  overflow: hidden !important;
+  border-radius: 8px !important;
+  background-color: #e9ecef !important;
+}
+
+/* 분석 진행 상황 스타일 */
+.analysis-progress {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  padding: 2rem;
+  margin-top: 1rem;
+  border: 2px solid rgba(102, 126, 234, 0.2);
+}
+
+.progress-step {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 10px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.progress-step.active {
+  background: rgba(102, 126, 234, 0.1);
+  border-left: 4px solid #667eea;
+}
+
+.progress-step.completed {
+  background: rgba(34, 197, 94, 0.1);
+  border-left: 4px solid #22c55e;
+}
+
+.progress-step.error {
+  background: rgba(239, 68, 68, 0.1);
+  border-left: 4px solid #ef4444;
+}
+
+.progress-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+  font-size: 16px;
+}
+
+.progress-step.active .progress-icon {
+  background: #667eea;
+  color: white;
+  animation: pulse 1.5s infinite;
+}
+
+.progress-step.completed .progress-icon {
+  background: #22c55e;
+  color: white;
+}
+
+.progress-step.error .progress-icon {
+  background: #ef4444;
+  color: white;
+}
+
+.progress-step:not(.active):not(.completed):not(.error) .progress-icon {
+  background: #e5e7eb;
+  color: #9ca3af;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.progress-text {
+  flex: 1;
+}
+
+.progress-title {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.progress-detail {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.overall-progress {
+  margin-bottom: 1.5rem;
+}
+
+.progress-bar {
+  height: 8px;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+} 

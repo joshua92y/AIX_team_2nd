@@ -1,0 +1,58 @@
+/* 챗봇 마크다운 스타일링 */
+#chatMessages .bg-white h1,
+#chatMessages .bg-white h2,
+#chatMessages .bg-white h3,
+#chatMessages .bg-white h4,
+#chatMessages .bg-white h5,
+#chatMessages .bg-white h6 {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #1e3a8a;
+}
+
+#chatMessages .bg-white p {
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+
+#chatMessages .bg-white ul,
+#chatMessages .bg-white ol {
+  margin-bottom: 0.5rem;
+  padding-left: 1.2rem;
+}
+
+#chatMessages .bg-white li {
+  margin-bottom: 0.2rem;
+}
+
+#chatMessages .bg-white strong {
+  font-weight: 600;
+  color: #1e40af;
+}
+
+#chatMessages .bg-white code {
+  background-color: #f1f5f9;
+  padding: 0.1rem 0.3rem;
+  border-radius: 0.25rem;
+  font-size: 0.85em;
+  color: #dc2626;
+}
+
+#chatMessages .bg-white pre {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  overflow-x: auto;
+  margin: 0.5rem 0;
+}
+
+#chatMessages .bg-white blockquote {
+  border-left: 4px solid #3b82f6;
+  background-color: #f8fafc;
+  padding: 0.5rem 1rem;
+  margin: 0.5rem 0;
+  font-style: italic;
+  color: #475569;
+} 
