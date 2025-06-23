@@ -39,6 +39,7 @@ class CustomQdrantRetriever(BaseRetriever):
 @lru_cache
 def get_qdrant_client() -> QdrantClient:
     """QdrantClient 인스턴스 생성"""
+    print(settings.QDRANT_URL)
     return QdrantClient(url=settings.QDRANT_URL, api_key=settings.QDRANT_API_KEY)
 
 
