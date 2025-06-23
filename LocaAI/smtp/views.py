@@ -5,6 +5,8 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import EmailMessage
 from .serializers import EmailMessageSerializer, ContactEmailSerializer,NewsletterSubscribeSerializer,NewsletterUnsubscribeSerializer
+from django.shortcuts import render, redirect
+from smtp.utils import send_subscription_email
 
 class EmailMessageViewSet(viewsets.ModelViewSet):
     queryset = EmailMessage.objects.all()
@@ -73,6 +75,7 @@ class NewsletterSubscribeView(APIView):
         serializer = NewsletterSubscribeSerializer(data=request.data, context={"request": request})
         if serializer.is_valid():
             subscriber = serializer.save()
+            print("==== 뉴스레터 구독 처리 완료 ====")
             return Response(
                 {'message': f"{subscriber.email} 님, 구독이 완료되었습니다."},
                 status=status.HTTP_201_CREATED
@@ -91,10 +94,23 @@ class NewsletterUnsubscribeView(APIView):
     def _handle_unsubscribe(self, request, method):
         data = request.query_params if method == "GET" else request.data
         serializer = NewsletterUnsubscribeSerializer(data=data, context={"method": method})
+        
         if serializer.is_valid():
             subscriber = serializer.save()
-            return Response(
-                {'message': f"{subscriber.email} 님, 구독이 해지되었습니다."},
-                status=status.HTTP_200_OK
-            )
+
+            if method == "GET":
+                # ✅ 이메일 링크로 들어온 경우: 리디렉트
+                return redirect("smtp:newsletter_unsubscribe_done")
+            else:
+                # ✅ 마이페이지에서 POST로 해지한 경우: 메시지만 JSON 응답
+                return Response(
+                    {'message': f"{subscriber.email} 님, 구독이 해지되었습니다."},
+                    status=status.HTTP_200_OK
+                )
+
+        # 검증 실패 시
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+def unsubscribe_done(request):
+    """구독 해지 완료 페이지"""
+    return render(request, "newsletter/unsubscribe_done.html")
