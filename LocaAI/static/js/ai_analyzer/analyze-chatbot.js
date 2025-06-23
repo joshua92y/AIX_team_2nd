@@ -3,12 +3,10 @@
 // 분석결과 상담 챗봇 관련 기능
 // ===========================================
 
-// 전역 변수들 (window 객체에 노출)
-window.currentSessionId = null;
-window.chatSocket = null;
-window.currentBotMessageText = '';
-
-// 지역 변수들은 전역 변수를 직접 사용
+// 전역 변수들
+let currentSessionId = null;
+let chatSocket = null;
+let currentBotMessageText = '';
 
 // ===========================================
 // WebSocket 초기화 및 연결 관리
@@ -16,13 +14,9 @@ window.currentBotMessageText = '';
 
 // WebSocket 초기화
 function initializeChatSocket() {
-  console.log('🚀 WebSocket 초기화 시작');
-  
   if (USER_AUTHENTICATED) {
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${wsProtocol}//${window.location.host}/ws/chatbot/`;
-    
-    console.log('🔗 WebSocket 연결:', wsUrl);
     
     // WebSocket 연결 시도
     const statusElement = document.getElementById('chatConnectionStatus');
@@ -30,11 +24,9 @@ function initializeChatSocket() {
       statusElement.style.display = 'block';
     }
     
-    window.chatSocket = new WebSocket(wsUrl);
+    chatSocket = new WebSocket(wsUrl);
     
-    window.chatSocket.onopen = function(e) {
-      console.log('✅ WebSocket 연결 성공');
-      
+    chatSocket.onopen = function(e) {
       // WebSocket 연결 완료
       if (statusElement) {
         statusElement.style.display = 'none';
@@ -46,41 +38,39 @@ function initializeChatSocket() {
       }
     };
     
-    window.chatSocket.onmessage = function(e) {
+    chatSocket.onmessage = function(e) {
+      console.log('📨 WebSocket 메시지 수신:', e.data);
+      
       try {
         const data = JSON.parse(e.data);
+        console.log('📋 파싱된 데이터:', data);
         
         if (data.chunk) {
           // 스트리밍 응답 처리
+          console.log('📝 스트리밍 청크 수신:', data.chunk.length, '문자');
           appendToCurrentBotMessage(data.chunk);
         } else if (data.done) {
           // 응답 완료
+          console.log('✅ 응답 완료');
           finalizeBotMessage();
           if (data.session_id) {
-            window.currentSessionId = data.session_id;
+            currentSessionId = data.session_id;
+            console.log('🔑 세션 ID 업데이트:', currentSessionId);
           }
         } else if (data.error) {
           // 오류 처리
           console.error('❌ 서버 오류:', data.error);
           addBotMessage('죄송합니다. 오류가 발생했습니다: ' + data.error);
-        } else if (data.message) {
-          // 일반 메시지 응답 (스트리밍이 아닌 경우)
-          addBotMessage(data.message);
-          if (data.session_id) {
-            window.currentSessionId = data.session_id;
-          }
         } else {
           console.warn('⚠️ 알 수 없는 메시지 형식:', data);
         }
       } catch (error) {
         console.error('❌ 메시지 파싱 오류:', error);
+        console.error('📄 원본 메시지:', e.data);
       }
-      syncGlobalVariables();
     };
     
-    window.chatSocket.onclose = function(e) {
-      console.log('🔌 WebSocket 연결 종료:', e.code);
-      
+    chatSocket.onclose = function(e) {
       // WebSocket 연결 종료
       const chatbotStatus = document.getElementById('chatbotStatus');
       if (chatbotStatus) {
@@ -89,9 +79,8 @@ function initializeChatSocket() {
       }
     };
     
-    window.chatSocket.onerror = function(e) {
-      console.error('❌ WebSocket 오류:', e.type);
-      
+    chatSocket.onerror = function(e) {
+      console.error('챗봇 WebSocket 오류:', e);
       const chatbotStatus = document.getElementById('chatbotStatus');
       if (chatbotStatus) {
         chatbotStatus.textContent = '오류';
@@ -157,27 +146,33 @@ async function createNewChatSession() {
       body: JSON.stringify({})
     });
 
+    console.log('세션 생성 응답 상태:', response.status);
+    
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('세션 생성 실패 응답:', errorText);
       throw new Error(`세션 생성 요청 실패: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
+    console.log('세션 생성 응답 데이터:', data);
     
     if (data.status !== 'ok' || !data.session_id) {
       throw new Error('세션 생성 응답 오류: ' + JSON.stringify(data));
     }
 
-    window.currentSessionId = data.session_id;
+    currentSessionId = data.session_id;
+    console.log('새로운 채팅 세션 생성됨:', currentSessionId);
     
     // PIP 히스토리 업데이트
     setTimeout(() => {
       updatePIPChatHistory();
     }, 100);
     
-      } catch (error) {
-      console.error('세션 생성 오류:', error);
-      throw error;
-    }
+  } catch (error) {
+    console.error('세션 생성 상세 오류:', error);
+    throw error;
+  }
 }
 
 // ===========================================
@@ -189,24 +184,21 @@ async function sendChatMessage() {
   const input = document.getElementById('chatInput');
   const message = input.value.trim();
   
-  if (!message || !window.chatSocket) {
+  console.log('💬 챗봇 메시지 전송 시작:', message);
+  console.log('🔌 WebSocket 상태:', chatSocket?.readyState);
+  console.log('👤 사용자 ID:', USER_ID);
+  console.log('🔑 세션 ID:', currentSessionId);
+  
+  if (!message || !chatSocket) {
+    console.warn('⚠️ 메시지가 없거나 WebSocket이 연결되지 않음');
     return;
   }
   
   // 새로운 세션이 필요한 경우 생성
-  if (!window.currentSessionId) {
+  if (!currentSessionId) {
     try {
+      console.log('🆕 새 세션 생성 중...');
       await createNewChatSession();
-      
-      // 서버에 최초 연결 정보 전송
-      window.chatSocket.send(JSON.stringify({
-        user_id: USER_ID,
-        session_id: window.currentSessionId
-      }));
-      
-      // 잠시 대기 후 실제 질문 전송
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
     } catch (error) {
       console.error('세션 생성 실패:', error);
       addBotMessage('죄송합니다. 채팅 세션을 생성할 수 없습니다. 잠시 후 다시 시도해주세요.');
@@ -222,23 +214,20 @@ async function sendChatMessage() {
   
   // 분석 데이터를 포함한 컨텍스트 생성
   const contextualMessage = createContextualMessage(message);
+  console.log('📝 컨텍스트 메시지 길이:', contextualMessage.length);
   
   // WebSocket으로 메시지 전송
   const messageData = {
     user_id: USER_ID,
-    session_id: window.currentSessionId,
+    session_id: currentSessionId,
     question: contextualMessage,
     collection: 'analysis_result_consultation'
   };
   
-  if (window.chatSocket.readyState !== WebSocket.OPEN) {
-    addBotMessage('채팅 서버와 연결되지 않았습니다. 페이지를 새로고침해주세요.');
-    return;
-  }
-  
+  console.log('📤 WebSocket 메시지 전송:', messageData);
   try {
-    const messageString = JSON.stringify(messageData);
-    window.chatSocket.send(messageString);
+    chatSocket.send(JSON.stringify(messageData));
+    console.log('✅ 메시지 전송 완료');
   } catch (error) {
     console.error('❌ 메시지 전송 실패:', error);
     addBotMessage('메시지 전송에 실패했습니다. 다시 시도해주세요.');
@@ -253,6 +242,7 @@ async function sendChatMessage() {
 function createContextualMessage(userMessage) {
   // currentAnalysisData가 정의되지 않았거나 null인 경우 체크
   if (!window.currentAnalysisData) {
+    console.log('⚠️ 분석 데이터가 없어 기본 메시지로 전송:', userMessage);
     return userMessage;
   }
   
@@ -351,12 +341,12 @@ function appendToCurrentBotMessage(chunk) {
   if (contentElement) {
     if (contentElement.innerHTML.includes('spinner-border')) {
       // 첫 번째 청크: 스피너 제거하고 텍스트 시작
-      window.currentBotMessageText = chunk;
+      currentBotMessageText = chunk;
       contentElement.innerHTML = marked.parse(chunk);
     } else {
       // 후속 청크: 기존 텍스트에 추가
-      window.currentBotMessageText += chunk;
-      contentElement.innerHTML = marked.parse(window.currentBotMessageText);
+      currentBotMessageText += chunk;
+      contentElement.innerHTML = marked.parse(currentBotMessageText);
     }
     const chatMessages = document.getElementById('chatMessages');
     if (chatMessages) {
@@ -369,7 +359,7 @@ function appendToCurrentBotMessage(chunk) {
     if (pipContentElement.innerHTML.includes('spinner-border')) {
       pipContentElement.innerHTML = marked.parse(chunk);
     } else {
-      pipContentElement.innerHTML = marked.parse(window.currentBotMessageText);
+      pipContentElement.innerHTML = marked.parse(currentBotMessageText);
     }
     const pipChatMessages = document.getElementById('pipChatMessages');
     if (pipChatMessages) {
@@ -390,7 +380,7 @@ function finalizeBotMessage() {
     currentPIPMessage.removeAttribute('id');
   }
   // 메시지 텍스트 초기화
-  window.currentBotMessageText = '';
+  currentBotMessageText = '';
   
   // PIP 히스토리 업데이트
   setTimeout(() => {
@@ -987,10 +977,10 @@ async function sendPIPMessage() {
   const input = document.getElementById('pipChatInput');
   const message = input.value.trim();
   
-  if (!message || !window.chatSocket) return;
+  if (!message || !chatSocket) return;
   
   // 새로운 세션이 필요한 경우 생성
-  if (!window.currentSessionId) {
+  if (!currentSessionId) {
     try {
       await createNewChatSession();
     } catch (error) {
@@ -1015,9 +1005,9 @@ async function sendPIPMessage() {
   const contextualMessage = createContextualMessage(message);
   
   // WebSocket으로 메시지 전송
-  window.chatSocket.send(JSON.stringify({
+  chatSocket.send(JSON.stringify({
     user_id: USER_ID,
-    session_id: window.currentSessionId,
+    session_id: currentSessionId,
     question: contextualMessage,
     collection: 'analysis_result_consultation'
   }));
@@ -1080,47 +1070,4 @@ function preparePIPBotMessage() {
   `;
   messagesContainer.appendChild(messageDiv);
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
-}
-
-// ===========================================
-// 전역 함수 노출 (HTML에서 접근 가능하도록)
-// ===========================================
-
-// 전역 변수 동기화 (이미 window 객체에 있으므로 동기화 불필요)
-function syncGlobalVariables() {
-  // 전역 변수들은 이미 window 객체에 저장되어 있음
-}
-
-// 주요 함수들을 전역으로 노출
-window.initializeChatSocket = initializeChatSocket;
-window.initializeChatbotState = initializeChatbotState;
-window.createNewChatSession = createNewChatSession;
-window.sendChatMessage = sendChatMessage;
-window.createContextualMessage = createContextualMessage;
-window.addUserMessage = addUserMessage;
-window.prepareBotMessage = prepareBotMessage;
-window.appendToCurrentBotMessage = appendToCurrentBotMessage;
-window.finalizeBotMessage = finalizeBotMessage;
-window.addBotMessage = addBotMessage;
-window.fillPIPExampleQuestion = fillPIPExampleQuestion;
-window.openChatbotPIP = openChatbotPIP;
-window.closeChatbotPIP = closeChatbotPIP;
-window.minimizeChatbotPIP = minimizeChatbotPIP;
-window.updatePIPChatHistory = updatePIPChatHistory;
-window.loadChatSession = loadChatSession;
-window.sendPIPMessage = sendPIPMessage;
-window.addPIPUserMessage = addPIPUserMessage;
-window.preparePIPBotMessage = preparePIPBotMessage;
-window.syncGlobalVariables = syncGlobalVariables;
-
-// 전역 변수 초기 동기화
-syncGlobalVariables();
-
-// WebSocket 이벤트에서 전역 변수 동기화
-const originalOnMessage = window.chatSocket?.onmessage;
-if (window.chatSocket) {
-  window.chatSocket.onmessage = function(e) {
-    if (originalOnMessage) originalOnMessage(e);
-    syncGlobalVariables();
-  };
 } 
