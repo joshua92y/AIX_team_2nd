@@ -203,23 +203,45 @@ if platform.system() == "Windows":
 # 정적 파일 및 미디어 설정
 # ============================================================================
 
-# 정적 파일 설정
 STATIC_URL = "static/"
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
+STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# Static files finders
 STATICFILES_FINDERS = [
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
 ]
 
-# 미디어 파일 설정
-MEDIA_URL = "media/"
-MEDIA_ROOT = BASE_DIR / "media"
+# S3 미디어 스토리지 설정
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME", "aix-701-14")
+AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", "ap-northeast-3")
+AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
 
+MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
+
+STORAGES = {
+    "default": {
+        "BACKEND": "config.storage_backends.MediaStorage",
+        "OPTIONS": {
+            "access_key": AWS_ACCESS_KEY_ID,
+            "secret_key": AWS_SECRET_ACCESS_KEY,
+            "bucket_name": AWS_STORAGE_BUCKET_NAME,
+            "region_name": AWS_S3_REGION_NAME,
+            "default_acl": None,
+            "file_overwrite": False,
+            "querystring_auth": False,
+            "location": "media",  # 버킷 내 media/ 하위로 저장됨
+        },
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
+print("S3 KEY:", AWS_ACCESS_KEY_ID)
+print("S3 BUCKET:", AWS_STORAGE_BUCKET_NAME)
 # ============================================================================
 # 국제화 및 현지화 설정
 # ============================================================================
