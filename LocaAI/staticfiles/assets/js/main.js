@@ -1,6 +1,16 @@
 (function() {
   "use strict";
 
+  function throttle(func, delay) {
+    let lastCall = 0;
+    return function(...args) {
+      const now = new Date().getTime();
+      if (now - lastCall < delay) return;
+      lastCall = now;
+      return func(...args);
+    };
+  }
+
   /**
    * Apply .scrolled class to the body as the page is scrolled down
    */
@@ -11,7 +21,7 @@
     window.scrollY > 100 ? selectBody.classList.add('scrolled') : selectBody.classList.remove('scrolled');
   }
 
-  document.addEventListener('scroll', toggleScrolled);
+  document.addEventListener('scroll', throttle(toggleScrolled, 30));
   window.addEventListener('load', toggleScrolled);
 
   /**
@@ -29,36 +39,26 @@
   }
 
   /**
-   * Hide mobile nav on same-page/hash links, but exclude dropdown toggles
+   * Hide mobile nav on same-page/hash links
    */
   document.querySelectorAll('#navmenu a').forEach(navmenu => {
-    navmenu.addEventListener('click', (e) => {
-      // 예외 처리: 드롭다운 toggle인 경우 닫지 않음
-      if (navmenu.closest('li')?.classList.contains('dropdown')) {
-        e.stopPropagation();
-        return;
-      }
+    navmenu.addEventListener('click', () => {
       if (document.querySelector('.mobile-nav-active')) {
         mobileNavToogle();
       }
     });
+
   });
 
   /**
    * Toggle mobile nav dropdowns
-   * Prevents dropdown from collapsing the mobile menu and ensures proper toggling.
    */
-  document.querySelectorAll('.navmenu .toggle-dropdown').forEach(toggle => {
-    toggle.addEventListener('click', function(e) {
+  document.querySelectorAll('.navmenu .toggle-dropdown').forEach(navmenu => {
+    navmenu.addEventListener('click', function(e) {
       e.preventDefault();
-      e.stopPropagation();
-      const dropdown = this.closest('li');
-      dropdown.classList.toggle('active');
-
-      const dropdownMenu = dropdown.querySelector('ul');
-      if (dropdownMenu) {
-        dropdownMenu.classList.toggle('dropdown-active');
-      }
+      this.parentNode.classList.toggle('active');
+      this.parentNode.nextElementSibling.classList.toggle('dropdown-active');
+      e.stopImmediatePropagation();
     });
   });
 
@@ -81,7 +81,7 @@
   });
 
   window.addEventListener('load', toggleScrollTop);
-  document.addEventListener('scroll', toggleScrollTop);
+  document.addEventListener('scroll', throttle(toggleScrollTop, 30));
 
   /**
    * Animation on scroll function and init
@@ -95,16 +95,6 @@
     });
   }
   window.addEventListener('load', aosInit);
-
-  
-  // ✅ 추가: 섹션 이동 후 AOS 재계산
-  window.addEventListener("hashchange", () => {
-    if (window.location.hash === "#contact") {
-      setTimeout(() => {
-        AOS.refresh();
-      }, 300);
-    }
-  });
 
   /**
    * Initiate glightbox
@@ -217,58 +207,29 @@
     })
   }
   window.addEventListener('load', navmenuScrollspy);
-  document.addEventListener('scroll', navmenuScrollspy);
-  const contactForm = document.querySelector("#contact-form");
+  document.addEventListener('scroll', throttle(navmenuScrollspy, 30));
 
-  if (contactForm) {
-    contactForm.addEventListener("submit", async function (e) {
-      e.preventDefault();
-
-      const name = contactForm.querySelector('[name="name"]').value.trim();
-      const email = contactForm.querySelector('[name="email"]').value.trim();
-      const subject = contactForm.querySelector('[name="subject"]').value.trim();
-      const message = contactForm.querySelector('[name="message"]').value.trim();
-
-      const payload = {
-        subject: `[문의] ${name} - ${subject}`,
-        message: message,
-        sender: email,
-        recipient: "aix25best@gmail.com"
-      };
-
-      // ✅ CSRF 토큰 자동 추출
-      const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]')?.value;
-
-      const loading = contactForm.querySelector(".loading");
-      const errorMsg = contactForm.querySelector(".error-message");
-      const sentMsg = contactForm.querySelector(".sent-message");
-
-      loading.style.display = "block";
-      errorMsg.style.display = "none";
-      sentMsg.style.display = "none";
-
-      try {
-        const res = await fetch("/api/smtp/contact/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(csrfToken && { "X-CSRFToken": csrfToken })  // ✅ 토큰이 있으면 헤더에 추가
-          },
-          credentials: "same-origin",  // ✅ 이거 중요!
-          body: JSON.stringify(payload)
+  /**
+   * Smooth scroll to section with scroll-marginTop consideration on navmenu click
+   */
+  document.querySelectorAll('.navmenu a[href^="#"]').forEach(link => {
+    link.addEventListener('click', function(e) {
+      const target = document.querySelector(this.hash);
+      if (target) {
+        e.preventDefault();
+        const scrollMarginTop = getComputedStyle(target).scrollMarginTop;
+        window.scrollTo({
+          top: target.offsetTop - parseInt(scrollMarginTop),
+          behavior: 'smooth'
         });
 
-        if (!res.ok) throw new Error("메시지 전송 실패");
-
-        sentMsg.style.display = "block";
-        contactForm.reset();
-      } catch (err) {
-        errorMsg.textContent = err.message || "전송 중 오류가 발생했습니다.";
-        errorMsg.style.display = "block";
-      } finally {
-        loading.style.display = "none";
+        setTimeout(() => {
+          if (typeof AOS !== 'undefined' && AOS.refresh) {
+            AOS.refresh();
+          }
+        }, 700); // allow scroll to complete before refreshing AOS
       }
     });
-  }
+  });
 
 })();
