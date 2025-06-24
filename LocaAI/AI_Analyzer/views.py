@@ -888,6 +888,7 @@ def perform_spatial_analysis_guest(temp_request):
                 survival_probability = predict_survival_probability(features_for_ai)
                 survival_percentage = round(survival_probability * 100, 1)
                 results['survival_percentage'] = survival_percentage
+                results['is_member_analysis'] = False  # 비회원 분석 표시
                 print(f"   ✅ AI 생존 확률 (28개 피쳐): {survival_percentage}%")
             except Exception as e:
                 print(f"   ❌ AI 예측 오류: {e}")
@@ -1683,11 +1684,28 @@ def perform_spatial_analysis(analysis_request):
                 survival_probability = predict_survival_probability(features_for_ai)
                 survival_percentage = round(survival_probability * 100, 1)
 
+                # 회원의 경우 ChatGPT를 통한 AI 설명 생성
+                ai_explanation = ""
+                ai_summary = ""
+                if analysis_request.user.is_authenticated:
+                    try:
+                        from .ai_explainer import get_xgboost_explanation, extract_summary_line
+                        ai_explanation = get_xgboost_explanation(features_for_ai, survival_percentage)
+                        ai_summary = extract_summary_line(ai_explanation)
+                        print(f"   ✅ AI 설명 생성 완료: {ai_summary}")
+                    except Exception as e:
+                        print(f"   ❌ AI 설명 생성 오류: {e}")
+                        ai_explanation = f"생존 확률 {survival_percentage}%로 예측되었습니다.\n\n상세한 분석을 위해 잠시 후 다시 시도해주세요."
+                        ai_summary = f"생존 확률 {survival_percentage}%로 예측되었습니다."
+
                 # AI 예측 결과를 results에 추가
                 results.update(
                     {
                         "survival_probability": survival_probability,
                         "survival_percentage": survival_percentage,
+                        "ai_explanation": ai_explanation,
+                        "ai_summary": ai_summary,
+                        "is_member_analysis": True,
                     }
                 )
 

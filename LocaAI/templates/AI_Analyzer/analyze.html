@@ -43,10 +43,13 @@
   <script src="{% static 'js/ai_analyzer/analyze-pdf.js' %}"></script>
   
   <!-- AI Analyzer Chatbot 로드 -->
-      <script src="{% static 'js/ai_analyzer/analyze-chatbot.js' %}"></script>
+  <script src="{% static 'js/ai_analyzer/analyze-chatbot.js' %}"></script>
   
-    <!-- AI Analyzer Core 로드 -->
-    <script src="{% static 'js/ai_analyzer/analyze-core.js' %}"></script>
+  <!-- AI Analyzer Explainable AI 로드 (회원용 XGBoost 설명) -->
+  <script src="{% static 'js/ai_analyzer/analyze-explainable.js' %}"></script>
+  
+  <!-- AI Analyzer Core 로드 -->
+  <script src="{% static 'js/ai_analyzer/analyze-core.js' %}"></script>
 
     <script>
     // Django 템플릿에서 JavaScript 변수로 사용자 인증 상태 전달
