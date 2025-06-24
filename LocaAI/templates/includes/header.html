@@ -101,7 +101,41 @@
     .dropdown-item i {
       width: 20px;
     }
-  </style>
+
+    .language-link {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start; /* 왼쪽 정렬 */
+      gap: 8px;
+      padding: 5px 10px;
+      width: 100%;
+      text-decoration: none;
+      color: inherit;
+      box-sizing: border-box;
+    }
+
+    .flag-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      object-fit: cover;
+
+      /* 선명도 향상 */
+      image-rendering: crisp-edges;
+      -webkit-image-rendering: crisp-edges;
+    }
+
+    .lang-label {
+      font-size: 14px;
+    }
+
+    .no-justify .language-link,
+    .no-justify .language-link:focus,
+    .no-justify .language-link:hover,
+    .no-justify .language-link:active {
+      justify-content: flex-start;
+    }
+    </style>
 
   <script>
     // 전역 변수로 설정하여 중복 선언 방지
