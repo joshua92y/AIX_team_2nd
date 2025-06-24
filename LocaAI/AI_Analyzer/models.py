@@ -161,6 +161,11 @@ class AnalysisResult(django_models.Model):
     survival_probability = django_models.FloatField(verbose_name="생존 확률 (0-1)", default=0)
     survival_percentage = django_models.FloatField(verbose_name="생존 확률 (%)", default=0)
     
+    # AI 설명 가능 결과 (회원용)
+    ai_explanation = django_models.TextField(verbose_name="AI 상세 설명", blank=True, default="")
+    ai_summary = django_models.CharField(max_length=100, verbose_name="AI 요약", blank=True, default="")
+    is_member_analysis = django_models.BooleanField(verbose_name="회원 분석 여부", default=False)
+    
     created_at = django_models.DateTimeField(auto_now_add=True)
     
     class Meta:

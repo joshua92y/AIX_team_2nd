@@ -43,10 +43,13 @@
   <script src="{% static 'js/ai_analyzer/analyze-pdf.js' %}"></script>
   
   <!-- AI Analyzer Chatbot 로드 -->
-      <script src="{% static 'js/ai_analyzer/analyze-chatbot.js' %}"></script>
+  <script src="{% static 'js/ai_analyzer/analyze-chatbot.js' %}"></script>
   
-    <!-- AI Analyzer Core 로드 -->
-    <script src="{% static 'js/ai_analyzer/analyze-core.js' %}"></script>
+  <!-- AI Analyzer Explainable AI 로드 (회원용 XGBoost 설명) -->
+  <script src="{% static 'js/ai_analyzer/analyze-explainable.js' %}"></script>
+  
+  <!-- AI Analyzer Core 로드 -->
+  <script src="{% static 'js/ai_analyzer/analyze-core.js' %}"></script>
 
     <script>
     // Django 템플릿에서 JavaScript 변수로 사용자 인증 상태 전달
@@ -142,13 +145,13 @@
                 <label for="address" class="form-label" data-lang="ESP" style="display: none;">Dirección</label>
                 
                 <div class="input-group">
-                  <input type="text" class="form-control lang-input" id="address" name="address" placeholder="주소를 입력해주세요" data-lang="KOR">
+                  <input type="text" class="form-control lang-input" id="address" name="address" placeholder="주소를 입력해주세요" data-lang="KOR" readonly>
                   <button class="btn btn-outline-secondary lang-btn" type="button" onclick="openAddressSearch()" data-lang="KOR">검색</button>
                   
-                  <input type="text" class="form-control lang-input" id="addressEng" name="address" placeholder="Please enter your address" data-lang="ENG" style="display: none;">
+                  <input type="text" class="form-control lang-input" id="addressEng" name="address" placeholder="Please enter your address" data-lang="ENG" style="display: none;" readonly>
                   <button class="btn btn-outline-secondary lang-btn" type="button" onclick="openAddressSearch()" data-lang="ENG" style="display: none;">Search</button>
                   
-                  <input type="text" class="form-control lang-input" id="addressEsp" name="address" placeholder="Por favor ingrese la dirección" data-lang="ESP" style="display: none;">
+                  <input type="text" class="form-control lang-input" id="addressEsp" name="address" placeholder="Por favor ingrese la dirección" data-lang="ESP" style="display: none;" readonly>
                   <button class="btn btn-outline-secondary lang-btn" type="button" onclick="openAddressSearch()" data-lang="ESP" style="display: none;">Buscar</button>
                 </div>
               </div>
