@@ -1,0 +1,99 @@
+<!-- 분석 진행 상황 UI -->
+<div id="analysisProgress" class="analysis-progress" style="display: none;">
+  <h5 class="text-center mb-4">
+    <i class="bi bi-cpu me-2"></i>
+    AI가 상권을 분석하고 있습니다...
+  </h5>
+  
+  <div class="overall-progress">
+    <div class="d-flex justify-content-between mb-2">
+      <span class="text-muted">전체 진행률</span>
+      <span id="overallPercent">0%</span>
+    </div>
+    <div class="progress">
+      <div class="progress-bar bg-primary" id="overallProgressBar" style="width: 0%"></div>
+    </div>
+  </div>
+  
+  <div id="progressSteps">
+    <div class="progress-step" id="step-population">
+      <div class="progress-icon">
+        <i class="bi bi-people"></i>
+      </div>
+      <div class="progress-text">
+        <div class="progress-title">생활인구 분석</div>
+        <div class="progress-detail">300m/1000m 반경 내 생활인구 및 연령대 분석</div>
+      </div>
+    </div>
+    
+    <div class="progress-step" id="step-working">
+      <div class="progress-icon">
+        <i class="bi bi-briefcase"></i>
+      </div>
+      <div class="progress-text">
+        <div class="progress-title">직장인구 분석</div>
+        <div class="progress-detail">300m 반경 내 직장인구 분포 분석</div>
+      </div>
+    </div>
+    
+    <div class="progress-step" id="step-foreign">
+      <div class="progress-icon">
+        <i class="bi bi-globe"></i>
+      </div>
+      <div class="progress-text">
+        <div class="progress-title">외국인 분석</div>
+        <div class="progress-detail">단기/장기체류외국인 분포 분석</div>
+      </div>
+    </div>
+    
+    <div class="progress-step" id="step-facilities">
+      <div class="progress-icon">
+        <i class="bi bi-building"></i>
+      </div>
+      <div class="progress-text">
+        <div class="progress-title">주변시설 분석</div>
+        <div class="progress-detail">학교, 공공건물 등 유동인구 시설 분석</div>
+      </div>
+    </div>
+    
+    <div class="progress-step" id="step-competition">
+      <div class="progress-icon">
+        <i class="bi bi-shop"></i>
+      </div>
+      <div class="progress-text">
+        <div class="progress-title">경쟁업체 분석</div>
+        <div class="progress-detail">동일업종 및 요식업체 경쟁강도 분석</div>
+      </div>
+    </div>
+    
+    <div class="progress-step" id="step-land">
+      <div class="progress-icon">
+        <i class="bi bi-currency-dollar"></i>
+      </div>
+      <div class="progress-text">
+        <div class="progress-title">공시지가 분석</div>
+        <div class="progress-detail">토지가치 및 임대료 추정</div>
+      </div>
+    </div>
+    
+    <div class="progress-step" id="step-ai">
+      <div class="progress-icon">
+        <i class="bi bi-cpu"></i>
+      </div>
+      <div class="progress-text">
+        <div class="progress-title">AI 예측 분석</div>
+        <div class="progress-detail">머신러닝 모델을 통한 생존확률 예측</div>
+      </div>
+    </div>
+    
+    <div class="progress-step" id="step-complete">
+      <div class="progress-icon">
+        <i class="bi bi-check-lg"></i>
+      </div>
+      <div class="progress-text">
+        <div class="progress-title">분석 완료</div>
+        <div class="progress-detail">결과를 표시하고 있습니다...</div>
+      </div>
+    </div>
+  </div>
+</div> 

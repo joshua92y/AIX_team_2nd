@@ -1,0 +1,23 @@
+/* PIP 채팅 히스토리 hover 효과 */
+.hover-bg-light:hover {
+  background-color: #f8f9fa !important;
+  cursor: pointer;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* PIP 채팅 히스토리 스타일 */
+.chat-history-item .hover-effect {
+  transition: all 0.2s ease-in-out;
+}
+
+.chat-history-item:hover .hover-effect:not(.bg-primary) {
+  background-color: #e9ecef !important;
+  transform: translateX(2px);
+}
+
+.chat-history-item.active .hover-effect {
+  box-shadow: 0 2px 8px rgba(13, 110, 253, 0.3);
+} 

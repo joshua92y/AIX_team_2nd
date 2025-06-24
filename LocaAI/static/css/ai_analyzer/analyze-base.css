@@ -1,0 +1,40 @@
+/* 기본 primary 버튼 disabled 시 커스텀 스타일 */
+.btn-primary.custom {
+  color: #fff;
+  background-color: #0d6efd; /* 원래 primary 색 */
+  opacity: 0.65;  /* 투명도 조절로 흐릿하게 표시 */
+}
+
+/* 공시지가 카드 폰트 크기 조정 */
+#totalLandValue {
+  font-size: 1.8rem !important;
+  line-height: 1.2;
+}
+
+@media (max-width: 768px) {
+  #totalLandValue {
+    font-size: 1.5rem !important;
+  }
+}
+
+/* 상권분석결과 섹션 컨테이너 스타일 */
+.analysis-container {
+  position: relative;
+}
+
+/* 분석결과 상담 섹션 sticky 스타일 */
+.chatbot-sticky {
+  position: sticky;
+  top: 20px;
+  z-index: 100;
+  transition: all 0.3s ease;
+}
+
+/* 반응형 디자인 - 모바일에서는 sticky 비활성화 */
+@media (max-width: 991.98px) {
+  .chatbot-sticky {
+    position: static;
+    top: auto;
+    z-index: auto;
+  }
+} 
