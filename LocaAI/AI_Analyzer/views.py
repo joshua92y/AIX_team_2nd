@@ -1927,6 +1927,11 @@ def get_analysis_result_api(request, request_id):
                 "2A_40": float(analysis_result.life_pop_40_1000m or 0),
                 "2A_50": float(analysis_result.life_pop_50_1000m or 0),
                 "2A_60": float(analysis_result.life_pop_60_1000m or 0),
+                
+                # AI 설명 관련 필드들
+                "ai_explanation": analysis_result.ai_explanation or "",
+                "ai_summary": analysis_result.ai_summary or "",
+                "is_member_analysis": analysis_result.is_member_analysis or False,
             },
         }
 

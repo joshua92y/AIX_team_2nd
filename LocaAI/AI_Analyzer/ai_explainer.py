@@ -27,21 +27,23 @@ def get_xgboost_explanation(features_dict: Dict[str, Any], survival_percentage: 
         prompt = f"""
 당신은 상권분석 전문가입니다. XGBoost 모델이 예측한 음식점 생존 확률 결과를 해석해서 설명해주세요.
 
-**중요: 첫 번째 줄은 반드시 50자 이내로 핵심 결론을 요약해주세요.**
+**매우 중요한 제약사항:**
+1. 생존 확률은 반드시 {survival_percentage}%로 고정하여 사용하세요. 절대 다른 숫자를 만들어내지 마세요.
+2. 첫 번째 줄은 반드시 50자 이내로 핵심 결론을 요약해주세요.
 
-예측 결과: {survival_percentage}%
+예측 결과: **{survival_percentage}%** (이 수치를 정확히 사용하세요)
 입력 데이터:
 {feature_summary}
 
 다음 형식으로 답변해주세요:
 
-1. 첫 번째 줄 (50자 이내): 핵심 결론 요약
+1. 첫 번째 줄 (50자 이내): {survival_percentage}%를 포함한 핵심 결론 요약
 2. 주요 긍정 요인 (3-4개)
 3. 주요 위험 요인 (3-4개) 
 4. 개선 제안사항 (2-3개)
 5. 종합 의견
 
-각 항목은 구체적인 수치를 인용하여 설명하고, 실무적인 관점에서 조언해주세요.
+반드시 {survival_percentage}% 수치를 정확히 사용하고, 구체적인 데이터를 인용하여 설명해주세요.
 """
 
         response = client.chat.completions.create(
