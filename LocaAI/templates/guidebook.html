@@ -9,14 +9,14 @@
       <h2 class="display-6 fw-bold text-primary">
         <i class="bi bi-journal-bookmark-fill text-primary me-2"></i>
         <span data-lang="KOR">Loca AI 가이드북</span>
-        <span data-lang="ENG">Loca AI Guidebook</span>
-        <span data-lang="ESP">Guía de Loca AI</span>
+        <span data-lang="ENG" style="display: none;">Loca AI Guidebook</span>
+        <span data-lang="ESP" style="display: none;">Guía de Loca AI</span>
       </h2>
 
       <p class="mb-3">
         <span data-lang="KOR">단계별 안내로 복잡한 상권 분석도 누구나 쉽게 시작 가능</span>
-        <span data-lang="ENG">Step-by-step guide to make complex market analysis easy for everyone</span>
-        <span data-lang="ESP">Guía paso a paso para facilitar el análisis comercial a cualquiera</span>
+        <span data-lang="ENG" style="display: none;">Step-by-step guide to make complex market analysis easy for everyone</span>
+        <span data-lang="ESP" style="display: none;">Guía paso a paso para facilitar el análisis comercial a cualquiera</span>
       </p>
   </div>
 
@@ -27,8 +27,8 @@
       <h2 class="accordion-header" id="headingOne">
         <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
           <span data-lang="KOR">1. 소개</span>
-          <span data-lang="ENG">1. Introduction</span>
-          <span data-lang="ESP">1. Introducción</span>
+          <span data-lang="ENG" style="display: none;">1. Introduction</span>
+          <span data-lang="ESP" style="display: none;">1. Introducción</span>
         </button>
       </h2>
 
@@ -38,7 +38,9 @@
           <div class="card border-0 shadow-sm mx-auto" style="max-width: 1000px;">
             <div class="card-body text-center">
 
-              <img src="{% static 'assets/img/guide01.png' %}" class="img-fluid rounded mb-4" alt="소개 이미지" style="max-width: 500px;">
+              <div class="mx-auto" style="max-width: 500px;">
+                <img src="{% static 'assets/img/guide01.png' %}" class="img-fluid rounded mb-4" alt="소개 이미지">
+              </div>
 
               <h4 class="card-title mb-3">
                 <i class="bi bi-geo-alt-fill text-primary me-2"></i>
@@ -290,10 +292,14 @@
             <div class="card-body text-center">
 
               <!-- 📷 이미지 -->
-              <img src="{% static 'assets/img/guide03.png' %}" 
-                class="rounded mb-4" 
-                alt="상권 정보 입력 화면 예시" 
-                style="width: 100%; height: auto; object-fit: contain;">
+              <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body text-center">
+                  <img src="{% static 'assets/img/guide03.png' %}" 
+                      class="rounded w-100 border" 
+                      alt="상권 정보 입력 화면 예시" 
+                      style="height: auto; object-fit: contain;">
+                </div>
+              </div>
 
               <!-- 🔹 제목 -->
               <h4 class="card-title mb-3">
@@ -382,57 +388,426 @@
       </div>
     </div>
 
-    <!-- 4. 생존률 예측 결과 확인 -->
+    <!-- 4. 상권 분석결과 리포트 -->
     <div class="accordion-item">
       <h2 class="accordion-header" id="headingFour">
         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour">
-          4. 생존률 예측 결과 확인
+          <span data-lang="KOR">4. 상권 분석 결과</span>
+          <span data-lang="ENG" style="display: none;">4. Commercial District Analysis Results</span>
+          <span data-lang="ESP" style="display: none;">4. Resultados del Análisis del Área Comercial</span>
         </button>
       </h2>
+
       <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#guideAccordion">
         <div class="accordion-body">
-          <ul class="text-start mx-auto" style="max-width: 600px;">
-            <li>분석 ID, 주소, 생존률 등이 표시됩니다.</li>
-            <li><strong>“결과보기”</strong> 클릭 시 상세 분석 제공</li>
-          </ul>
-        </div>
-      </div>
-    </div>
+          <div class="card border-0 shadow-sm mx-auto" style="max-width: 1000px;">
+            <div class="card-body">
+
+              <!-- 제목 및 설명 -->
+              <h4 class="card-title mb-3 text-center fw-bold">
+                <i class="bi bi-cpu-fill text-primary me-2"></i>
+                <span data-lang="KOR">상권 분석 결과 리포트</span>
+                <span data-lang="ENG" style="display: none;">Commercial Area Analysis Report</span>
+                <span data-lang="ESP" style="display: none;">Informe de Análisis de Zona Comercial</span>
+              </h4>
+              <p class="text-center text-muted mb-4">
+                <span data-lang="KOR">Loca AI가 제공하는 빠르고 정확한 맞춤 분석 결과를 확인해보세요.</span>
+                <span data-lang="ENG" style="display: none;">Discover fast and accurate custom insights powered by Loca AI.</span>
+                <span data-lang="ESP" style="display: none;">Descubre análisis personalizados, rápidos y precisos con Loca AI.</span>
+              </p>
+
+              <hr class="my-4">
+
+              <!-- 이미지 + 설명 영역 -->
+              <div class="row justify-content-center align-items-start g-4">
+
+                <!-- 이미지 영역 -->
+                <div class="col-lg-7 text-center">
+                  <img src="{% static 'assets/img/guide04.png' %}" 
+                      class="w-100 rounded shadow-sm border" 
+                      alt="AI 예측 결과 예시" 
+                      style="min-height: 600px; object-fit: contain;">
+                </div>
+
+                <!-- 설명 영역 -->
+                <div class="col-lg-5 mt-4 mt-lg-0 text-start animate__animated animate__fadeInUp">
+
+                  <!-- 설명 카드 1 -->
+                  <div class="card bg-light mt-4 border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                      <h5 class="card-title fw-bold mb-3">
+                        <i class="bi bi-robot text-primary me-2"></i>
+                        <span data-lang="KOR">LocaAI 맞춤 리포트 안내</span>
+                        <span data-lang="ENG" style="display: none;">About the LocaAI Custom Report</span>
+                        <span data-lang="ESP" style="display: none;">Sobre el Informe Personalizado de LocaAI</span>
+                      </h5>
+
+                      <p class="text-muted" style="line-height: 1.7;">
+                        <span data-lang="KOR">
+                          <strong>LocaAI 리포트</strong>는 사용자가 입력한 상권 정보  
+                          <span class="badge bg-secondary">주소</span>, <span class="badge bg-secondary">업종</span>, 
+                          <span class="badge bg-secondary">면적</span>, <span class="badge bg-secondary">주류 판매 여부</span>를 기반으로,<br>
+                          수십만 건의 공공 및 민간 데이터를 분석해 제공하는 <strong class="text-primary">AI 맞춤형 상권 분석 리포트</strong>입니다.
+                        </span>
+
+                        <span data-lang="ENG" style="display: none;">
+                          The <strong>LocaAI Report</strong> is a <strong class="text-primary">customized AI commercial district analysis report</strong> based on the user’s input:
+                          <span class="badge bg-secondary">address</span>, <span class="badge bg-secondary">business type</span>, 
+                          <span class="badge bg-secondary">area</span>, and <span class="badge bg-secondary">liquor sales status</span>.<br>
+                          It analyzes hundreds of thousands of public and private data entries to provide insights.
+                        </span>
+
+                        <span data-lang="ESP" style="display: none;">
+                          El <strong>informe de LocaAI</strong> es un <strong class="text-primary">informe de análisis de zona comercial personalizado con IA</strong> basado en la información ingresada por el usuario:  
+                          <span class="badge bg-secondary">dirección</span>, <span class="badge bg-secondary">tipo de negocio</span>, 
+                          <span class="badge bg-secondary">superficie</span> y <span class="badge bg-secondary">venta de licor</span>.<br>
+                          Analiza cientos de miles de datos públicos y privados para ofrecer resultados útiles.
+                        </span>
+                      </p>
+
+
+                      <hr class="my-3">
+
+                      <p class="text-muted" style="line-height: 1.7;">
+                        <span data-lang="KOR">
+                          본 리포트는 단순한 위치 정보가 아닌 <br>다음 항목을 종합적으로 분석하여,<br>
+                          <strong class="text-dark">창업 또는 이전 결정에 도움을 주는 <br>의사결정 지원 도구</strong>입니다:
+                        </span>
+
+                        <span data-lang="ENG" style="display: none;">
+                          This report is not based on simple location data, but rather provides a <br>comprehensive analysis of the following factors,<br>
+                          serving as a <strong class="text-dark">decision-making support tool for starting or relocating a business</strong>:
+                        </span>
+
+                        <span data-lang="ESP" style="display: none;">
+                          Este informe no se basa solo en datos de ubicación, sino que <br>analiza de manera integral los siguientes factores<br>
+                          y actúa como una <strong class="text-dark">herramienta de apoyo para tomar decisiones sobre iniciar o trasladar un negocio</strong>:
+                        </span>
+                      </p>
+
+                      <ul class="text-muted ps-3" style="line-height: 1.8;">
+                        <li>
+                          <span data-lang="KOR">해당 입지의 <strong>생존 가능성</strong></span>
+                          <span data-lang="ENG" style="display:none;">The <strong>survivability</strong> of the location</span>
+                          <span data-lang="ESP" style="display:none;"><strong>Probabilidad de supervivencia</strong> de la ubicación</span>
+                        </li>
+                        <li>
+                          <span data-lang="KOR"><strong>경쟁 강도</strong> 및 주변 상권 밀도</span>
+                          <span data-lang="ENG" style="display:none;"><strong>Competition intensity</strong> and surrounding commercial density</span>
+                          <span data-lang="ESP" style="display:none;"><strong>Intensidad de la competencia</strong> y densidad comercial circundante</span>
+                        </li>
+                        <li>
+                          <span data-lang="KOR"><strong>인구 구성</strong> 및 유동 인구</span>
+                          <span data-lang="ENG" style="display:none;"><strong>Demographic composition</strong> and floating population</span>
+                          <span data-lang="ESP" style="display:none;"><strong>Composición demográfica</strong> y población flotante</span>
+                        </li>
+                        <li>
+                          <span data-lang="KOR"><strong>업종 매출 규모</strong> 및 성장성</span>
+                          <span data-lang="ENG" style="display:none;"><strong>Sales volume</strong> and growth potential of the business category</span>
+                          <span data-lang="ESP" style="display:none;"><strong>Volumen de ventas</strong> y potencial de crecimiento del sector</span>
+                        </li>
+                      </ul>
+
+                    </div> <!-- 설명 카드 1 종료 -->
+                  </div>
+
+                  <!-- 설명 카드 2: 구성 항목 -->
+                  <div class="card border-0 shadow-sm mb-4 animate__animated animate__fadeIn text-start">
+                    <div class="card-body">
+                      <h6 class="fw-bold mb-4 text-primary fs-5">
+                        <i class="bi bi-layers text-success me-2"></i>
+                        <span data-lang="KOR">리포트 구성 항목</span>
+                        <span data-lang="ENG" style="display: none;">Report Components</span>
+                        <span data-lang="ESP" style="display: none;">Componentes del informe</span>
+                      </h6>
+
+                      <ul class="list-group list-group-flush text-start fs-6 rounded border ps-0">
+
+                        <!-- 항목 1 -->
+                        <li class="list-group-item list-hover d-block py-3">
+                          <i class="bi bi-geo-alt text-danger me-2"></i>
+                          <span class="fw-bold" data-lang="KOR">입력한 상권 조건 및 기본 정보 요약</span>
+                          <span class="fw-bold" data-lang="ENG" style="display: none;">Summary of entered commercial area conditions and basic information</span>
+                          <span class="fw-bold" data-lang="ESP" style="display: none;">Resumen de las condiciones ingresadas del área comercial e información básica</span>
+                        </li>
+
+                        <!-- 항목 2 -->
+                        <li class="list-group-item list-hover d-block py-3">
+                          <i class="bi bi-cpu text-primary me-2"></i>
+                          <span class="fw-bold" data-lang="KOR">AI 기반 <span class="text-primary">장기 생존률 예측 결과</span> 시각화</span>
+                          <span class="fw-bold" data-lang="ENG" style="display: none;">Visualization of <span class="text-primary">AI-based long-term survivability prediction</span></span>
+                          <span class="fw-bold" data-lang="ESP" style="display: none;">Visualización de la <span class="text-primary">predicción de supervivencia a largo plazo basada en IA</span></span>
+                        </li>
+
+                        <!-- 항목 3 -->
+                        <li class="list-group-item list-hover d-block py-3">
+                          <i class="bi bi-graph-up-arrow text-warning me-2"></i>
+                          <span class="fw-bold" data-lang="KOR">반경 300m <span class="text-warning">경쟁 업체 분석</span> 및 업종 다양성</span>
+                          <span class="fw-bold" data-lang="ENG" style="display: none;">Analysis of <span class="text-warning">competitors within 300m radius</span> and business diversity</span>
+                          <span class="fw-bold" data-lang="ESP" style="display: none;">Análisis de <span class="text-warning">competidores en un radio de 300 m</span> y diversidad de sectores</span>
+                        </li>
+
+                        <!-- 항목 4 -->
+                        <li class="list-group-item list-hover d-block py-3">
+                          <i class="bi bi-people text-info me-2"></i>
+                          <span class="fw-bold" data-lang="KOR">반경 1000m <span class="text-info">생활 인구 및 연령대 분석</span></span>
+                          <span class="fw-bold" data-lang="ENG" style="display: none;">Analysis of <span class="text-info">residential population and age groups within 1000m</span></span>
+                          <span class="fw-bold" data-lang="ESP" style="display: none;">Análisis de la <span class="text-info">población residente y grupos de edad en un radio de 1000 m</span></span>
+                        </li>
+
+                        <!-- 항목 5 -->
+                        <li class="list-group-item list-hover d-block py-3">
+                          <i class="bi bi-bar-chart text-secondary me-2"></i>
+                          <span class="fw-bold" data-lang="KOR">유동 인구, 외국인 비율, 공시지가 등 <span class="text-secondary">입지 가치 요소</span></span>
+                          <span class="fw-bold" data-lang="ENG" style="display: none;"><span class="text-secondary">Location value factors</span> such as floating population, foreigner ratio, and official land price</span>
+                          <span class="fw-bold" data-lang="ESP" style="display: none;"><span class="text-secondary">Factores de valor de ubicación</span> como población flotante, proporción de extranjeros y valor catastral</span>
+                        </li>
+
+                      </ul>
+                    </div> <!-- 설명 카드 2 종료 -->
+                  </div>
+
+
+                  <!-- 설명 카드 3: 추가 안내 -->
+                  <div class="card bg-light border-0 shadow-sm mb-4">
+                    <div class="card-body">
+
+                      <!-- 1. 최신 데이터와 AI 모델 -->
+                      <p class="text-muted mb-3" style="line-height: 1.7;">
+                        <span data-lang="KOR">
+                          <i class="bi bi-arrow-repeat text-secondary me-1"></i>
+                          LocaAI는 최신 데이터와 지속적인 <br>AI 모델 개선을 통해 정확한 분석을 제공합니다.
+                        </span>
+                        <span data-lang="ENG" style="display: none;">
+                          <i class="bi bi-arrow-repeat text-secondary me-1"></i>
+                          LocaAI provides accurate analysis through the latest data and continuous <br>AI model improvement.
+                        </span>
+                        <span data-lang="ESP" style="display: none;">
+                          <i class="bi bi-arrow-repeat text-secondary me-1"></i>
+                          LocaAI ofrece análisis precisos mediante los datos más recientes y <br>la mejora continua de su modelo de IA.
+                        </span>
+                      </p>
+
+                      <!-- 2. 고객 맞춤형 전략 -->
+                      <p class="text-muted mb-3" style="line-height: 1.7;">
+                        <span data-lang="KOR">
+                          <i class="bi bi-person-check text-success me-1"></i>
+                          고객 맞춤형 마케팅 전략 수립에 <br>활용할 수 있는 인사이트를 제공합니다.
+                        </span>
+                        <span data-lang="ENG" style="display: none;">
+                          <i class="bi bi-person-check text-success me-1"></i>
+                          Provides insights that can be used to <br>develop customized marketing strategies.
+                        </span>
+                        <span data-lang="ESP" style="display: none;">
+                          <i class="bi bi-person-check text-success me-1"></i>
+                          Ofrece ideas útiles para <br>desarrollar estrategias de marketing personalizadas.
+                        </span>
+                      </p>
+
+                      <!-- 3. 창업자 성공 사례 -->
+                      <p class="text-muted mb-0" style="line-height: 1.7;">
+                        <span data-lang="KOR">
+                          <i class="bi bi-star-fill text-warning me-1"></i>
+                          많은 창업자들이 상권분석 리포트를 활용해 <br>효율적인 입지 선정에 성공하였습니다.
+                        </span>
+                        <span data-lang="ENG" style="display: none;">
+                          <i class="bi bi-star-fill text-warning me-1"></i>
+                          Many entrepreneurs have successfully <br>used commercial analysis reports to select optimal locations.
+                        </span>
+                        <span data-lang="ESP" style="display: none;">
+                          <i class="bi bi-star-fill text-warning me-1"></i>
+                          Muchos emprendedores han logrado <br>elegir ubicaciones óptimas utilizando informes de análisis comercial.
+                        </span>
+                      </p>
+
+                    </div> <!-- 설명 카드 3 종료 -->
+                  </div>
+
+                </div> <!-- 설명 영역 col 종료 -->
+              </div> <!-- ✅ 추가: .row 종료 -->
+
+              <!-- 하단 알림 -->
+              <!--<div class="alert alert-primary mt-4 text-center" role="alert" style="line-height: 1.6;">
+                <i class="bi bi-lightbulb-fill fs-4 mb-2"></i>
+                  <p class="mb-2" data-lang="KOR">
+                    이 리포트는 <strong class="text-dark">창업 전 입지 검토</strong>, <strong>신규 점포 전략 수립</strong>, <strong class="text-dark">브랜드 확장</strong> 등 <br>
+                    주요 의사결정에 있어 <strong>데이터 기반 판단</strong>을 돕는 신뢰할 수 있는 자료입니다.
+                  </p>
+                  <p class="mb-0" data-lang="KOR">
+                    LocaAI는 복잡한 상권 데이터를 시각적으로 정리하여, 입지 선택의 핵심 요소를 한눈에 파악할 수 있도록 지원합니다.
+                  </p>
+              </div>-->
+
+            </div> <!-- ✅ 추가: .card-body 종료 -->
+          </div> <!-- .card 종료 -->
+        </div> <!-- .accordion-body 종료 -->
+      </div> <!-- .accordion-collapse 종료 -->
+    </div> <!-- .accordion-item 종료 (4번) -->
 
     <!-- 5. 최근 분석 기록 확인 -->
     <div class="accordion-item">
       <h2 class="accordion-header" id="headingFive">
         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive">
-          5. 최근 분석 기록 확인
+          <span data-lang="KOR">5. 최근 분석 기록 확인</span>
+          <span data-lang="ENG" style="display: none;">5. Check Recent Analysis History</span>
+          <span data-lang="ESP" style="display: none;">5. Ver historial de análisis reciente</span>
         </button>
       </h2>
       <div id="collapseFive" class="accordion-collapse collapse" data-bs-parent="#guideAccordion">
         <div class="accordion-body">
-          홈페이지 하단 <strong>“내 최근 분석 기록”</strong> 영역에서 확인할 수 있습니다.
+          <div class="card border-0 shadow-sm mx-auto" style="max-width: 1000px;">
+            <div class="card-body text-center">
+
+              <!-- 📷 이미지 -->
+              <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body text-center p-0">
+                  <img src="/static/assets/img/guide05.png"
+                      class="img-fluid w-100 rounded border"
+                      alt="최근 분석 기록 화면 예시"
+                      style="object-fit: cover;">
+                </div>
+              </div>
+
+              <!-- 🔹 제목 -->
+              <h4 class="card-title mb-3">
+                <i class="bi bi-clock-history text-primary me-2"></i>
+                <span data-lang="KOR"><strong class="text-primary">최근 분석 기록</strong> 확인 방법</span>
+                <span data-lang="ENG" style="display: none;"><strong class="text-primary">How to Check</strong> Recent Analysis History</span>
+                <span data-lang="ESP" style="display: none;"><strong class="text-primary">Cómo consultar</strong> el historial de análisis reciente</span>
+              </h4>
+
+              <p class="text-muted mb-3">
+                <span data-lang="KOR">상권 분석을 완료하면, <strong>상권 정보 입력 영역 아래</strong>에 최근 분석 기록이 자동으로 표시됩니다.</span>
+                <span data-lang="ENG" style="display: none;">Once the analysis is completed, your recent history is displayed <strong>below the commercial area input section</strong>.</span>
+                <span data-lang="ESP" style="display: none;">Una vez completado el análisis, su historial reciente se muestra <strong>debajo del área de entrada de zona comercial</strong>.</span>
+              </p>
+
+              <hr class="my-4">
+
+              <!-- 설명 -->
+              <div class="text-start mx-auto" style="max-width: 1000px;">
+                <ul class="mb-4" style="line-height: 1.8;">
+                  <li>
+                    <span data-lang="KOR"><strong>내 최근 분석 기록</strong> 영역은 사용자가 이전에 수행한 상권 분석 결과를 다시 확인할 수 있는 기능입니다.</span>
+                    <span data-lang="ENG" style="display:none;">The <strong>My Recent Analysis History</strong> section allows users to revisit previously conducted commercial analysis results.</span>
+                    <span data-lang="ESP" style="display:none;">La sección de <strong>Historial de análisis reciente</strong> permite a los usuarios revisar los resultados de análisis comerciales realizados anteriormente.</span>
+                  </li>
+                  <li>
+                    <span data-lang="KOR">해당 영역을 클릭하면 <strong>이전 분석 기록이 아래로 펼쳐져</strong> 리스트 형태로 표시됩니다.</span>
+                    <span data-lang="ENG" style="display:none;">When clicked, <strong>previous records expand below</strong> and are displayed in a list format.</span>
+                    <span data-lang="ESP" style="display:none;">Al hacer clic, <strong>los registros anteriores se despliegan hacia abajo</strong> y se muestran en formato de lista.</span>
+                  </li>
+                  <li>
+                    <span data-lang="KOR">각 기록에는 <strong>분석 ID</strong>, <strong>주소</strong>, <strong>날짜 및 시간</strong>, <strong>분석 유형</strong>이 표시됩니다.</span>
+                    <span data-lang="ENG" style="display:none;">Each record shows the <strong>Analysis ID</strong>, <strong>Address</strong>, <strong>Date and Time</strong>, and <strong>Analysis Type</strong>.</span>
+                    <span data-lang="ESP" style="display:none;">Cada registro incluye el <strong>ID de análisis</strong>, <strong>dirección</strong>, <strong>fecha y hora</strong>, y el <strong>tipo de análisis</strong>.</span>
+                  </li>
+                  <li>
+                    <span data-lang="KOR"><strong>“결과보기”</strong> 버튼을 클릭하면 <strong>화면 위에 리포트가 바로 열리며</strong>, 분석 내용을 확인하고 <strong>PDF로 다운로드</strong>할 수 있습니다.</span>
+                    <span data-lang="ENG" style="display:none;">Clicking the <strong>“View Result”</strong> button opens the report <strong>directly on the current screen</strong>, allowing you to view the analysis and <strong>download it as a PDF</strong>.</span>
+                    <span data-lang="ESP" style="display:none;">Al hacer clic en el botón <strong>“Ver resultados”</strong>, el informe se abre <strong>directamente en la pantalla actual</strong>, permitiéndole revisarlo y <strong>descargarlo en PDF</strong>.</span>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- ⚠️ 요금제 안내 -->
+              <div class="alert alert-primary mt-4 text-center" role="alert">
+                <span data-lang="KOR">
+                  <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                  <strong>최근 분석 기록 조회 기능은 Business Plan 이상에서만 제공됩니다.</strong><br>
+                  자세한 내용은 <strong>7. 이용 플랜 안내</strong> 항목을 확인해주세요.
+                </span>
+                <span data-lang="ENG" style="display: none;">
+                  <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                  <strong>The recent analysis history feature is only available with the Business Plan or higher.</strong><br>
+                  For details, please refer to <strong>Section 7. Plan Guide</strong>.
+                </span>
+                <span data-lang="ESP" style="display: none;">
+                  <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                  <strong>La función de historial de análisis reciente solo está disponible en el plan Business o superior.</strong><br>
+                  Para más información, consulte la sección <strong>7. Guía de Planes</strong>.
+                </span>
+              </div>
+
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- 6. PDF 저장 방법 -->
+    <!-- 6. 챗봇 이용 안내 -->
     <div class="accordion-item">
       <h2 class="accordion-header" id="headingSix">
         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSix">
-          6. PDF 저장 방법
+          <span data-lang="KOR">6. 챗봇 이용 안내</span>
+          <span data-lang="ENG" style="display: none;">6. How to Use the Chatbot</span>
+          <span data-lang="ESP" style="display: none;">6. Cómo usar el chatbot</span>
         </button>
       </h2>
       <div id="collapseSix" class="accordion-collapse collapse" data-bs-parent="#guideAccordion">
         <div class="accordion-body">
-          <p><strong>“PDF 저장”</strong> 버튼 클릭 시 자동 다운로드됩니다.</p>
-          <p><kbd>Ctrl+P</kbd> 또는 <kbd>Cmd+P</kbd>로 인쇄 저장도 가능해요.</p>
+          <div class="card border-0 shadow-sm mx-auto" style="max-width: 1000px;">
+            <div class="card-body text-center">
+
+              <!-- 📷 이미지 -->
+              <div class="d-flex justify-content-center my-4">
+                <div class="border rounded shadow-sm p-3" style="max-width: 420px;">
+                  <img src="/static/assets/img/guide06.png"
+                      alt="챗봇 기능 안내 예시"
+                      class="img-fluid rounded"
+                      style="width: 100%; height: auto;">
+                </div>
+              </div>
+              <!-- 🔹 제목 -->
+              <h4 class="card-title mb-3">
+                <i class="bi bi-chat-dots-fill text-primary me-2"></i>
+                <span data-lang="KOR"><strong class="text-primary">챗봇 이용</strong> 안내</span>
+                <span data-lang="ENG" style="display: none;"><strong class="text-primary">Chatbot Usage</strong> Guide</span>
+                <span data-lang="ESP" style="display: none;"><strong class="text-primary">Guía de uso del</strong> chatbot</span>
+              </h4>
+
+              <p class="text-muted mb-3">
+                <span data-lang="KOR">상권 분석 리포트를 생성하면, <strong>오른쪽 하단에 챗봇이 자동으로 활성화</strong>되어 AI 상담을 이용할 수 있습니다.</span>
+                <span data-lang="ENG" style="display: none;">Once the analysis report is generated, the <strong>chatbot is automatically activated on the bottom right</strong> for AI consultation.</span>
+                <span data-lang="ESP" style="display: none;">Una vez generado el informe de análisis, el <strong>chatbot se activa automáticamente en la esquina inferior derecha</strong> para consultas con IA.</span>
+              </p>
+
+              <hr class="my-4">
+
+              <!-- 설명 -->
+              <div class="text-start mx-auto" style="max-width: 1000px;">
+                <ul class="mb-4" style="line-height: 1.8;">
+                  <li>
+                    <span data-lang="KOR">챗봇은 <strong>분석 결과에 기반한 질문과 응답</strong>을 제공합니다.</span>
+                    <span data-lang="ENG" style="display: none;">The chatbot provides <strong>questions and answers based on the analysis results</strong>.</span>
+                    <span data-lang="ESP" style="display: none;">El chatbot ofrece <strong>preguntas y respuestas basadas en los resultados del análisis</strong>.</span>
+                  </li>
+                  <li>
+                    <span data-lang="KOR">추천 질문을 클릭하면 <strong>쉽게 상담을 진행</strong>할 수 있습니다.</span>
+                    <span data-lang="ENG" style="display: none;">By clicking suggested questions, you can <strong>easily proceed with the consultation</strong>.</span>
+                    <span data-lang="ESP" style="display: none;">Al hacer clic en preguntas sugeridas, puede <strong>consultar fácilmente</strong>.</span>
+                  </li>
+                  <li>
+                    <span data-lang="KOR">챗봇은 분석 리포트를 기반으로 <strong>상권 해석, 전략 추천</strong> 등 다양한 도움을 제공합니다.</span>
+                    <span data-lang="ENG" style="display: none;">The chatbot provides various supports such as <strong>interpreting analysis and suggesting strategies</strong>.</span>
+                    <span data-lang="ESP" style="display: none;">El chatbot ofrece varios tipos de ayuda como <strong>interpretación de análisis y recomendaciones de estrategias</strong>.</span>
+                  </li>
+                </ul>
+              </div>
+
+            </div>
+          </div>
         </div>
       </div>
     </div>
-    
+
     <!-- 7. 요금제 및 이용 제한 안내 -->
     <div class="accordion-item">
       <h2 class="accordion-header" id="headingNine">
         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNine">
-          7. 이용 플랜 안내
+          <span data-lang="KOR">7. 이용 플랜 안내</span>
+          <span data-lang="ENG" style="display: none;">7. Plan Guide</span>
+          <span data-lang="ESP" style="display: none;">7. Guía de planes</span>
         </button>
       </h2>
 
@@ -444,11 +819,15 @@
 
               <h4 class="card-title mb-3">
                 <i class="bi bi-cash-coin text-primary me-2"></i>
-                <strong class="text-primary">Loca AI</strong> 이용 플랜 & 혜택
+                <span data-lang="KOR"><strong class="text-primary">Loca AI</strong> 이용 플랜 & 혜택</span>
+                <span data-lang="ENG" style="display: none;"><strong class="text-primary">Loca AI</strong> Plans & Benefits</span>
+                <span data-lang="ESP" style="display: none;"><strong class="text-primary">Loca AI</strong> Planes y Beneficios</span>
               </h4>
 
               <p class="text-muted mb-3">
-                비즈니스에 꼭 맞는 요금제를 선택해 상권 분석 기능을 효율적으로 활용해보세요.
+                <span data-lang="KOR">비즈니스에 꼭 맞는 요금제를 선택해 상권 분석 기능을 효율적으로 활용해보세요.</span>
+                <span data-lang="ENG" style="display: none;">Choose the plan that fits your business to efficiently use the commercial area analysis features.</span>
+                <span data-lang="ESP" style="display: none;">Seleccione el plan que se adapte a su negocio para aprovechar eficazmente las funciones de análisis comercial.</span>
               </p>
 
               <hr class="my-4">
@@ -458,60 +837,200 @@
                 <!-- Free Plan -->
                 <div class="col">
                   <div class="border rounded p-4 h-100 shadow-sm">
-                    <h5 class="text-success">Free Plan</h5>
-                    <h3 class="my-2">$0 <small class="text-muted fs-6">/ mo</small></h3>
+                    <h5 class="text-success">
+                      <span data-lang="KOR">Free Plan</span>
+                      <span data-lang="ENG" style="display: none;">Free Plan</span>
+                      <span data-lang="ESP" style="display: none;">Plan Gratis</span>
+                    </h5>
+                    <h3 class="my-2">
+                      $0 <small class="text-muted fs-6">/ 
+                      <span data-lang="KOR">mo</span>
+                      <span data-lang="ENG" style="display: none;">mo</span>
+                      <span data-lang="ESP" style="display: none;">mes</span>
+                      </small>
+                    </h3>
                     <div class="my-3">
                       <i class="bi bi-box-seam fs-1 text-success"></i>
                     </div>
-                    <p class="mb-1 fw-medium">Newsletter 정기발송</p>
-                    <p class="text-muted">상권분석 <span class="text-success fw-bold">1회</span></p>
-                    <p class="text-muted"><del>보고서출력</del></p>
-                    <p class="text-muted"><del>이전 분석기록 조회</del></p>
+                    <p class="mb-1 fw-medium">
+                      <span data-lang="KOR">Newsletter 정기발송</span>
+                      <span data-lang="ENG" style="display: none;">Regular Newsletter</span>
+                      <span data-lang="ESP" style="display: none;">Boletín regular</span>
+                    </p>
+                    <p class="text-muted">
+                      <span data-lang="KOR">상권분석 </span>
+                      <span class="text-success fw-bold">
+                        <span data-lang="KOR">1회</span>
+                        <span data-lang="ENG" style="display: none;">1 time</span>
+                        <span data-lang="ESP" style="display: none;">1 vez</span>
+                      </span>
+                    </p>
+                    <p class="text-muted"><del>
+                      <span data-lang="KOR">보고서출력</span>
+                      <span data-lang="ENG" style="display: none;">Report Printing</span>
+                      <span data-lang="ESP" style="display: none;">Impresión de informe</span>
+                    </del></p>
+                    <p class="text-muted"><del>
+                      <span data-lang="KOR">이전 분석기록 조회</span>
+                      <span data-lang="ENG" style="display: none;">Previous Analysis Records</span>
+                      <span data-lang="ESP" style="display: none;">Consulta de análisis previos</span>
+                    </del></p>
                   </div>
                 </div>
 
                 <!-- Starter Plan -->
                 <div class="col">
                   <div class="border rounded p-4 h-100 shadow-sm position-relative">
-                    <h5 class="text-info">Starter Plan</h5>
-                    <h3 class="my-2">$9.9 <small class="text-muted fs-6">/ mo</small></h3>
+                    <h5 class="text-info">
+                      <span data-lang="KOR">Starter Plan</span>
+                      <span data-lang="ENG" style="display: none;">Starter Plan</span>
+                      <span data-lang="ESP" style="display: none;">Plan Inicial</span>
+                    </h5>
+                    <h3 class="my-2">
+                      $9.9 <small class="text-muted fs-6">
+                        / 
+                        <span data-lang="KOR">mo</span>
+                        <span data-lang="ENG" style="display: none;">mo</span>
+                        <span data-lang="ESP" style="display: none;">mes</span>
+                      </small>
+                    </h3>
                     <div class="my-3">
                       <i class="bi bi-send fs-1 text-info"></i>
                     </div>
-                    <p class="mb-1 fw-medium">Newsletter 정기발송</p>
-                    <p>상권분석 <span class="text-info fw-bold">10회</span></p>
-                    <p>보고서출력 <span class="fw-bold">5회</span></p>
-                    <p class="text-muted"><del>이전 분석기록 조회</del></p>
+                    <p class="mb-1 fw-medium">
+                      <span data-lang="KOR">Newsletter 정기발송</span>
+                      <span data-lang="ENG" style="display: none;">Regular Newsletter</span>
+                      <span data-lang="ESP" style="display: none;">Boletín regular</span>
+                    </p>
+                    <p>
+                      <span data-lang="KOR">상권분석 </span>
+                      <span class="text-info fw-bold">
+                        <span data-lang="KOR">10회</span>
+                        <span data-lang="ENG" style="display: none;">10 times</span>
+                        <span data-lang="ESP" style="display: none;">10 veces</span>
+                      </span>
+                    </p>
+                    <p>
+                      <span data-lang="KOR">보고서출력 </span>
+                      <span class="fw-bold">
+                        <span data-lang="KOR">5회</span>
+                        <span data-lang="ENG" style="display: none;">5 times</span>
+                        <span data-lang="ESP" style="display: none;">5 veces</span>
+                      </span>
+                    </p>
+                    <p class="text-muted"><del>
+                      <span data-lang="KOR">이전 분석기록 조회</span>
+                      <span data-lang="ENG" style="display: none;">Previous Analysis Records</span>
+                      <span data-lang="ESP" style="display: none;">Consulta de análisis previos</span>
+                    </del></p>
                   </div>
                 </div>
 
                 <!-- Business Plan -->
                 <div class="col">
                   <div class="border rounded p-4 h-100 shadow-sm">
-                    <h5 class="text-warning">Business Plan</h5>
-                    <h3 class="my-2">$19 <small class="text-muted fs-6">/ mo</small></h3>
+                    <h5 class="text-warning">
+                      <span data-lang="KOR">Business Plan</span>
+                      <span data-lang="ENG" style="display: none;">Business Plan</span>
+                      <span data-lang="ESP" style="display: none;">Plan Empresarial</span>
+                    </h5>
+                    <h3 class="my-2">
+                      $19 <small class="text-muted fs-6">
+                        / 
+                        <span data-lang="KOR">mo</span>
+                        <span data-lang="ENG" style="display: none;">mo</span>
+                        <span data-lang="ESP" style="display: none;">mes</span>
+                      </small>
+                    </h3>
                     <div class="my-3">
                       <i class="bi bi-airplane fs-1 text-warning"></i>
                     </div>
-                    <p class="mb-1 fw-medium">Newsletter 정기발송</p>
-                    <p>상권분석 <span class="text-warning fw-bold">30회</span></p>
-                    <p>보고서출력 <span class="fw-bold">10회</span></p>
-                    <p>최근 <span class="fw-bold text-warning">5회</span> 이전 <br>분석기록 조회</p>
+                    <p class="mb-1 fw-medium">
+                      <span data-lang="KOR">Newsletter 정기발송</span>
+                      <span data-lang="ENG" style="display: none;">Regular Newsletter</span>
+                      <span data-lang="ESP" style="display: none;">Boletín regular</span>
+                    </p>
+                    <p>
+                      <span data-lang="KOR">상권분석 </span>
+                      <span class="text-warning fw-bold">
+                        <span data-lang="KOR">30회</span>
+                        <span data-lang="ENG" style="display: none;">30 times</span>
+                        <span data-lang="ESP" style="display: none;">30 veces</span>
+                      </span>
+                    </p>
+                    <p>
+                      <span data-lang="KOR">보고서출력 </span>
+                      <span class="fw-bold">
+                        <span data-lang="KOR">10회</span>
+                        <span data-lang="ENG" style="display: none;">10 times</span>
+                        <span data-lang="ESP" style="display: none;">10 veces</span>
+                      </span>
+                    </p>
+                    <p>
+                      <span data-lang="KOR">최근 </span>
+                      <span class="fw-bold text-warning">
+                        <span data-lang="KOR">5회</span>
+                        <span data-lang="ENG" style="display: none;">5 times</span>
+                        <span data-lang="ESP" style="display: none;">5 veces</span>
+                      </span>
+                      <span data-lang="KOR"> 이전 <br>분석기록 조회</span>
+                      <span data-lang="ENG" style="display: none;"> Previous <br> Analysis Records</span>
+                      <span data-lang="ESP" style="display: none;"> Análisis previos <br> consultados</span>
+                    </p>
                   </div>
                 </div>
 
                 <!-- Ultimate Plan -->
                 <div class="col">
                   <div class="border rounded p-4 h-100 shadow-sm">
-                    <h5 class="text-primary">Ultimate Plan</h5>
-                    <h3 class="my-2">$39 <small class="text-muted fs-6">/ mo</small></h3>
+                    <h5 class="text-primary">
+                      <span data-lang="KOR">Ultimate Plan</span>
+                      <span data-lang="ENG" style="display: none;">Ultimate Plan</span>
+                      <span data-lang="ESP" style="display: none;">Plan Definitivo</span>
+                    </h5>
+                    <h3 class="my-2">
+                      $39 <small class="text-muted fs-6">
+                        / 
+                        <span data-lang="KOR">mo</span>
+                        <span data-lang="ENG" style="display: none;">mo</span>
+                        <span data-lang="ESP" style="display: none;">mes</span>
+                      </small>
+                    </h3>
                     <div class="my-3">
                       <i class="bi bi-rocket-takeoff fs-1 text-primary"></i>
                     </div>
-                    <p class="mb-1 fw-medium">Newsletter 정기발송</p>
-                    <p>상권분석 <span class="text-primary fw-bold">무제한</span></p>
-                    <p>보고서출력 <span class="text-primary fw-bold">무제한</span></p>
-                    <p>최근 <span class="fw-bold text-primary">10회</span> 이전 <br>분석기록 조회</p>
+                    <p class="mb-1 fw-medium">
+                      <span data-lang="KOR">Newsletter 정기발송</span>
+                      <span data-lang="ENG" style="display: none;">Regular Newsletter</span>
+                      <span data-lang="ESP" style="display: none;">Boletín regular</span>
+                    </p>
+                    <p>
+                      <span data-lang="KOR">상권분석 </span>
+                      <span class="text-primary fw-bold">
+                        <span data-lang="KOR">무제한</span>
+                        <span data-lang="ENG" style="display: none;">Unlimited</span>
+                        <span data-lang="ESP" style="display: none;">Ilimitado</span>
+                      </span>
+                    </p>
+                    <p>
+                      <span data-lang="KOR">보고서출력 </span>
+                      <span class="text-primary fw-bold">
+                        <span data-lang="KOR">무제한</span>
+                        <span data-lang="ENG" style="display: none;">Unlimited</span>
+                        <span data-lang="ESP" style="display: none;">Ilimitado</span>
+                      </span>
+                    </p>
+                    <p>
+                      <span data-lang="KOR">최근 </span>
+                      <span class="fw-bold text-primary">
+                        <span data-lang="KOR">10회</span>
+                        <span data-lang="ENG" style="display: none;">10 times</span>
+                        <span data-lang="ESP" style="display: none;">10 veces</span>
+                      </span>
+                      <span data-lang="KOR"> 이전 <br>분석기록 조회</span>
+                      <span data-lang="ENG" style="display: none;"> Previous <br> Analysis Records</span>
+                      <span data-lang="ESP" style="display: none;"> Análisis previos <br> consultados</span>
+                    </p>
                   </div>
                 </div>
 
@@ -526,7 +1045,9 @@
     <div class="accordion-item">
       <h2 class="accordion-header" id="headingSeven">
         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSeven">
-          8. 자주 묻는 질문 (FAQ)
+          <span data-lang="KOR">8. 자주 묻는 질문 (FAQ)</span>
+          <span data-lang="ENG" style="display: none;">8. Frequently Asked Questions (FAQ)</span>
+          <span data-lang="ESP" style="display: none;">8. Preguntas frecuentes (FAQ)</span>
         </button>
       </h2>
 
@@ -538,11 +1059,15 @@
 
               <h4 class="card-title mb-3 text-center">
                 <i class="bi bi-question-diamond-fill text-primary me-2"></i>
-                자주 묻는 질문 (FAQ)
+                <span data-lang="KOR">자주 묻는 질문 (FAQ)</span>
+                <span data-lang="ENG" style="display: none;">Frequently Asked Questions (FAQ)</span>
+                <span data-lang="ESP" style="display: none;">Preguntas frecuentes (FAQ)</span>
               </h4>
 
               <p class="text-muted mb-3 text-center">
-                자주 묻는 질문을 통해 궁금한 내용을 빠르게 확인해보세요.
+                <span data-lang="KOR">자주 묻는 질문을 통해 궁금한 내용을 빠르게 확인해보세요.</span>
+                <span data-lang="ENG" style="display: none;">Quickly find answers to your questions through the FAQ.</span>
+                <span data-lang="ESP" style="display: none;">Encuentre rápidamente respuestas a sus preguntas a través de las preguntas frecuentes.</span>
               </p>
 
               <hr class="my-4">
@@ -554,11 +1079,23 @@
                 <div class="mb-4 p-3 border rounded shadow-sm bg-light">
                   <h5 class="fw-semibold text-primary mb-2">
                     <i class="bi bi-lightbulb-fill me-2 text-warning"></i>
-                    LocaAI는 어떤 방식으로 상권 분석을 하나요?
+                    <span data-lang="KOR">LocaAI는 어떤 방식으로 상권 분석을 하나요?</span>
+                    <span data-lang="ENG" style="display: none;">How does LocaAI analyze commercial areas?</span>
+                    <span data-lang="ESP" style="display: none;">¿Cómo analiza LocaAI las zonas comerciales?</span>
                   </h5>
                   <div class="ps-4 text-dark">
-                    공공 데이터, 유동 인구, 업종 분포, 매출 예측 등의 <strong>다양한 빅데이터를 AI가 학습</strong>하여 <br>
-                    <strong>해당 입지의 상업적 가능성과 생존률</strong>을 예측합니다.
+                    <span data-lang="KOR">
+                      공공 데이터, 유동 인구, 업종 분포, 매출 예측 등의 <strong>다양한 빅데이터를 AI가 학습</strong>하여 <br>
+                      <strong>해당 입지의 상업적 가능성과 생존률</strong>을 예측합니다.
+                    </span>
+                    <span data-lang="ENG" style="display: none;">
+                      AI learns from various big data such as public data, floating population, business distribution, and sales forecasts to predict <br>
+                      <strong>the commercial potential and survivability</strong> of the location.
+                    </span>
+                    <span data-lang="ESP" style="display: none;">
+                      La IA aprende de diversos datos masivos como datos públicos, población flotante, distribución comercial y pronósticos de ventas para predecir <br>
+                      <strong>el potencial comercial y la supervivencia</strong> del lugar.
+                    </span>
                   </div>
                 </div>
 
@@ -566,10 +1103,20 @@
                 <div class="mb-4 p-3 border rounded shadow-sm bg-light">
                   <h5 class="fw-semibold text-primary mb-2">
                     <i class="bi bi-bar-chart-fill me-2 text-info"></i>
-                    정확도는 얼마나 되나요?
+                    <span data-lang="KOR">정확도는 얼마나 되나요?</span>
+                    <span data-lang="ENG" style="display: none;">How accurate is it?</span>
+                    <span data-lang="ESP" style="display: none;">¿Cuál es la precisión?</span>
                   </h5>
                   <div class="ps-4 text-dark">
-                    <strong>평균 80~90% </strong>수준의 예측 정확도를 유지하고 있으며, <strong>최신 상권 데이터와 머신러닝 알고리즘 기반</strong>으로 분석됩니다.
+                    <span data-lang="KOR">
+                      <strong>평균 80~90% </strong>수준의 예측 정확도를 유지하고 있으며, <strong>최신 상권 데이터와 머신러닝 알고리즘 기반</strong>으로 분석됩니다.
+                    </span>
+                    <span data-lang="ENG" style="display: none;">
+                      It maintains an average prediction accuracy of <strong>80-90%</strong> and is analyzed based on <strong>the latest commercial data and machine learning algorithms</strong>.
+                    </span>
+                    <span data-lang="ESP" style="display: none;">
+                      Mantiene una precisión de predicción promedio del <strong>80-90%</strong> y se analiza basado en <strong>los datos comerciales más recientes y algoritmos de aprendizaje automático</strong>.
+                    </span>
                   </div>
                 </div>
 
@@ -577,11 +1124,23 @@
                 <div class="mb-4 p-3 border rounded shadow-sm bg-light">
                   <h5 class="fw-semibold text-primary mb-2">
                     <i class="bi bi-stopwatch-fill me-2 text-warning"></i>
-                    분석 결과가 나오기까지 얼마나 걸리나요?
+                    <span data-lang="KOR">분석 결과가 나오기까지 얼마나 걸리나요?</span>
+                    <span data-lang="ENG" style="display: none;">How long does it take to get analysis results?</span>
+                    <span data-lang="ESP" style="display: none;">¿Cuánto tiempo tarda en salir el resultado del análisis?</span>
                   </h5>
                   <div class="ps-4 text-dark">
-                    상권 분석은 평균적으로 <strong>30초 이내</strong>에 완료되며, <strong>복잡한 데이터 입력 시 다소 시간이 소요</strong>될 수 있습니다. <br>
-                    결과가 생성되면 즉시 화면에 표시되며, PDF로 바로 저장 가능합니다.
+                    <span data-lang="KOR">
+                      상권 분석은 평균적으로 <strong>30초 이내</strong>에 완료되며, <strong>복잡한 데이터 입력 시 다소 시간이 소요</strong>될 수 있습니다. <br>
+                      결과가 생성되면 즉시 화면에 표시되며, PDF로 바로 저장 가능합니다.
+                    </span>
+                    <span data-lang="ENG" style="display: none;">
+                      The commercial analysis is typically completed within <strong>30 seconds</strong>, but <strong>complex data input may take longer</strong>.<br>
+                      Once results are generated, they are displayed immediately on the screen and can be saved as a PDF.
+                    </span>
+                    <span data-lang="ESP" style="display: none;">
+                      El análisis comercial generalmente se completa en menos de <strong>30 segundos</strong>, pero <strong>la entrada de datos complejos puede tardar más</strong>.<br>
+                      Una vez generados los resultados, se muestran inmediatamente en la pantalla y pueden guardarse en PDF.
+                    </span>
                   </div>
                 </div>
 
@@ -589,11 +1148,23 @@
                 <div class="mb-4 p-3 border rounded shadow-sm bg-light">
                   <h5 class="fw-semibold text-primary mb-2">
                     <i class="bi bi-file-earmark-pdf-fill me-2 text-danger"></i>
-                    분석 리포트는 어떻게 받을 수 있나요?
+                    <span data-lang="KOR">분석 리포트는 어떻게 받을 수 있나요?</span>
+                    <span data-lang="ENG" style="display: none;">How can I receive the analysis report?</span>
+                    <span data-lang="ESP" style="display: none;">¿Cómo puedo recibir el informe de análisis?</span>
                   </h5>
                   <div class="ps-4 text-dark">
-                    업종, 주소, 점포 면적, 주류 판매 여부를 입력하고 상권 분석하기 버튼을 클릭하면 <br>
-                    <strong>맞춤형 리포트</strong>가 자동 생성되며 <strong>PDF</strong> 다운로드도 가능합니다.
+                    <span data-lang="KOR">
+                      업종, 주소, 점포 면적, 주류 판매 여부를 입력하고 상권 분석하기 버튼을 클릭하면 <br>
+                      <strong>맞춤형 리포트</strong>가 자동 생성되며 <strong>PDF</strong> 다운로드도 가능합니다.
+                    </span>
+                    <span data-lang="ENG" style="display: none;">
+                      Enter the business type, address, store area, and alcohol sales status, then click the analyze button.<br>
+                      A <strong>customized report</strong> will be generated automatically, and you can download it as a <strong>PDF</strong>.
+                    </span>
+                    <span data-lang="ESP" style="display: none;">
+                      Ingrese el tipo de negocio, dirección, área de la tienda y estado de venta de alcohol, luego haga clic en el botón de análisis.<br>
+                      Se generará automáticamente un <strong>informe personalizado</strong> y podrá descargarlo en formato <strong>PDF</strong>.
+                    </span>
                   </div>
                 </div>
 
@@ -601,11 +1172,23 @@
                 <div class="mb-4 p-3 border rounded shadow-sm bg-light">
                   <h5 class="fw-semibold text-primary mb-2">
                     <i class="bi bi-person-x-fill me-2 text-secondary"></i>
-                    회원가입 없이도 분석이 가능한가요?
+                    <span data-lang="KOR">회원가입 없이도 분석이 가능한가요?</span>
+                    <span data-lang="ENG" style="display: none;">Can I analyze without signing up?</span>
+                    <span data-lang="ESP" style="display: none;">¿Puedo analizar sin registrarme?</span>
                   </h5>
                   <div class="ps-4 text-dark">
-                    서비스의 주요 기능인 <strong>상권 분석 및 PDF 리포트 생성</strong>은 <strong>로그인 후 이용</strong>하실 수 있습니다.<br>
-                    다만, <strong class="text-primary">[Data] </strong>페이지에서는 회원가입 없이도 상권 관련 통계 자료를 열람하실 수 있습니다.
+                    <span data-lang="KOR">
+                      서비스의 주요 기능인 <strong>상권 분석 및 PDF 리포트 생성</strong>은 <strong>로그인 후 이용</strong>하실 수 있습니다.<br>
+                      다만, <strong class="text-primary">[Data] </strong>페이지에서는 회원가입 없이도 상권 관련 통계 자료를 열람하실 수 있습니다.
+                    </span>
+                    <span data-lang="ENG" style="display: none;">
+                      The main features of the service, <strong>commercial analysis and PDF report generation</strong>, require <strong>logging in</strong>.<br>
+                      However, on the <strong class="text-primary">[Data]</strong> page, you can view commercial statistics without signing up.
+                    </span>
+                    <span data-lang="ESP" style="display: none;">
+                      Las funciones principales del servicio, <strong>análisis comercial y generación de informes PDF</strong>, requieren <strong>iniciar sesión</strong>.<br>
+                      Sin embargo, en la página <strong class="text-primary">[Datos]</strong>, puede consultar estadísticas comerciales sin registrarse.
+                    </span>
                   </div>
                 </div>
 
@@ -613,17 +1196,41 @@
                 <div class="mb-4 p-3 border rounded shadow-sm bg-light">
                   <h5 class="fw-semibold text-primary mb-2">
                     <i class="bi bi-tags-fill me-2 text-info"></i>
-                    요금제는 어떻게 구성되어 있나요?
+                    <span data-lang="KOR">요금제는 어떻게 구성되어 있나요?</span>
+                    <span data-lang="ENG" style="display: none;">How are the plans structured?</span>
+                    <span data-lang="ESP" style="display: none;">¿Cómo están estructurados los planes?</span>
                   </h5>
                   <div class="ps-4 text-dark">
-                    무료부터 무제한 플랜까지 있으며, <strong>분석 횟수 및 출력 횟수 등에 따라 차등</strong> 제공됩니다. <br>
-                    <button
-                      data-bs-target="#collapseNine"
-                      data-bs-toggle="collapse"
-                      data-bs-parent="#guideAccordion"
-                      class="accordion-button bg-transparent border-0 p-0 fw-semibold text-primary text-decoration-underline">
-                      7. 이용 플랜 안내 에서 바로 확인해보세요 <i class="bi bi-arrow-right-circle ms-1"></i>
-                    </button>
+                    <span data-lang="KOR">
+                      무료부터 무제한 플랜까지 있으며, <strong>분석 횟수 및 출력 횟수 등에 따라 차등</strong> 제공됩니다. <br>
+                      <button
+                        data-bs-target="#collapseNine"
+                        data-bs-toggle="collapse"
+                        data-bs-parent="#guideAccordion"
+                        class="accordion-button bg-transparent border-0 p-0 fw-semibold text-primary text-decoration-underline">
+                        7. 이용 플랜 안내 에서 바로 확인해보세요 <i class="bi bi-arrow-right-circle ms-1"></i>
+                      </button>
+                    </span>
+                    <span data-lang="ENG" style="display: none;">
+                      Plans range from free to unlimited, with <strong>differentiation based on analysis and output counts</strong>.<br>
+                      <button
+                        data-bs-target="#collapseNine"
+                        data-bs-toggle="collapse"
+                        data-bs-parent="#guideAccordion"
+                        class="accordion-button bg-transparent border-0 p-0 fw-semibold text-primary text-decoration-underline">
+                        Check it directly in Section 7. Plan Guide <i class="bi bi-arrow-right-circle ms-1"></i>
+                      </button>
+                    </span>
+                    <span data-lang="ESP" style="display: none;">
+                      Los planes varían desde gratuitos hasta ilimitados, con <strong>diferenciación basada en la cantidad de análisis y salidas</strong>.<br>
+                      <button
+                        data-bs-target="#collapseNine"
+                        data-bs-toggle="collapse"
+                        data-bs-parent="#guideAccordion"
+                        class="accordion-button bg-transparent border-0 p-0 fw-semibold text-primary text-decoration-underline">
+                        Revíselo directamente en la Sección 7. Guía de Planes <i class="bi bi-arrow-right-circle ms-1"></i>
+                      </button>
+                    </span>
                   </div>
                 </div>
 
@@ -631,13 +1238,26 @@
                 <div class="mb-4 p-3 border rounded shadow-sm bg-light">
                   <h5 class="fw-semibold text-primary mb-2">
                     <i class="bi bi-journal-check me-2 text-primary"></i>
-                    내 분석 기록은 어디서 확인하나요?
+                    <span data-lang="KOR">내 분석 기록은 어디서 확인하나요?</span>
+                    <span data-lang="ENG" style="display: none;">Where can I check my analysis records?</span>
+                    <span data-lang="ESP" style="display: none;">¿Dónde puedo consultar mis registros de análisis?</span>
                   </h5>
                   <div class="ps-4 text-dark">
-                    <strong>Business Plan 이상 요금제</strong> 이용 시, 분석 기록 조회가 가능합니다. <br>
-                    로그인 후 <strong class="text-primary">[Services]</strong> 화면에서 <strong>‘내 최근 분석기록’</strong>을 확인하실 수 있습니다.
+                    <span data-lang="KOR">
+                      <strong>Business Plan 이상 요금제</strong> 이용 시, 분석 기록 조회가 가능합니다. <br>
+                      로그인 후 <strong class="text-primary">[Services]</strong> 화면에서 <strong>‘내 최근 분석기록’</strong>을 확인하실 수 있습니다.
+                    </span>
+                    <span data-lang="ENG" style="display: none;">
+                      Analysis record viewing is available with the <strong>Business Plan or higher</strong>.<br>
+                      After logging in, you can check <strong>‘My Recent Analysis Records’</strong> on the <strong class="text-primary">[Services]</strong> page.
+                    </span>
+                    <span data-lang="ESP" style="display: none;">
+                      La visualización de registros de análisis está disponible con el <strong>Plan Business o superior</strong>.<br>
+                      Después de iniciar sesión, puede consultar <strong>‘Mis registros de análisis recientes’</strong> en la página <strong class="text-primary">[Servicios]</strong>.
+                    </span>
                   </div>
                 </div>
+
               </div><!-- /faq-list -->
             </div>
           </div>
@@ -650,7 +1270,9 @@
     <div class="accordion-item">
       <h2 class="accordion-header" id="headingEight">
         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEight">
-          9. 문의하기
+          <span data-lang="KOR">9. 문의하기</span>
+          <span data-lang="ENG" style="display: none;">9. Contact Us</span>
+          <span data-lang="ESP" style="display: none;">9. Contáctenos</span>
         </button>
       </h2>
       <div id="collapseEight" class="accordion-collapse collapse" data-bs-parent="#guideAccordion">
@@ -661,11 +1283,15 @@
               <!-- 🔹 제목 -->
               <h4 class="card-title mb-3">
                 <i class="bi bi-question-circle-fill text-primary me-2"></i>
-                <strong class="text-primary">LocaAI</strong> 문의하기
+                <span data-lang="KOR"><strong class="text-primary">LocaAI</strong> 문의하기</span>
+                <span data-lang="ENG" style="display: none;"><strong class="text-primary">Contact</strong> LocaAI</span>
+                <span data-lang="ESP" style="display: none;"><strong class="text-primary">Contacto con</strong> LocaAI</span>
               </h4>
 
               <p class="text-muted mb-3">
-                궁금한 점이 있다면 언제든지 문의해주세요.
+                <span data-lang="KOR">궁금한 점이 있다면 언제든지 문의해주세요.</span>
+                <span data-lang="ENG" style="display: none;">If you have any questions, feel free to contact us anytime.</span>
+                <span data-lang="ESP" style="display: none;">Si tiene alguna pregunta, no dude en contactarnos en cualquier momento.</span>
               </p>
 
               <hr class="my-4">
@@ -674,15 +1300,31 @@
               <div class="text-start mx-auto" style="max-width: 1000px;">
                 <h5 class="mb-3">
                   <i class="bi bi-envelope-open-fill text-success me-2"></i>
-                  문의 방법 안내
+                  <span data-lang="KOR">문의 방법 안내</span>
+                  <span data-lang="ENG" style="display: none;">How to Contact</span>
+                  <span data-lang="ESP" style="display: none;">Cómo contactar</span>
                 </h5>
+
                 <p class="mb-4">
-                  서비스 이용 중 불편한 점이나 궁금한 사항은 아래 버튼을 통해 <strong>문의 게시판</strong>에 글을 남겨주세요.<br>
-                  담당자가 빠르게 확인 후 답변드리겠습니다.
+                  <span data-lang="KOR">
+                    서비스 이용 중 불편한 점이나 궁금한 사항은 아래 버튼을 통해 <strong>문의 게시판</strong>에 글을 남겨주세요.<br>
+                    담당자가 빠르게 확인 후 답변드리겠습니다.
+                  </span>
+                  <span data-lang="ENG" style="display: none;">
+                    If you experience any issues or have questions while using the service, please leave a post on the <strong>inquiry board</strong> using the button below.<br>
+                    Our team will review it promptly and respond as soon as possible.
+                  </span>
+                  <span data-lang="ESP" style="display: none;">
+                    Si tiene algún inconveniente o pregunta mientras usa el servicio, deje una publicación en el <strong>tablero de consultas</strong> usando el botón de abajo.<br>
+                    Nuestro equipo lo revisará rápidamente y le responderá lo antes posible.
+                  </span>
                 </p>
 
                 <a href="{% url 'border:inquiry_list' %}" class="btn btn-outline-primary mt-2">
-                  문의 게시판으로 이동 <i class="bi bi-arrow-right-circle ms-1"></i>
+                  <span data-lang="KOR">문의 게시판으로 이동</span>
+                  <span data-lang="ENG" style="display: none;">Go to Inquiry Board</span>
+                  <span data-lang="ESP" style="display: none;">Ir al tablero de consultas</span>
+                  <i class="bi bi-arrow-right-circle ms-1"></i>
                 </a>
 
             </div>
@@ -694,9 +1336,21 @@
   </div>
 
   <!-- 알림 -->
-  <div class="alert alert-warning shadow-sm mt-4 w-100 text-center" style="max-width: 800px;">
-    <strong>⚠️ LocaAI가 제공하는 리포트는 추정값 입니다.</strong><br> 
-    빅데이터를 기반으로 AI가 분석한 결과이며, 참고용으로 활용해주세요.
+  <div class="d-flex justify-content-center">
+    <div class="alert alert-warning shadow-sm mt-4 w-100 text-center" style="max-width: 800px;">
+      <span data-lang="KOR">
+        <strong>⚠️ LocaAI가 제공하는 리포트는 추정값 입니다.</strong><br>
+        빅데이터를 기반으로 AI가 분석한 결과이며, 참고용으로 활용해주세요.
+      </span>
+      <span data-lang="ENG" style="display: none;">
+        <strong>⚠️ Reports provided by LocaAI are estimated values.</strong><br>
+        They are AI-generated based on big data and should be used for reference only.
+      </span>
+      <span data-lang="ESP" style="display: none;">
+        <strong>⚠️ Los informes proporcionados por LocaAI son valores estimados.</strong><br>
+        Son resultados generados por IA basados en macrodatos y deben utilizarse solo como referencia.
+      </span>
+    </div>
   </div>
 </div>
 {% endblock %}
@@ -714,6 +1368,24 @@
   }
   .badge {
     font-size: 1rem;
+  }
+  .list-hover {
+    font-size: 0.85rem; 
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 0.5rem;
+    text-align: left !important;
+  }
+  .list-hover:hover {
+    background-color: #e9f5ff;
+    transform: scale(1.03);
+    box-shadow: 0 0.5rem 1rem rgba(0, 123, 255, 0.15);
+    color: #0d6efd;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .list-hover:hover i {
+    transform: scale(1.2);
+    transition: transform 0.2s ease;
   }
 </style>
 {% endblock %}
