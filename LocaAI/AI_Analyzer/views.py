@@ -822,18 +822,73 @@ def perform_spatial_analysis_guest(temp_request):
                 "2A_Long_CN": results.get("long_foreign_cn_1000m", 0),
             })
 
-            # AI 예측 수행 (간소화된 데이터로)
+            # 비회원 분석에서도 28개 피쳐를 모두 사용하여 AI 예측 수행
             try:
-                ai_prediction = predict_survival_probability({
-                    'life_pop_300m': results['life_pop_300m'],
-                    'working_pop_300m': results['working_pop_300m'],
-                    'competitor_300m': results['competitor_300m'],
-                    'total_land_value': results['total_land_value'],
-                    'area': area,
-                    'service_type': service_type,
-                })
-                results['survival_percentage'] = ai_prediction
-                print(f"   ✅ AI 생존 확률: {ai_prediction}%")
+                # 변수 매핑 (회원 분석과 동일하게)
+                _1A_Total = results.get('life_pop_300m', 0)
+                _1A_20 = results.get('life_pop_20_300m', 0)
+                _1A_30 = results.get('life_pop_30_300m', 0)
+                _1A_40 = results.get('life_pop_40_300m', 0)
+                _1A_50 = results.get('life_pop_50_300m', 0)
+                _1A_60 = results.get('life_pop_60_300m', 0)
+                _2A_20 = results.get('life_pop_20_1000m', 0)
+                _2A_30 = results.get('life_pop_30_1000m', 0)
+                _2A_40 = results.get('life_pop_40_1000m', 0)
+                _2A_50 = results.get('life_pop_50_1000m', 0)
+                _2A_60 = results.get('life_pop_60_1000m', 0)
+                _1A_Temp_CN = results.get('temp_foreign_cn_300m', 0)
+                _2A_Temp_Total = results.get('temp_foreign_1000m', 0)
+                _2A_Temp_CN = results.get('temp_foreign_cn_1000m', 0)
+                _1A_Long_Total = results.get('long_foreign_300m', 0)
+                _2A_Long_Total = results.get('long_foreign_1000m', 0)
+                _2A_Long_CN = results.get('long_foreign_cn_1000m', 0)
+                Working_Pop = results.get('working_pop_300m', 0)
+                PubBuilding = results.get('public_building_250m', 0)
+                School = results.get('school_250m', 0)
+                Competitor_C = results.get('competitor_300m', 0)
+                Competitor_R = results.get('competitor_ratio_300m', 0)
+                Adjacent_BIZ = results.get('adjacent_biz_300m', 0)
+                Business_D = results.get('business_diversity_300m', 0)
+                Area = area
+                Total_LV = results.get('total_land_value', 0)
+                Service = service_type
+
+                # 28개 피쳐로 AI 예측 수행
+                features_for_ai = {
+                    "Area": Area,
+                    "Adjacent_BIZ": Adjacent_BIZ,
+                    "1A_Total": _1A_Total,
+                    "Total_LV": Total_LV,
+                    "Business_D": Business_D,
+                    "Working_Pop": Working_Pop,
+                    "2A_20": _2A_20,
+                    "2A_30": _2A_30,
+                    "2A_40": _2A_40,
+                    "2A_50": _2A_50,
+                    "2A_60": _2A_60,
+                    "1A_20": _1A_20,
+                    "1A_30": _1A_30,
+                    "1A_40": _1A_40,
+                    "1A_50": _1A_50,
+                    "1A_60": _1A_60,
+                    "1A_Long_Total": _1A_Long_Total,
+                    "2A_Long_Total": _2A_Long_Total,
+                    "1A_Temp_CN": _1A_Temp_CN,
+                    "2A_Temp_CN": _2A_Temp_CN,
+                    "2A_Temp_Total": _2A_Temp_Total,
+                    "2A_Long_CN": _2A_Long_CN,
+                    "Competitor_C": Competitor_C,
+                    "Competitor_R": Competitor_R,
+                    "Service": Service,
+                    "School": School,
+                    "PubBuilding": PubBuilding,
+                    "UPTAENM_ID": business_type_id,  # 업종 ID
+                }
+
+                survival_probability = predict_survival_probability(features_for_ai)
+                survival_percentage = round(survival_probability * 100, 1)
+                results['survival_percentage'] = survival_percentage
+                print(f"   ✅ AI 생존 확률 (28개 피쳐): {survival_percentage}%")
             except Exception as e:
                 print(f"   ❌ AI 예측 오류: {e}")
                 results['survival_percentage'] = 50  # 기본값
