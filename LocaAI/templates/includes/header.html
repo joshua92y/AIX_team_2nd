@@ -24,10 +24,27 @@
         </li>
         <li class="dropdown">
           <a href="#"><span>Language</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-          <ul> 
-            <li><a href="#" onclick="setSelectedLangValue('KOR'); return false;">🇰🇷 한국어</a></li>
-            <li><a href="#" onclick="setSelectedLangValue('ENG'); return false;">🇺🇸 영어</a></li>
-            <li><a href="#" onclick="setSelectedLangValue('ESP'); return false;">🇪🇸 스페인어</a></li>
+          <ul class="no-justify">
+            <li>
+              <a href="#" class="language-link" onclick="setSelectedLangValue('KOR'); return false;">
+                <img src="https://flagcdn.com/w40/kr.png" 
+                    srcset="https://flagcdn.com/w80/kr.png 2x"
+                    alt="한국 국기" class="flag-icon">
+                <span class="lang-label">한국어</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="language-link" onclick="setSelectedLangValue('ENG'); return false;">
+                <img src="https://flagcdn.com/w20/us.png" alt="미국 국기" class="flag-icon">
+                영어
+              </a>
+            </li>
+            <li>
+              <a href="#" class="language-link" onclick="setSelectedLangValue('ESP'); return false;">
+                <img src="https://flagcdn.com/w20/es.png" alt="스페인 국기" class="flag-icon">
+                스페인어
+              </a>
+            </li>
           </ul>
         </li>
       </ul>
@@ -101,7 +118,41 @@
     .dropdown-item i {
       width: 20px;
     }
-  </style>
+
+    .language-link {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start; /* 왼쪽 정렬 */
+      gap: 8px;
+      padding: 5px 10px;
+      width: 100%;
+      text-decoration: none;
+      color: inherit;
+      box-sizing: border-box;
+    }
+
+    .flag-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      object-fit: cover;
+
+      /* 선명도 향상 */
+      image-rendering: crisp-edges;
+      -webkit-image-rendering: crisp-edges;
+    }
+
+    .lang-label {
+      font-size: 14px;
+    }
+
+    .no-justify .language-link,
+    .no-justify .language-link:focus,
+    .no-justify .language-link:hover,
+    .no-justify .language-link:active {
+      justify-content: flex-start;
+    }
+    </style>
 
   <script>
     // 전역 변수로 설정하여 중복 선언 방지
