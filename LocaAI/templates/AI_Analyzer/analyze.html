@@ -104,6 +104,20 @@
       console.log('🔍 [DEBUG] PDF 디버깅 정보:');
       console.log('- window.currentRequestId:', window.currentRequestId);
       console.log('- window.currentAnalysisData:', window.currentAnalysisData);
+      
+      // currentAnalysisData가 있으면 상세 정보 확인
+      if (window.currentAnalysisData) {
+        console.log('- currentAnalysisData.request:', window.currentAnalysisData.request);
+        console.log('- currentAnalysisData.request.id:', window.currentAnalysisData.request?.id);
+        
+        // currentRequestId가 null이면 currentAnalysisData에서 추출 시도
+        if (!window.currentRequestId && window.currentAnalysisData.request?.id) {
+          console.log('🔧 [FIX] currentRequestId를 currentAnalysisData에서 복구 시도...');
+          window.currentRequestId = window.currentAnalysisData.request.id;
+          console.log('✅ currentRequestId 복구됨:', window.currentRequestId);
+        }
+      }
+      
       console.log('- typeof generatePDF:', typeof generatePDF);
       if (window.currentRequestId) {
         console.log('✅ currentRequestId가 설정되어 있습니다.');
