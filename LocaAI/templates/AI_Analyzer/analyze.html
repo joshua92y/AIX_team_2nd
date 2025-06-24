@@ -109,16 +109,66 @@
     // - analyze-utils.js: 공통 유틸리티
     // ===========================================
     
-    // 전역 변수 선언 및 디버깅 함수
-    window.debugPDF = function() {
-      console.log('🔍 [DEBUG] PDF 디버깅 정보:');
-      console.log('- window.currentRequestId:', window.currentRequestId);
-      console.log('- window.currentAnalysisData:', window.currentAnalysisData);
+    // 채팅 메시지 전송
+    async function sendChatMessage() {
+      const input = document.getElementById('chatInput');
+      const message = input.value.trim();
       
-      // currentAnalysisData가 있으면 상세 정보 확인
-      if (window.currentAnalysisData) {
-        console.log('- currentAnalysisData.request:', window.currentAnalysisData.request);
-        console.log('- currentAnalysisData.request.id:', window.currentAnalysisData.request?.id);
+      if (!message || !chatSocket) return;
+      
+      // 새로운 세션이 필요한 경우 생성
+      if (!currentSessionId) {
+        try {
+          await createNewChatSession();
+        } catch (error) {
+          console.error('세션 생성 실패:', error);
+          addBotMessage('죄송합니다. 채팅 세션을 생성할 수 없습니다. 잠시 후 다시 시도해주세요.');
+          return;
+        }
+      }
+      
+      // 사용자 메시지 추가
+      addUserMessage(message);
+      
+      // 입력 필드 초기화
+      input.value = '';
+      
+      // 분석 데이터를 포함한 컨텍스트 생성
+      const contextualMessage = createContextualMessage(message);
+      
+      // WebSocket으로 메시지 전송
+      chatSocket.send(JSON.stringify({
+        user_id: USER_ID,
+        session_id: currentSessionId,
+        question: contextualMessage,
+        collection: 'analysis_result_consultation'
+      }));
+      
+      // 봇 응답 준비
+      prepareBotMessage();
+    }
+
+    // 새로운 채팅 세션 생성
+    async function createNewChatSession() {
+      const userId = USER_ID;
+      if (!userId || userId === 'None') {
+        throw new Error('사용자 인증이 필요합니다');
+      }
+
+      // CSRF 토큰 가져오기
+      const csrfToken = getCsrfToken();
+      
+      try {
+        const response = await fetch(`/chatbot/sessions/${userId}/create/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+          },
+          body: JSON.stringify({})
+        });
+
+        console.log('세션 생성 응답 상태:', response.status);
         
         if (!response.ok) {
           const errorText = await response.text();
