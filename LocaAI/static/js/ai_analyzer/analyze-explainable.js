@@ -1,10 +1,16 @@
 // static/js/ai_analyzer/analyze-explainable.js
 // 회원용 XGBoost 설명 가능 AI 결과 표시 및 시각화
 
+// 스크립트 로딩 확인
+console.log('🔄 analyze-explainable.js 로드됨 - 회원 AI 분석 기능 활성화');
+
 // ===========================================
 // 전역 변수
 // ===========================================
 let featureImportanceChart = null;
+
+// 로드 완료 시 전역 플래그 설정
+window.analyzeExplainableLoaded = true;
 
 // ===========================================
 // AI 설명 결과 표시 함수
@@ -65,8 +71,16 @@ function extractCleanSummary(summary, actualSurvivalRate) {
 function updateAIFactorsSection(result) {
   console.log('updateAIFactorsSection 호출됨, result:', result);
   
-  if (!result.ai_explanation) {
-    console.log('ai_explanation이 없습니다:', result.ai_explanation);
+  // ai_explanation이 없거나 빈 문자열인 경우에도 기본 분석 기반으로 강점/주의사항 표시
+  if (!result.ai_explanation || result.ai_explanation.trim() === '') {
+    console.log('ai_explanation이 없어서 기본 분석 기반으로 강점/주의사항 표시');
+    // 기존 displayStrengthsAndCautions 함수를 사용하여 강점/주의사항 표시
+    if (typeof displayStrengthsAndCautions === 'function') {
+      displayStrengthsAndCautions(result);
+    } else {
+      // displayStrengthsAndCautions 함수가 없는 경우 기본 AI 기반 분석
+      generateBasicFactors(result);
+    }
     return;
   }
   
@@ -82,6 +96,17 @@ function updateAIFactorsSection(result) {
   const riskMatch = content.match(/주요\s*위험\s*요인[^]*?(?=개선\s*제안사항|종합\s*의견|$)/i);
   const riskFactors = riskMatch ? extractFactors(riskMatch[0]) : [];
   console.log('위험 요인:', riskFactors);
+  
+  // AI에서 추출한 요인이 없는 경우 기본 분석 사용
+  if (positiveFactors.length === 0 && riskFactors.length === 0) {
+    console.log('AI에서 요인을 추출하지 못했으므로 기본 분석 사용');
+    if (typeof displayStrengthsAndCautions === 'function') {
+      displayStrengthsAndCautions(result);
+    } else {
+      generateBasicFactors(result);
+    }
+    return;
+  }
   
   // 기존 강점/주의사항 섹션 업데이트
   updateFactorsUI(positiveFactors, riskFactors);
@@ -106,6 +131,75 @@ function extractFactors(text) {
 }
 
 /**
+ * AI 설명이 없을 때 기본 강점/주의사항 생성
+ */
+function generateBasicFactors(result) {
+  console.log('generateBasicFactors 호출됨, result:', result);
+  
+  const strengths = [];
+  const cautions = [];
+  
+  // 생활인구 분석
+  const lifePop300 = result.life_pop_300m || 0;
+  if (lifePop300 > 5000) {
+    strengths.push(`생활인구가 풍부함 (${Math.round(lifePop300).toLocaleString()}명)`);
+  } else if (lifePop300 < 2000) {
+    cautions.push('생활인구가 적어 고객 확보에 어려움 예상');
+  }
+  
+  // 직장인구 분석
+  const workingPop300 = result.working_pop_300m || 0;
+  if (workingPop300 > 3000) {
+    strengths.push('직장인구가 많아 점심시간 고객 확보 유리');
+  } else if (workingPop300 < 1000) {
+    cautions.push('직장인구가 적어 평일 점심 고객 부족 우려');
+  }
+  
+  // 경쟁업체 분석
+  const competitor300 = result.competitor_300m || 0;
+  const competitorRatio = result.competitor_ratio_300m || 0;
+  if (competitorRatio < 30) {
+    strengths.push('경쟁업체 비율이 낮아 경쟁 부담 적음');
+  } else if (competitorRatio > 50) {
+    cautions.push('경쟁업체 비율이 높아 치열한 경쟁 예상');
+  }
+  
+  if (competitor300 > 5) {
+    cautions.push(`동일업종 경쟁업체가 많음 (${competitor300}개)`);
+  }
+  
+  // 업종 다양성 분석
+  const businessDiversity = result.business_diversity_300m || 0;
+  if (businessDiversity > 10) {
+    strengths.push('업종 다양성이 높아 상권이 활성화됨');
+  }
+  
+  // 공시지가 분석
+  const landValue = result.total_land_value || 0;
+  if (landValue > 100000000) {
+    cautions.push('공시지가가 높아 임대료 부담 클 수 있음');
+  }
+  
+  // 유동인구 유발시설 분석
+  const publicBuilding = result.public_building_250m || 0;
+  const school = result.school_250m || 0;
+  if (publicBuilding > 0 || school > 0) {
+    strengths.push('주변 유동인구 유발시설 존재');
+  }
+  
+  // 기본 메시지
+  if (strengths.length === 0) {
+    strengths.push('상권 분석 결과를 종합적으로 검토하세요');
+  }
+  if (cautions.length === 0) {
+    cautions.push('현재 상권 조건이 양호합니다');
+  }
+  
+  // UI 업데이트
+  updateFactorsUI(strengths, cautions);
+}
+
+/**
  * 강점/주의사항 UI 업데이트
  */
 function updateFactorsUI(positiveFactors, riskFactors) {
@@ -120,12 +214,13 @@ function updateFactorsUI(positiveFactors, riskFactors) {
       strengthsList.innerHTML = positiveFactors.map(factor => 
         `<li class="mb-1">${factor}</li>`
       ).join('');
-      console.log('강점 업데이트 완료:', positiveFactors);
+      console.log('✅ 강점 업데이트 완료:', positiveFactors);
     } else {
-      console.log('긍정 요인이 없습니다');
+      console.log('⚠️ 긍정 요인이 없습니다');
+      strengthsList.innerHTML = '<li class="mb-1">상권 분석 결과를 종합적으로 검토하세요</li>';
     }
   } else {
-    console.error('strengthsList 요소를 찾을 수 없습니다');
+    console.error('❌ strengthsList 요소를 찾을 수 없습니다');
   }
   
   // 주의사항 업데이트
@@ -137,12 +232,13 @@ function updateFactorsUI(positiveFactors, riskFactors) {
       cautionsList.innerHTML = riskFactors.map(factor => 
         `<li class="mb-1">${factor}</li>`
       ).join('');
-      console.log('주의사항 업데이트 완료:', riskFactors);
+      console.log('✅ 주의사항 업데이트 완료:', riskFactors);
     } else {
-      console.log('위험 요인이 없습니다');
+      console.log('⚠️ 위험 요인이 없습니다');
+      cautionsList.innerHTML = '<li class="mb-1">현재 상권 조건이 양호합니다</li>';
     }
   } else {
-    console.error('cautionsList 요소를 찾을 수 없습니다');
+    console.error('❌ cautionsList 요소를 찾을 수 없습니다');
   }
 }
 
