@@ -1872,6 +1872,7 @@ def get_analysis_result_api(request, request_id):
         # 결과 데이터를 딕셔너리로 변환
         result_data = {
             "request": {
+                "id": analysis_request.id,  # 누락된 ID 필드 추가
                 "address": analysis_request.address,
                 "business_type_id": analysis_request.business_type_id,
                 "area": float(analysis_request.area),
