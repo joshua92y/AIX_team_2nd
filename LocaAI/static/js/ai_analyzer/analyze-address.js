@@ -38,8 +38,14 @@ function openAddressSearch() {
         return; // 팝업을 닫지 않고 다시 선택할 수 있도록 함
       }
       
-      // 주소를 입력하고 팝업 즉시 닫기 (UX 개선)
-      document.getElementById('address').value = finalAddress;
+      // 주소를 입력하고 팝업 즉시 닫기 (UX 개선) - 다국어 필드 모두 업데이트
+      const addressInputs = ['address', 'addressEng', 'addressEsp'];
+      addressInputs.forEach(function(inputId) {
+        const input = document.getElementById(inputId);
+        if (input) {
+          input.value = finalAddress;
+        }
+      });
       closeAddressSearch();
       
       // 좌표 변환 API 호출
@@ -132,8 +138,14 @@ function convertAddressToCoordinates(address) {
   // 서울특별시 주소 검증
   if (!validateSeoulAddress(address)) {
     alert('⚠️ 서비스 지역 제한\n\n현재 서비스는 서울특별시 지역만 지원합니다.\n서울특별시 내의 주소를 입력해주세요.');
-    // 주소 필드 초기화
-    document.getElementById('address').value = '';
+    // 주소 필드 초기화 (다국어 필드 모두)
+    const addressInputs = ['address', 'addressEng', 'addressEsp'];
+    addressInputs.forEach(function(inputId) {
+      const input = document.getElementById(inputId);
+      if (input) {
+        input.value = '';
+      }
+    });
     return;
   }
   
@@ -189,21 +201,25 @@ function initializeAddressSearch() {
     addressModal.style.pointerEvents = 'none';
   }
   
-  // 주소 입력 필드 클릭 시 주소 검색 모달 열기
-  const addressInput = document.getElementById('address');
-  if (addressInput) {
-    addressInput.addEventListener('click', function(e) {
-      e.preventDefault();
-      openAddressSearch();
-    });
-    
-    // 포커스 시에도 모달 열기
-    addressInput.addEventListener('focus', function(e) {
-      e.preventDefault();
-      this.blur(); // 포커스 해제
-      openAddressSearch();
-    });
-  }
+  // 주소 입력 필드 클릭 시 주소 검색 모달 열기 (다국어 지원)
+  const addressInputs = ['address', 'addressEng', 'addressEsp'];
+  
+  addressInputs.forEach(function(inputId) {
+    const addressInput = document.getElementById(inputId);
+    if (addressInput) {
+      addressInput.addEventListener('click', function(e) {
+        e.preventDefault();
+        openAddressSearch();
+      });
+      
+      // 포커스 시에도 모달 열기
+      addressInput.addEventListener('focus', function(e) {
+        e.preventDefault();
+        this.blur(); // 포커스 해제
+        openAddressSearch();
+      });
+    }
+  });
 }
 
 // DOM 로드 시 초기화
