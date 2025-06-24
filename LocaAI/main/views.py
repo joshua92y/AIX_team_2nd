@@ -63,3 +63,6 @@ def guidebook(request):
     lang = getSessionLang(request)
     print(lang)
     return render(request, 'guidebook.html', {'lang': lang})
+
+def about_us(request):
+    return render(request, 'about_us.html')
