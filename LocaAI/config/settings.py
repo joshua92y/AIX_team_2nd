@@ -25,6 +25,7 @@ import platform
 
 # 프로젝트 루트 디렉토리
 BASE_DIR = Path(__file__).resolve().parent.parent
+print(f"[INFO] 프로젝트 루트 디렉토리: {BASE_DIR}")
 
 # 환경변수 로드
 load_dotenv(dotenv_path=BASE_DIR / ".env")
@@ -197,34 +198,69 @@ if platform.system() == "Windows":
     GDAL_LIBRARY_PATH = os.path.join(
         BASE_DIR, "venv", "Lib", "site-packages", "osgeo", "gdal.dll"
     )
+elif platform.system() == "Darwin":  # macOS
+    GEOS_LIBRARY_PATH = "/opt/homebrew/lib/libgeos_c.dylib"  # brew로 설치한 기본 위치
+    GDAL_LIBRARY_PATH = "/opt/homebrew/lib/libgdal.dylib"    # brew 설치 경로 (gdal 3.x 기준)
+
 # 지도 설정 (Leaflet.js 직접 사용)
 
 # ============================================================================
 # 정적 파일 및 미디어 설정
 # ============================================================================
 
-# 정적 파일 설정
 STATIC_URL = "static/"
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
+STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# Static files finders
 STATICFILES_FINDERS = [
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
 ]
 
-# 미디어 파일 설정
-MEDIA_URL = "media/"
-MEDIA_ROOT = BASE_DIR / "media"
+# S3 미디어 스토리지 설정
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME", "aix-701-14")
+AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", "ap-northeast-3")
+AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
 
+MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
+
+STORAGES = {
+    "default": {
+        "BACKEND": "config.storage_backends.MediaStorage",
+        "OPTIONS": {
+            "access_key": AWS_ACCESS_KEY_ID,
+            "secret_key": AWS_SECRET_ACCESS_KEY,
+            "bucket_name": AWS_STORAGE_BUCKET_NAME,
+            "region_name": AWS_S3_REGION_NAME,
+            "default_acl": None,
+            "file_overwrite": False,
+            "querystring_auth": False,
+            "location": "media",  # 버킷 내 media/ 하위로 저장됨
+        },
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
 # ============================================================================
 # 국제화 및 현지화 설정
 # ============================================================================
 
 LANGUAGE_CODE = "ko-kr"
+
+# 지원 언어 설정
+LANGUAGES = [
+    ('ko', 'Korean'),
+    ('en', 'English'),
+    ('es', 'Spanish'),
+]
+
+LOCALE_PATHS = [
+    os.path.join(BASE_DIR, 'locale'),
+]
+
 TIME_ZONE = "Asia/Seoul"
 USE_I18N = True
 USE_TZ = True
@@ -262,7 +298,9 @@ KAKAO_JS_API_KEY = os.getenv("KAKAO_JS_API_KEY")
 # RAG 모델설정: LocaAI/chatbot/rag_settings.py
 # Qdrant 설정
 QDRANT_URL = os.getenv("QDRANT_URL")
+print(f"[INFO] Qdrant URL: {QDRANT_URL}")
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
+print(f"[INFO] Qdrant API Key: {'설정됨' if QDRANT_API_KEY else '없음'}")
 
 # Channels (WebSocket) 설정
 CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}

@@ -29,26 +29,36 @@
   }
 
   /**
-   * Hide mobile nav on same-page/hash links
+   * Hide mobile nav on same-page/hash links, but exclude dropdown toggles
    */
   document.querySelectorAll('#navmenu a').forEach(navmenu => {
-    navmenu.addEventListener('click', () => {
+    navmenu.addEventListener('click', (e) => {
+      // 예외 처리: 드롭다운 toggle인 경우 닫지 않음
+      if (navmenu.closest('li')?.classList.contains('dropdown')) {
+        e.stopPropagation();
+        return;
+      }
       if (document.querySelector('.mobile-nav-active')) {
         mobileNavToogle();
       }
     });
-
   });
 
   /**
    * Toggle mobile nav dropdowns
+   * Prevents dropdown from collapsing the mobile menu and ensures proper toggling.
    */
-  document.querySelectorAll('.navmenu .toggle-dropdown').forEach(navmenu => {
-    navmenu.addEventListener('click', function(e) {
+  document.querySelectorAll('.navmenu .toggle-dropdown').forEach(toggle => {
+    toggle.addEventListener('click', function(e) {
       e.preventDefault();
-      this.parentNode.classList.toggle('active');
-      this.parentNode.nextElementSibling.classList.toggle('dropdown-active');
-      e.stopImmediatePropagation();
+      e.stopPropagation();
+      const dropdown = this.closest('li');
+      dropdown.classList.toggle('active');
+
+      const dropdownMenu = dropdown.querySelector('ul');
+      if (dropdownMenu) {
+        dropdownMenu.classList.toggle('dropdown-active');
+      }
     });
   });
 
