@@ -32,6 +32,12 @@ function openAddressSearch() {
       // 최종 주소
       const finalAddress = fullAddr + extraAddr;
       
+      // 서울특별시 주소 검증 (팝업에서 선택한 주소)
+      if (!validateSeoulAddress(finalAddress)) {
+        alert('⚠️ 서비스 지역 제한\n\n현재 서비스는 서울특별시 지역만 지원합니다.\n서울특별시 내의 주소를 선택해주세요.');
+        return; // 팝업을 닫지 않고 다시 선택할 수 있도록 함
+      }
+      
       // 주소를 입력하고 팝업 즉시 닫기 (UX 개선)
       document.getElementById('address').value = finalAddress;
       closeAddressSearch();
@@ -107,8 +113,30 @@ function closeAddressSearch() {
   }
 }
 
+// 서울특별시 주소인지 검증하는 함수
+function validateSeoulAddress(address) {
+  // 서울특별시 관련 키워드들
+  const seoulKeywords = [
+    '서울특별시', '서울시', '서울',
+    '강남구', '강동구', '강북구', '강서구', '관악구', '광진구', '구로구', '금천구',
+    '노원구', '도봉구', '동대문구', '동작구', '마포구', '서대문구', '서초구', '성동구',
+    '성북구', '송파구', '양천구', '영등포구', '용산구', '은평구', '종로구', '중구', '중랑구'
+  ];
+  
+  // 주소에 서울 관련 키워드가 포함되어 있는지 확인
+  return seoulKeywords.some(keyword => address.includes(keyword));
+}
+
 // 주소를 좌표로 변환하는 함수
 function convertAddressToCoordinates(address) {
+  // 서울특별시 주소 검증
+  if (!validateSeoulAddress(address)) {
+    alert('⚠️ 서비스 지역 제한\n\n현재 서비스는 서울특별시 지역만 지원합니다.\n서울특별시 내의 주소를 입력해주세요.');
+    // 주소 필드 초기화
+    document.getElementById('address').value = '';
+    return;
+  }
+  
   const csrfToken = getCsrfToken(); // utils.js의 함수 사용
   
   $.ajax({
@@ -159,6 +187,22 @@ function initializeAddressSearch() {
   if (addressModal) {
     addressModal.style.display = 'none';
     addressModal.style.pointerEvents = 'none';
+  }
+  
+  // 주소 입력 필드 클릭 시 주소 검색 모달 열기
+  const addressInput = document.getElementById('address');
+  if (addressInput) {
+    addressInput.addEventListener('click', function(e) {
+      e.preventDefault();
+      openAddressSearch();
+    });
+    
+    // 포커스 시에도 모달 열기
+    addressInput.addEventListener('focus', function(e) {
+      e.preventDefault();
+      this.blur(); // 포커스 해제
+      openAddressSearch();
+    });
   }
 }
 
