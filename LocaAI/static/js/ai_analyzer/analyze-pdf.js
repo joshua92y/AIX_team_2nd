@@ -6,8 +6,11 @@
 
 // 미리보기 모달에서 PDF 다운로드 함수 (고품질)
 function downloadPreviewPDF() {
-  if (!currentPreviewRequestId) {
-    alert('미리보기 데이터가 없습니다.');
+  const currentRequestId = window.currentRequestId;
+  console.log('🔍 [DEBUG] downloadPreviewPDF 호출됨, currentRequestId:', currentRequestId);
+  
+  if (!currentRequestId) {
+    alert('분석 결과가 없습니다. 먼저 상권 분석을 진행해주세요.');
     return;
   }
   
@@ -99,8 +102,11 @@ function downloadPreviewPDF() {
 
 // 미리보기 모달에서 경량 PDF 다운로드 함수 (한글 폰트 지원)
 function downloadPreviewLightweightPDF() {
-  if (!currentPreviewRequestId) {
-    alert('미리보기 데이터가 없습니다.');
+  const currentRequestId = window.currentRequestId;
+  console.log('🔍 [DEBUG] downloadPreviewLightweightPDF 호출됨, currentRequestId:', currentRequestId);
+  
+  if (!currentRequestId) {
+    alert('분석 결과가 없습니다. 먼저 상권 분석을 진행해주세요.');
     return;
   }
   
@@ -192,8 +198,11 @@ function downloadPreviewLightweightPDF() {
 
 // 경량 PDF 다운로드 함수
 function downloadLightweightPDF() {
+  const currentRequestId = window.currentRequestId;
+  console.log('🔍 [DEBUG] downloadLightweightPDF 호출됨, currentRequestId:', currentRequestId);
+  
   if (!currentRequestId) {
-    alert('분석 결과가 없습니다.');
+    alert('분석 결과가 없습니다. 먼저 상권 분석을 진행해주세요.');
     return;
   }
   
@@ -489,8 +498,11 @@ function generatePDF() {
   }
   
   // 현재 분석 결과를 사용하여 PDF 미리보기 표시
+  const currentRequestId = window.currentRequestId;
+  console.log('🔍 [DEBUG] generatePDF 호출됨, currentRequestId:', currentRequestId);
+  
   if (!currentRequestId) {
-    alert('분석 결과가 없습니다.');
+    alert('분석 결과가 없습니다. 먼저 상권 분석을 진행해주세요.');
     return;
   }
   
