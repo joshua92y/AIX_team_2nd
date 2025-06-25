@@ -183,6 +183,10 @@ h6 {
     padding: 6px 15px;
   }
 
+  .header .user-profile-dropdown {
+    order: 2;
+  }
+
   .header .navmenu {
     order: 3;
   }
