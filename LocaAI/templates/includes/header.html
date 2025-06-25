@@ -22,12 +22,29 @@
             <li><a href="{% url 'border:inquiry_list' %}">customer board</a></li>
           </ul>
         </li>
-        <li class="dropdown">
-          <a href="javascript:void(0);" onclick="event.preventDefault(); event.stopPropagation(); toggleDropdown(this);"><span>Language</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-          <ul> 
-            <li><a href="#" onclick="setSelectedLangValue('KOR'); return false;">🇰🇷 한국어</a></li>
-            <li><a href="#" onclick="setSelectedLangValue('ENG'); return false;">🇺🇸 영어</a></li>
-            <li><a href="#" onclick="setSelectedLangValue('ESP'); return false;">🇪🇸 스페인어</a></li>
+        <li class="dropdown no-justify">
+          <a href="javascript:void(0);" onclick="event.preventDefault(); event.stopPropagation(); toggleDropdown(this);">
+            <span>Language</span> <i class="bi bi-chevron-down toggle-dropdown"></i>
+          </a>
+          <ul>
+            <li>
+              <a href="#" class="language-link" onclick="setSelectedLangValue('KOR'); return false;">
+                <img src="https://flagcdn.com/w20/kr.png" alt="한국 국기" class="flag-icon">
+                <span class="lang-label">한국어</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="language-link" onclick="setSelectedLangValue('ENG'); return false;">
+                <img src="https://flagcdn.com/w20/us.png" alt="미국 국기" class="flag-icon">
+                <span class="lang-label">영어</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="language-link" onclick="setSelectedLangValue('ESP'); return false;">
+                <img src="https://flagcdn.com/w20/es.png" alt="스페인 국기" class="flag-icon">
+                <span class="lang-label">스페인어</span>
+              </a>
+            </li>
           </ul>
         </li>
       </ul>

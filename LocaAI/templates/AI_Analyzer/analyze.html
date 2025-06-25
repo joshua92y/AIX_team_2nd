@@ -159,7 +159,7 @@
               </div>
 
               <!-- 주소 입력 -->
-              <div class="col-md-3">
+              <div class="col-md-4">
                 <input type="hidden" id="latitude" name="latitude">
                 <input type="hidden" id="longitude" name="longitude">
                 <input type="hidden" id="x_coord" name="x_coord">
@@ -187,12 +187,12 @@
                 </div>
                 
                 <!-- 주소 입력 도움말 -->
-                <div class="mt-2">
+                <div class="mt-3">
                   <div class="alert alert-info d-flex align-items-center" style="padding: 8px 12px; font-size: 0.85rem; margin-bottom: 0;">
                     <i class="bi bi-info-circle me-2 text-primary"></i>
                     <div>
                       <span class="lang-text" data-lang="KOR">
-                        <strong>서비스 지역:</strong> 서울특별시 25개 구만 지원됩니다 (경기도, 인천 등 제외)
+                        <strong>서비스 지역:</strong> 서울특별시 25개 구만 지원됩니다 <br>(경기도, 인천 등 제외)
                       </span>
                       <span class="lang-text" data-lang="ENG" style="display: none;">
                         <strong>Service Area:</strong> Only Seoul Metropolitan City (25 districts) is supported
@@ -214,12 +214,31 @@
               </div>
 
               <!-- 주류 판매 여부 선택 -->
-              <div class="col-md-3">
-                <label for="service_type" class="form-label">주류 판매 여부</label>
-                <select class="form-select" id="service_type" name="service_type" required>
+              <div class="col-md-2">
+                <!-- 주류 판매 여부 label -->
+                <label class="form-label" data-lang="KOR" for="alcohol-kor">주류 판매 여부</label>
+                <label class="form-label" data-lang="ENG" for="alcohol-eng" style="display: none;">Alcohol Sale</label>
+                <label class="form-label" data-lang="ESP" for="alcohol-esp" style="display: none;">Venta de alcohol</label>
+
+                <!-- 한국어 select -->
+                <select class="form-select" id="alcohol-kor" name="service" required data-lang="KOR">
                   <option selected disabled>선택</option>
                   <option value="1">판매함</option>
                   <option value="0">판매 안함</option>
+                </select>
+
+                <!-- 영어 select -->
+                <select class="form-select" id="alcohol-eng" name="service" required data-lang="ENG" style="display: none;">
+                  <option selected disabled>Choose</option>
+                  <option value="1">Yes</option>
+                  <option value="0">No</option>
+                </select>
+
+                <!-- 스페인어 select -->
+                <select class="form-select" id="alcohol-esp" name="service" required data-lang="ESP" style="display: none;">
+                  <option selected disabled>Seleccionar</option>
+                  <option value="1">Sí</option>
+                  <option value="0">No</option>
                 </select>
               </div>
             </div>
@@ -227,7 +246,9 @@
             <!-- 버튼 -->
             <div class="text-center mt-4">
               <button type="button" class="btn btn-primary custom px-5" onclick="getFormData();">
-                상권 분석하기
+                <span data-lang="KOR">상권 분석하기</span>
+                <span data-lang="ENG" style="display: none;">Analyze Commercial Area</span>
+                <span data-lang="ESP" style="display: none;">Analizar Zona Comercial</span>
               </button>
             </div>
           </form>
@@ -414,7 +435,11 @@
           <div id="analysisWaiting">
             <div class="text-center p-4">
               <i class="bi bi-analytics text-muted" style="font-size: 3rem;"></i>
-              <h5 class="mt-3 text-muted">상권 분석을 시작하세요</h5>
+              <h5 class="mt-3 text-muted">
+                <span data-lang="KOR">상권 분석을 시작하세요</span>
+                <span data-lang="ENG" style="display: none;">Start your commercial area analysis</span>
+                <span data-lang="ESP" style="display: none;">Comienza tu análisis comercial</span>
+              </h5>
               <p class="text-muted">
                 <span data-lang="KOR">
                   위의 정보를 입력하고 '상권 분석하기' 버튼을 클릭하면<br>이 영역에 분석 결과가 표시됩니다.
