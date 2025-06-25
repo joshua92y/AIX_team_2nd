@@ -2,7 +2,6 @@
 import logging
 from langchain_core.runnables import RunnableLambda, RunnableMap
 from langchain_core.prompts import PromptTemplate
-from langchain_core.messages import HumanMessage, AIMessage
 from langchain_core.output_parsers import StrOutputParser
 from chatbot.core.memory import DjangoChatHistory
 from langchain.memory import ConversationBufferWindowMemory
@@ -10,13 +9,10 @@ from chatbot.models import ChatSession, ChatMemory, CollectionMemory, Prompt, Ch
 from chatbot.utils.qdrant import get_collection_retriever, list_all_collections, get_embedding_model
 from chatbot.utils.llm_config import get_llm
 from django.conf import settings
-from django.utils.timezone import now
 from asgiref.sync import sync_to_async
 from dataclasses import dataclass
 from langchain_core.retrievers import BaseRetriever
-from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
 
 
 import json

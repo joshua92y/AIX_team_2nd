@@ -13,3 +13,43 @@ AI First Leader
 
 2.django
 uvicorn config.asgi:application --host 0.0.0.0 --port 8000
+
+
+3. 빌드 셋팅
+aws configure #aws config 셋팅
+AWS Access Key ID [****************Q3ZW]:
+AWS Secret Access Key [****************RseQ]:
+Default region name [ap-northeast-3]: ap-northeast-3
+Default output format [json]: json
+docker build -t aix25best/701-14 . #빌드
+
+$TOKEN = aws ecr-public get-login-password --region us-east-1 # ssh 토큰화
+docker login --username AWS --password $TOKEN public.ecr.aws #aws 퍼블릭 ECR 에 로그인
+
+docker images # 로컬 이미지 확인
+docker tag aix25best/701-14:latest public.ecr.aws/s5p9b7c9/aix25best/701-14:latest #태그 매칭
+docker push public.ecr.aws/s5p9b7c9/aix25best/701-14:latest #푸시
+docker pull public.ecr.aws/s5p9b7c9/aix25best/701-14:latest #풀
+sudo docker run -d -p 80:8000 --name myapp myimage #80포트:8000포트 포트포워딩
+
+
+- config.json #도커 셋팅 
+{
+  "auths": {
+    "public.ecr.aws": {}
+  },
+  "currentContext": "desktop-linux"
+}
+
+4. aws 인스턴스 셋팅
+$ curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+sudo apt update && sudo apt install -y unzip
+unzip awscliv2.zip
+sudo ./aws/install
+aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws # 도커 로그인
+
+5. aws 명령어
+ssh 접속
+ssh -i .\aix-701-14-web-secure ubuntu@ec2-56-155-21-149.ap-northeast-3.compute.amazonaws.com
+
+df -h # 남은용량 확인
