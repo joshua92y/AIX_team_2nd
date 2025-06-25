@@ -31,7 +31,7 @@ docker tag aix25best/701-14:latest public.ecr.aws/s5p9b7c9/aix25best/701-14:late
 docker push public.ecr.aws/s5p9b7c9/aix25best/701-14:latest #푸시
 docker pull public.ecr.aws/s5p9b7c9/aix25best/701-14:latest #풀
 sudo docker run -d -p 80:8000 --name myapp myimage #80포트:8000포트 포트포워딩
-
+docker rmi public.ecr.aws/s5p9b7c9/aix25best/701-14:latest # 이미지 삭제 명령어
 
 - config.json #도커 셋팅 
 {
