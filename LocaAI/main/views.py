@@ -2,6 +2,7 @@ import os
 from django.conf import settings
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
+from border.models import Post  # 추가
 
 # Create your views here.
 from django.shortcuts import render
@@ -26,8 +27,8 @@ def set_language(request):
 
 def index(request):
     lang = getSessionLang(request)
-    print(lang)
-    return render(request, 'index.html', {'lang': lang})
+    topic_posts = Post.objects.filter(board_type='topic').order_by('-created_at')[:3]
+    return render(request, 'index.html', {'lang': lang, 'topic_posts': topic_posts})
 
 def blog(request):
     lang = getSessionLang(request)

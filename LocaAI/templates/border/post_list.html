@@ -2,7 +2,7 @@
 {% load static %}
 {% load user_extras %}
 {% block title %}
-    {% if board_type == 'inquiry' %}문의 게시판{% elif board_type == 'portfolio' %}포트폴리오{% else %}공지사항{% endif %} - LocaAI
+    {% if board_type == 'inquiry' %}문의 게시판{% elif board_type == 'portfolio' %}포트폴리오{% elif board_type == 'topic' %}토픽 게시판{% else %}공지사항{% endif %} - LocaAI
 {% endblock %}
 
 {% block css %}
@@ -14,16 +14,23 @@
     <div class="board-header d-flex justify-content-between align-items-center mb-4">
         <h2>
             <span data-lang="KOR">
-                {% if board_type == 'inquiry' %}문의 게시판{% elif board_type == 'portfolio' %}포트폴리오{% else %}공지사항{% endif %}
+                {% if board_type == 'inquiry' %}문의 게시판{% elif board_type == 'portfolio' %}포트폴리오{% elif board_type == 'topic' %}토픽 게시판{% else %}공지사항{% endif %}
             </span>
             <span data-lang="ENG" style="display:none;">
-                {% if board_type == 'inquiry' %}Inquiry Board{% elif board_type == 'portfolio' %}Portfolio{% else %}Notice{% endif %}
+                {% if board_type == 'inquiry' %}Inquiry Board{% elif board_type == 'portfolio' %}Portfolio{% elif board_type == 'topic' %}Topic Board{% else %}Notice{% endif %}
             </span>
             <span data-lang="ESP" style="display:none;">
-                {% if board_type == 'inquiry' %}Tablero de consultas{% elif board_type == 'portfolio' %}Portafolio{% else %}Avisos{% endif %}
+                {% if board_type == 'inquiry' %}Tablero de consultas{% elif board_type == 'portfolio' %}Portafolio{% elif board_type == 'topic' %}Tablero de temas{% else %}Avisos{% endif %}
             </span>
         </h2>
-        {% if board_type == 'inquiry' or board_type == 'notice' and user|is_admin_call or board_type == 'portfolio' and user|is_admin_call %}
+        {% if board_type == 'inquiry' %}
+        <a href="{% url 'border:post_create' board_type %}" class="btn btn-primary">
+            <i class="fas fa-pen"></i>
+            <span data-lang="KOR">글쓰기</span>
+            <span data-lang="ENG" style="display:none">Write</span>
+            <span data-lang="ESP" style="display:none">Escribir</span>
+        </a>
+        {% elif board_type == 'notice' and user|is_admin_call or board_type == 'portfolio' and user|is_admin_call or board_type == 'topic' and user|is_admin_call %}
         <a href="{% url 'border:post_create' board_type %}" class="btn btn-primary">
             <i class="fas fa-pen"></i>
             <span data-lang="KOR">글쓰기</span>
@@ -54,7 +61,7 @@
     </form>
 
     <!-- 게시글 목록 -->
-    {% if board_type == 'portfolio' %}
+{% if board_type == 'portfolio' or board_type == 'topic' %}
     <!-- ✅ 포트폴리오 카드 그리드 -->
     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
     {% for post in posts %}

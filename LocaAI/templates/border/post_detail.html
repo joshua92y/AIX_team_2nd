@@ -42,13 +42,13 @@
             </div>
         </div>
         <div class="card-body">
-            <p class="card-text">{{ post.description|linebreaks }}</p>
-            
             {% if post.thumbnail %}
-            <div class="mt-3">
+            <div class="mb-3">
                 <img src="{{ post.thumbnail.url }}" alt="썸네일" class="img-fluid">
             </div>
             {% endif %}
+            
+            <p class="card-text">{{ post.description|linebreaks }}</p>
             
             {% if post.file %}
             <div class="mt-3">
@@ -59,7 +59,7 @@
         <div class="card-footer">
             <div class="d-flex justify-content-between">
                 <div>
-                    <a href="{% if post.board_type == 'inquiry' %}{% url 'border:inquiry_list' %}{% else %}{% url 'border:notice_list' %}{% endif %}" class="btn btn-secondary">목록</a>
+                    <a href="{% url 'border:post_list' post.board_type %}" class="btn btn-secondary">목록</a>
                 </div>
                 <div>
                     {% if post.author == request.user or request.user.role == 'admin' or not post.author %}
@@ -155,4 +155,4 @@
 
 {% block js %}
 <script src="{% static 'js/board.js' %}"></script>
-{% endblock %} 
+{% endblock %}

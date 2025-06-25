@@ -103,12 +103,13 @@ def post_detail(request, pk):
     })
 
 def post_create(request, board_type):
-    # 공지사항 작성 권한 체크
-    if board_type in ['notice', 'portfolio'] and not (request.user.is_authenticated and request.user.is_admin()):
+    # 공지사항/포트폴리오/토픽 작성 권한 체크
+    if board_type in ['notice', 'portfolio', 'topic'] and not (request.user.is_authenticated and request.user.is_admin()):
         messages.error(request, f'{board_type} 게시판은 관리자만 작성할 수 있습니다.')
         redirect_map = {
             'notice': 'border:notice_list',
             'portfolio': 'border:portfolio_list',
+            'topic': 'border:topic_list',
         }
         return redirect(redirect_map.get(board_type, 'border:inquiry_list'))
     

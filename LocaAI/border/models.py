@@ -9,6 +9,7 @@ class Post(models.Model):
         ('inquiry', '문의 게시판'),
         ('notice', '공지사항'),
         ('portfolio', '포트폴리오'),
+        ('topic', '토픽 게시판'),
     )
     
     title = models.CharField(max_length=200)
