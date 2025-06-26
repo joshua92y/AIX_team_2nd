@@ -216,7 +216,7 @@
    */
   document.querySelectorAll('.navmenu a[href^="#"]').forEach(link => {
     link.addEventListener('click', function(e) {
-      const target = document.querySelector(this.hash);
+      const target = this.hash && document.querySelector(this.hash);
       if (target) {
         e.preventDefault();
         const scrollMarginTop = getComputedStyle(target).scrollMarginTop;
