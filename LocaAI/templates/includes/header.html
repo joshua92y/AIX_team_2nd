@@ -158,9 +158,18 @@
     </style>
 
   <script>
-    // 전역 변수로 설정하여 중복 선언 방지
-    if (typeof window.sessionLang === 'undefined') {
-      window.sessionLang = "{{ request.session.language|default:'KOR' }}";
+    // 전역 변수로 설정하여 중복 선언 방지 및 브라우저 언어 감지 로깅 추가
+    if (typeof window.sessionLang === 'undefined' || !window.sessionLang) {
+      const browserLang = navigator.language || navigator.userLanguage;
+      console.log("[header.js] 감지된 브라우저 언어:", browserLang);
+      if (browserLang.startsWith('en')) {
+        window.sessionLang = 'ENG';
+      } else if (browserLang.startsWith('es')) {
+        window.sessionLang = 'ESP';
+      } else {
+        window.sessionLang = 'KOR';
+      }
+      console.log("[header.js] 설정된 기본 언어:", window.sessionLang);
     }
 
 		$(window).ready(function() {
