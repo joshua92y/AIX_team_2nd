@@ -170,10 +170,7 @@
         window.sessionLang = 'KOR';
       }
       console.log("[header.js] 설정된 기본 언어:", window.sessionLang);
-      {% if not request.session.language %}
-      console.log("[header.js] 세션 언어 없음 → Ajax로 설정 요청 중...");
       setSelectedLangValue(window.sessionLang);
-      {% endif %}
     }
 
 		$(window).ready(function() {
