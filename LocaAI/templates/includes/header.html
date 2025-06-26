@@ -10,22 +10,25 @@
     <nav id="navmenu" class="navmenu">
       <ul>
         <li><a href="{% url 'index' %}" class="active">Home</a></li>
-        <li><a href="/#about">About</a></li>
+        <li><a href="{% url 'about_us' %}">About us</a></li>
         <li><a href="{% url 'AI_Analyzer:analyze_page' %}">Services</a></li>
         <li><a href="{% url 'shopdash:dashboard' %}">Data</a></li>
         <li><a href="{% url 'border:portfolio_list' %}">Portfolio</a></li>
         <li><a href="/#contact">Contact Us</a></li>
-        <li class="dropdown"><a href="javascript:void(0);" onclick="event.preventDefault(); event.stopPropagation(); toggleDropdown(this);"><span>Support</span><i class="bi bi-chevron-down toggle-dropdown"></i></a>
+
+        <!-- Support 드롭다운 -->
+        <li class="dropdown">
+          <a href="#"><span>Support</span><i class="bi bi-chevron-down toggle-dropdown"></i></a>
           <ul>
             <li><a href="{% url 'guidebook' %}">guide book</a></li>
             <li><a href="{% url 'border:notice_list' %}">notice</a></li>
             <li><a href="{% url 'border:inquiry_list' %}">customer board</a></li>
           </ul>
         </li>
+
+        <!-- Language 드롭다운 -->
         <li class="dropdown no-justify">
-          <a href="javascript:void(0);" onclick="event.preventDefault(); event.stopPropagation(); toggleDropdown(this);">
-            <span>Language</span> <i class="bi bi-chevron-down toggle-dropdown"></i>
-          </a>
+          <a href="#"><span>Language</span><i class="bi bi-chevron-down toggle-dropdown"></i></a>
           <ul>
             <li>
               <a href="#" class="language-link" onclick="setSelectedLangValue('KOR'); return false;">
@@ -48,7 +51,7 @@
           </ul>
         </li>
       </ul>
-      
+
       <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
     </nav>
 
