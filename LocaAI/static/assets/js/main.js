@@ -1,6 +1,16 @@
 (function() {
   "use strict";
 
+  function throttle(func, delay) {
+    let lastCall = 0;
+    return function(...args) {
+      const now = new Date().getTime();
+      if (now - lastCall < delay) return;
+      lastCall = now;
+      return func(...args);
+    };
+  }
+
   /**
    * Apply .scrolled class to the body as the page is scrolled down
    */
@@ -11,7 +21,7 @@
     window.scrollY > 100 ? selectBody.classList.add('scrolled') : selectBody.classList.remove('scrolled');
   }
 
-  document.addEventListener('scroll', toggleScrolled);
+  document.addEventListener('scroll', throttle(toggleScrolled, 30));
   window.addEventListener('load', toggleScrolled);
 
   /**
@@ -32,13 +42,15 @@
    * Hide mobile nav on same-page/hash links
    */
   document.querySelectorAll('#navmenu a').forEach(navmenu => {
-    navmenu.addEventListener('click', () => {
-      if (document.querySelector('.mobile-nav-active')) {
-        mobileNavToogle();
-      }
-    });
+      navmenu.addEventListener('click', (e) => {
+        // 드롭다운 열기 버튼은 무시
+        if (e.target.classList.contains('toggle-dropdown') || e.target.closest('.dropdown')) return;
 
-  });
+        if (document.querySelector('.mobile-nav-active')) {
+          mobileNavToogle();
+        }
+      });
+    });
 
   /**
    * Toggle mobile nav dropdowns
@@ -71,7 +83,7 @@
   });
 
   window.addEventListener('load', toggleScrollTop);
-  document.addEventListener('scroll', toggleScrollTop);
+  document.addEventListener('scroll', throttle(toggleScrollTop, 30));
 
   /**
    * Animation on scroll function and init
@@ -197,6 +209,29 @@
     })
   }
   window.addEventListener('load', navmenuScrollspy);
-  document.addEventListener('scroll', navmenuScrollspy);
+  document.addEventListener('scroll', throttle(navmenuScrollspy, 30));
+
+  /**
+   * Smooth scroll to section with scroll-marginTop consideration on navmenu click
+   */
+  document.querySelectorAll('.navmenu a[href^="#"]').forEach(link => {
+    link.addEventListener('click', function(e) {
+      const target = document.querySelector(this.hash);
+      if (target) {
+        e.preventDefault();
+        const scrollMarginTop = getComputedStyle(target).scrollMarginTop;
+        window.scrollTo({
+          top: target.offsetTop - parseInt(scrollMarginTop),
+          behavior: 'smooth'
+        });
+
+        setTimeout(() => {
+          if (typeof AOS !== 'undefined' && AOS.refresh) {
+            AOS.refresh();
+          }
+        }, 700); // allow scroll to complete before refreshing AOS
+      }
+    });
+  });
 
 })();

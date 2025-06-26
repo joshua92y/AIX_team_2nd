@@ -13,7 +13,6 @@ db.sqlite3
 
 # 🖼️ 미디어, 정적 캐시
 staticfiles/
-static/
 
 # 🗂️ IDE 설정 및 메타 파일
 .vscode/

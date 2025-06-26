@@ -8,6 +8,8 @@ urlpatterns = [
     path('inquiry/', views.post_list, {'board_type': 'inquiry'}, name='inquiry_list'), # 문의 게시판
     path('notice/', views.post_list, {'board_type': 'notice'}, name='notice_list'),    # 공지사항 게시판
     path('portfolio/', views.post_list, {'board_type': 'portfolio'}, name='portfolio_list'), # 포트폴리오 게시판
+    path('topic/', views.post_list, {'board_type': 'topic'}, name='topic_list'),  # 토픽 게시판
+    path('board/<str:board_type>/', views.post_list, name='post_list'),
     
     # 게시글 상세
     path('post/<int:pk>/', views.post_detail, name='post_detail'),
@@ -23,4 +25,4 @@ urlpatterns = [
     
     # 댓글 삭제
     path('comment/<int:pk>/delete/', views.comment_delete, name='comment_delete'),
-] 
+]

@@ -10,28 +10,48 @@
     <nav id="navmenu" class="navmenu">
       <ul>
         <li><a href="{% url 'index' %}" class="active">Home</a></li>
-        <li><a href="/#about">About</a></li>
+        <li><a href="{% url 'about_us' %}">About us</a></li>
         <li><a href="{% url 'AI_Analyzer:analyze_page' %}">Services</a></li>
         <li><a href="{% url 'shopdash:dashboard' %}">Data</a></li>
         <li><a href="{% url 'border:portfolio_list' %}">Portfolio</a></li>
         <li><a href="/#contact">Contact Us</a></li>
-        <li class="dropdown"><a href="javascript:void(0);" onclick="event.preventDefault(); event.stopPropagation(); toggleDropdown(this);"><span>Support</span><i class="bi bi-chevron-down toggle-dropdown"></i></a>
+
+        <!-- Support 드롭다운 -->
+        <li class="dropdown">
+          <a href="#"><span>Support</span><i class="bi bi-chevron-down toggle-dropdown"></i></a>
           <ul>
             <li><a href="{% url 'guidebook' %}">guide book</a></li>
             <li><a href="{% url 'border:notice_list' %}">notice</a></li>
             <li><a href="{% url 'border:inquiry_list' %}">customer board</a></li>
           </ul>
         </li>
-        <li class="dropdown">
-          <a href="javascript:void(0);" onclick="event.preventDefault(); event.stopPropagation(); toggleDropdown(this);"><span>Language</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-          <ul> 
-            <li><a href="#" onclick="setSelectedLangValue('KOR'); return false;">🇰🇷 한국어</a></li>
-            <li><a href="#" onclick="setSelectedLangValue('ENG'); return false;">🇺🇸 영어</a></li>
-            <li><a href="#" onclick="setSelectedLangValue('ESP'); return false;">🇪🇸 스페인어</a></li>
+
+        <!-- Language 드롭다운 -->
+        <li class="dropdown no-justify">
+          <a href="#"><span>Language</span><i class="bi bi-chevron-down toggle-dropdown"></i></a>
+          <ul>
+            <li>
+              <a href="#" class="language-link" onclick="setSelectedLangValue('KOR'); return false;">
+                <img src="https://flagcdn.com/w20/kr.png" alt="한국 국기" class="flag-icon">
+                <span class="lang-label">한국어</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="language-link" onclick="setSelectedLangValue('ENG'); return false;">
+                <img src="https://flagcdn.com/w20/us.png" alt="미국 국기" class="flag-icon">
+                <span class="lang-label">영어</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="language-link" onclick="setSelectedLangValue('ESP'); return false;">
+                <img src="https://flagcdn.com/w20/es.png" alt="스페인 국기" class="flag-icon">
+                <span class="lang-label">스페인어</span>
+              </a>
+            </li>
           </ul>
         </li>
       </ul>
-      
+
       <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
     </nav>
 
@@ -101,7 +121,41 @@
     .dropdown-item i {
       width: 20px;
     }
-  </style>
+
+    .language-link {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start; /* 왼쪽 정렬 */
+      gap: 8px;
+      padding: 5px 10px;
+      width: 100%;
+      text-decoration: none;
+      color: inherit;
+      box-sizing: border-box;
+    }
+
+    .flag-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      object-fit: cover;
+
+      /* 선명도 향상 */
+      image-rendering: crisp-edges;
+      -webkit-image-rendering: crisp-edges;
+    }
+
+    .lang-label {
+      font-size: 14px;
+    }
+
+    .no-justify .language-link,
+    .no-justify .language-link:focus,
+    .no-justify .language-link:hover,
+    .no-justify .language-link:active {
+      justify-content: flex-start;
+    }
+    </style>
 
   <script>
     // 전역 변수로 설정하여 중복 선언 방지
