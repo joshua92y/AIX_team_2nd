@@ -6,7 +6,7 @@
 // 전역 변수들
 let currentSessionId = null;
 let chatSocket = null;
-let currentBotMessageText = '';
+let chatbotCurrentBotMessageText = '';
 
 // ===========================================
 // WebSocket 초기화 및 연결 관리
@@ -341,12 +341,12 @@ function appendToCurrentBotMessage(chunk) {
   if (contentElement) {
     if (contentElement.innerHTML.includes('spinner-border')) {
       // 첫 번째 청크: 스피너 제거하고 텍스트 시작
-      currentBotMessageText = chunk;
+      chatbotCurrentBotMessageText = chunk;
       contentElement.innerHTML = marked.parse(chunk);
     } else {
       // 후속 청크: 기존 텍스트에 추가
-      currentBotMessageText += chunk;
-      contentElement.innerHTML = marked.parse(currentBotMessageText);
+      chatbotCurrentBotMessageText += chunk;
+      contentElement.innerHTML = marked.parse(chatbotCurrentBotMessageText);
     }
     const chatMessages = document.getElementById('chatMessages');
     if (chatMessages) {
@@ -359,7 +359,7 @@ function appendToCurrentBotMessage(chunk) {
     if (pipContentElement.innerHTML.includes('spinner-border')) {
       pipContentElement.innerHTML = marked.parse(chunk);
     } else {
-      pipContentElement.innerHTML = marked.parse(currentBotMessageText);
+      pipContentElement.innerHTML = marked.parse(chatbotCurrentBotMessageText);
     }
     const pipChatMessages = document.getElementById('pipChatMessages');
     if (pipChatMessages) {
@@ -380,7 +380,7 @@ function finalizeBotMessage() {
     currentPIPMessage.removeAttribute('id');
   }
   // 메시지 텍스트 초기화
-  currentBotMessageText = '';
+  chatbotCurrentBotMessageText = '';
   
   // PIP 히스토리 업데이트
   setTimeout(() => {

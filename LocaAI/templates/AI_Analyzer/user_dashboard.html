@@ -166,7 +166,7 @@
     <div class="col-md-3 mb-3">
       <div class="stats-card text-center">
         {% if best_analysis %}
-        <div class="stats-number">{{ best_analysis.survival_percentage }}%</div>
+                            <div class="stats-number">{{ best_analysis.survival_percentage|floatformat:1 }}%</div>
         <div class="stats-label">최고 생존율</div>
         {% else %}
         <div class="stats-number">-</div>
@@ -221,15 +221,15 @@
               </div>
               <div class="d-flex align-items-center">
                 <span class="me-3"><strong>생존율:</strong></span>
-                {% if analysis.survival_percentage >= 80 %}
-                  <span class="survival-badge survival-excellent">{{ analysis.survival_percentage }}% - 우수</span>
-                {% elif analysis.survival_percentage >= 65 %}
-                  <span class="survival-badge survival-good">{{ analysis.survival_percentage }}% - 양호</span>
-                {% elif analysis.survival_percentage >= 50 %}
-                  <span class="survival-badge survival-average">{{ analysis.survival_percentage }}% - 보통</span>
-                {% else %}
-                  <span class="survival-badge survival-poor">{{ analysis.survival_percentage }}% - 주의</span>
-                {% endif %}
+                                    {% if analysis.survival_percentage >= 80 %}
+                    <span class="survival-badge survival-excellent">{{ analysis.survival_percentage|floatformat:1 }}% - 우수</span>
+                    {% elif analysis.survival_percentage >= 65 %}
+                    <span class="survival-badge survival-good">{{ analysis.survival_percentage|floatformat:1 }}% - 양호</span>
+                    {% elif analysis.survival_percentage >= 50 %}
+                    <span class="survival-badge survival-average">{{ analysis.survival_percentage|floatformat:1 }}% - 보통</span>
+                    {% else %}
+                    <span class="survival-badge survival-poor">{{ analysis.survival_percentage|floatformat:1 }}% - 주의</span>
+                    {% endif %}
               </div>
             </div>
             <div class="text-end">
@@ -269,7 +269,7 @@
         <h6 class="text-success mb-2">🏆 최고 성과</h6>
         <p class="mb-1 fw-bold">{{ best_analysis.request.address }}</p>
         <p class="mb-1 text-muted">{{ best_analysis.request.business_type.name }}</p>
-        <p class="mb-0 text-success fs-5 fw-bold">{{ best_analysis.survival_percentage }}%</p>
+                        <p class="mb-0 text-success fs-5 fw-bold">{{ best_analysis.survival_percentage|floatformat:1 }}%</p>
       </div>
       {% endif %}
 
@@ -278,7 +278,7 @@
         <h6 class="text-warning mb-2">📈 개선 기회</h6>
         <p class="mb-1 fw-bold">{{ worst_analysis.request.address }}</p>
         <p class="mb-1 text-muted">{{ worst_analysis.request.business_type.name }}</p>
-        <p class="mb-0 text-warning fs-5 fw-bold">{{ worst_analysis.survival_percentage }}%</p>
+                        <p class="mb-0 text-warning fs-5 fw-bold">{{ worst_analysis.survival_percentage|floatformat:1 }}%</p>
       </div>
       {% endif %}
       {% endif %}

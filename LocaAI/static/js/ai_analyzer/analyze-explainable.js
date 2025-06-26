@@ -51,15 +51,15 @@ function extractCleanSummary(summary, actualSurvivalRate) {
   // 150자 정도의 더 자세한 분석 요약 생성
   let detailedSummary = '';
   if (survivalRate >= 80) {
-    detailedSummary = `예측 생존확률 ${survivalRate}%로 매우 양호한 사업 환경입니다. 창업에 적합한 입지 조건을 갖추고 있으며, 성공 가능성이 높은 것으로 분석됩니다.`;
+    detailedSummary = `예측 생존확률 ${survivalRate.toFixed(1)}%로 매우 양호한 사업 환경입니다. 창업에 적합한 입지 조건을 갖추고 있으며, 성공 가능성이 높은 것으로 분석됩니다.`;
   } else if (survivalRate >= 65) {
-    detailedSummary = `예측 생존확률 ${survivalRate}%로 양호한 사업 환경입니다. 적절한 마케팅 전략과 운영 계획을 수립한다면 성공할 가능성이 높습니다.`;
+    detailedSummary = `예측 생존확률 ${survivalRate.toFixed(1)}%로 양호한 사업 환경입니다. 적절한 마케팅 전략과 운영 계획을 수립한다면 성공할 가능성이 높습니다.`;
   } else if (survivalRate >= 50) {
-    detailedSummary = `예측 생존확률 ${survivalRate}%로 보통 수준의 사업 환경입니다. 경쟁력 있는 차별화 전략과 신중한 사업 계획이 필요합니다.`;
+    detailedSummary = `예측 생존확률 ${survivalRate.toFixed(1)}%로 보통 수준의 사업 환경입니다. 경쟁력 있는 차별화 전략과 신중한 사업 계획이 필요합니다.`;
   } else if (survivalRate >= 35) {
-    detailedSummary = `예측 생존확률 ${survivalRate}%로 도전적인 사업 환경입니다. 위험 요인을 면밀히 검토하고 전문적인 컨설팅을 받아보시기 바랍니다.`;
+    detailedSummary = `예측 생존확률 ${survivalRate.toFixed(1)}%로 도전적인 사업 환경입니다. 위험 요인을 면밀히 검토하고 전문적인 컨설팅을 받아보시기 바랍니다.`;
   } else {
-    detailedSummary = `예측 생존확률 ${survivalRate}%로 높은 위험이 예상됩니다. 입지 변경을 고려하거나 사업 모델을 전면 재검토하시기 바랍니다.`;
+    detailedSummary = `예측 생존확률 ${survivalRate.toFixed(1)}%로 높은 위험이 예상됩니다. 입지 변경을 고려하거나 사업 모델을 전면 재검토하시기 바랍니다.`;
   }
   
   return detailedSummary;
@@ -512,7 +512,7 @@ function animateSurvivalGauge(percentage) {
     fill.style.transform = `rotate(${rotation}deg)`;
     
     // 텍스트 업데이트
-    text.textContent = Math.round(currentPercent) + '%';
+    text.textContent = currentPercent.toFixed(1) + '%';
     
     // 색상 변경
     let color = '#dc3545'; // 빨간색 (위험)

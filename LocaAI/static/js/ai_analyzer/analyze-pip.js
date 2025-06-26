@@ -4,7 +4,7 @@
  */
 
 // 전역 변수
-let currentBotMessageText = '';
+let pipCurrentBotMessageText = '';
 
 // PIP 예시 질문 입력 함수
 function fillPIPExampleQuestion(question) {
@@ -659,7 +659,7 @@ function scrollToPIPMessage(sessionNumber) {
 
 // 스트리밍 메시지 업데이트 (PIP 포함)
 function appendToPIPBotMessage(chunk) {
-  currentBotMessageText += chunk;
+  pipCurrentBotMessageText += chunk;
   
   // 메인 채팅 메시지 업데이트
   const currentMessage = document.getElementById('currentBotMessage');
@@ -669,7 +669,7 @@ function appendToPIPBotMessage(chunk) {
       if (contentElement.innerHTML.includes('spinner-border')) {
         contentElement.innerHTML = marked.parse(chunk);
       } else {
-        contentElement.innerHTML = marked.parse(currentBotMessageText);
+        contentElement.innerHTML = marked.parse(pipCurrentBotMessageText);
       }
     }
     document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
@@ -683,7 +683,7 @@ function appendToPIPBotMessage(chunk) {
       if (pipContentElement.innerHTML.includes('spinner-border')) {
         pipContentElement.innerHTML = marked.parse(chunk);
       } else {
-        pipContentElement.innerHTML = marked.parse(currentBotMessageText);
+        pipContentElement.innerHTML = marked.parse(pipCurrentBotMessageText);
       }
       document.getElementById('pipChatMessages').scrollTop = document.getElementById('pipChatMessages').scrollHeight;
     }
@@ -702,7 +702,7 @@ function finalizePIPBotMessage() {
     currentPIPMessage.removeAttribute('id');
   }
   // 메시지 텍스트 초기화
-  currentBotMessageText = '';
+  pipCurrentBotMessageText = '';
   
   // PIP 히스토리 업데이트
   setTimeout(() => {
