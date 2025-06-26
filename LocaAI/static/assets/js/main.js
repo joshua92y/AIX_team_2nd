@@ -42,13 +42,15 @@
    * Hide mobile nav on same-page/hash links
    */
   document.querySelectorAll('#navmenu a').forEach(navmenu => {
-    navmenu.addEventListener('click', () => {
-      if (document.querySelector('.mobile-nav-active')) {
-        mobileNavToogle();
-      }
-    });
+      navmenu.addEventListener('click', (e) => {
+        // 드롭다운 열기 버튼은 무시
+        if (e.target.classList.contains('toggle-dropdown') || e.target.closest('.dropdown')) return;
 
-  });
+        if (document.querySelector('.mobile-nav-active')) {
+          mobileNavToogle();
+        }
+      });
+    });
 
   /**
    * Toggle mobile nav dropdowns
