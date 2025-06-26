@@ -10,10 +10,12 @@ class SeoulCommercialMap {
         this.districtLayer = null;
         this.dongLayer = null;
         this.selectionLayer = null;
+        this.storeLayer = null; // 점포 마커 레이어
         this.popup = null;
         this.selection = {}; // 선택된 feature들 관리
-        this.currentView = 'district'; // 'district' 또는 'dong'
+        this.currentView = 'district'; // 'district', 'dong', 'stores'
         this.currentGuCode = null; // 현재 표시 중인 구 코드
+        this.currentDongCode = null; // 현재 표시 중인 행정동 코드
         
         this.setupProjections();
         this.init();
@@ -74,6 +76,14 @@ class SeoulCommercialMap {
             pixelRatio: 1,
             renderer: ['canvas', 'webgl']
         });
+        
+        // Canvas2D 경고 해결을 위한 설정
+        setTimeout(() => {
+            const mapCanvas = this.map.getViewport().querySelector('canvas');
+            if (mapCanvas && mapCanvas.getContext) {
+                const context = mapCanvas.getContext('2d', { willReadFrequently: true });
+            }
+        }, 100);
     }
     
     createPopup() {
@@ -242,6 +252,16 @@ class SeoulCommercialMap {
                 border-top: 1px solid #eee;
                 margin-top: 5px;
             }
+            
+            .popup-value.active {
+                color: #28a745;
+                font-weight: bold;
+            }
+            
+            .popup-value.closed {
+                color: #dc3545;
+                font-weight: bold;
+            }
             .loading-overlay {
                 position: absolute;
                 top: 0;
@@ -354,30 +374,63 @@ class SeoulCommercialMap {
     }
     
     setupSelection() {
-        // 클릭 이벤트로 확대 및 행정동 표시
-        this.map.on('click', (event) => {
+        // 클릭 이벤트 처리
+        this.map.on('singleclick', (event) => {
             if (this.currentView === 'district') {
-                // 구별 뷰에서 클릭 시
+                // 구별 뷰에서 클릭 시 - 행정동 표시
                 const features = [];
                 this.map.forEachFeatureAtPixel(event.pixel, (feature, layer) => {
                     if (layer === this.districtLayer) {
                         features.push(feature);
                     }
+                }, {
+                    hitTolerance: 10
                 });
                 
                 if (features.length > 0) {
                     const feature = features[0];
                     const guCode = feature.get('adm_sect_c');
-                    
-                    // 해당 구로 확대 및 행정동 표시
                     this.zoomToDistrict(feature, guCode);
-                    console.log('구 확대:', feature.get('district_name'));
                 }
             } else if (this.currentView === 'dong') {
-                // 행정동 뷰에서 클릭 시 - 구별 뷰로 복귀
-                this.returnToDistrictView();
+                // 행정동 뷰에서 클릭 시 - 행정동 확대 및 점포 표시
+                const features = [];
+                
+                // 모든 레이어에서 feature 검색
+                this.map.forEachFeatureAtPixel(event.pixel, (feature, layer) => {
+                    if (layer === this.dongLayer) {
+                        features.push(feature);
+                    }
+                }, {
+                    hitTolerance: 15  // 클릭 허용 범위 더 확대
+                });
+                
+                if (features.length > 0) {
+                    const feature = features[0];
+                    const dongCode = feature.get('emd_cd');
+                    
+                    // 해당 행정동으로 확대 및 점포 표시
+                    this.zoomToDong(feature, dongCode);
+                }
+            } else if (this.currentView === 'stores') {
+                // 점포 뷰에서 클릭 시 - 행정동 뷰로 복귀
+                this.returnToDongView();
             }
         });
+        
+        // 더블클릭 이벤트로 상위 뷰로 복귀 (임시 비활성화)
+        /*
+        this.map.on('dblclick', (event) => {
+            console.log('🖱️🖱️ 더블클릭 이벤트, 현재 뷰:', this.currentView);
+            if (this.currentView === 'dong') {
+                console.log('🖱️🖱️ 더블클릭으로 구별 뷰로 복귀');
+                this.returnToDistrictView();
+            } else if (this.currentView === 'stores') {
+                console.log('🖱️🖱️ 더블클릭으로 행정동 뷰로 복귀');
+                this.returnToDongView();
+            }
+        });
+        */
         
         // 마우스 오버 시 팝업 표시 및 커서 변경 (throttled)
         let lastMoveTime = 0;
@@ -392,6 +445,9 @@ class SeoulCommercialMap {
             } else if (this.currentView === 'dong') {
                 // 행정동 뷰에서 마우스오버
                 this.handleDongHover(event);
+            } else if (this.currentView === 'stores') {
+                // 점포 뷰에서 마우스오버
+                this.handleStoreHover(event);
             }
         });
         
@@ -544,7 +600,7 @@ class SeoulCommercialMap {
                 <span class="popup-value">${properties.top_business_type || '정보없음'} (${properties.top_business_count?.toLocaleString() || 0}개)</span>
             </div>
             <div class="popup-info-item">
-                <span class="popup-hint">💡 클릭하면 구별 뷰로 돌아갑니다</span>
+                <span class="popup-hint">💡 클릭하면 점포를 확인할 수 있습니다 (더블클릭으로 뒤로)</span>
             </div>
         `;
         
@@ -598,7 +654,8 @@ class SeoulCommercialMap {
             this.currentView = 'dong';
             this.currentGuCode = guCode;
             
-            console.log('행정동 뷰로 전환:', guCode);
+            console.log('🏘️ 행정동 뷰로 전환 완료:', guCode, '현재 뷰:', this.currentView);
+            console.log('🏘️ dongLayer 상태:', !!this.dongLayer, 'visible:', this.dongLayer?.getVisible());
             
         } catch (error) {
             console.error('구 확대 실패:', error);
@@ -644,11 +701,13 @@ class SeoulCommercialMap {
                         color: 'rgba(33, 150, 243, 0.1)'
                     })
                 }),
-                zIndex: 10
+                zIndex: 15  // z-index를 높여서 클릭 우선순위 증가
             });
             
             // 지도에 추가
             this.map.addLayer(this.dongLayer);
+            console.log('✅ 행정동 레이어 지도에 추가 완료, zIndex:', this.dongLayer.getZIndex());
+            console.log('✅ 행정동 레이어 표시 상태:', this.dongLayer.getVisible());
             
         } catch (error) {
             console.error('행정동 레이어 로드 실패:', error);
@@ -656,7 +715,213 @@ class SeoulCommercialMap {
         }
     }
     
+    async zoomToDong(dongFeature, dongCode) {
+        try {
+            // 🚀 성능 개선: 즉시 로딩 표시
+            this.showLoading('점포 데이터를 불러오는 중...');
+            
+            // 행정동 레이어 숨기기
+            this.dongLayer.setVisible(false);
+            
+            // 🚀 성능 개선: 병렬 처리로 점포 데이터 로드와 화면 전환 동시 실행
+            const [storeData] = await Promise.all([
+                this.loadStoreLayer(dongCode),
+                this.animateToExtent(dongFeature.getGeometry().getExtent())
+            ]);
+            
+            // 뷰 모드 변경
+            this.currentView = 'stores';
+            this.currentDongCode = dongCode;
+            
+        } catch (error) {
+            console.error('행정동 확대 실패:', error);
+            this.showError('점포 데이터를 불러오는데 실패했습니다.');
+        } finally {
+            this.hideLoading();
+        }
+    }
+    
+    // 🚀 새로운 메서드: 애니메이션 처리 분리
+    async animateToExtent(extent) {
+        return new Promise((resolve) => {
+            this.map.getView().fit(extent, {
+                padding: [50, 50, 50, 50],
+                duration: 800, // 애니메이션 시간 단축
+                maxZoom: 18,
+                callback: resolve
+            });
+        });
+    }
+    
+    async loadStoreLayer(dongCode) {
+        try {
+            // 기존 점포 레이어 제거
+            if (this.storeLayer) {
+                this.map.removeLayer(this.storeLayer);
+            }
+            
+            // 점포 데이터 API 호출
+            const apiUrl = `/shopdash/api/dong-stores/?emd_cd=${dongCode}`;
+            const response = await fetch(apiUrl);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const storeData = await response.json();
+            
+            // Vector Source 생성 (백엔드에서 이미 EPSG:4326으로 변환됨)
+            const vectorSource = new ol.source.Vector({
+                features: new ol.format.GeoJSON().readFeatures(storeData, {
+                    dataProjection: 'EPSG:4326',
+                    featureProjection: 'EPSG:3857'
+                })
+            });
+            
+            // 🚀 성능 개선: 동적 스타일링 (생존상태에 따른 색상)
+            const createStoreStyle = (feature) => {
+                const 생존상태 = feature.get('생존상태');
+                let color = '#FF6B6B'; // 기본 색상 (분석중)
+                
+                if (생존상태 === '생존 예상') {
+                    color = '#4CAF50'; // 녹색
+                } else if (생존상태 === '위험') {
+                    color = '#999999'; // 회색
+                }
+                
+                return new ol.style.Style({
+                    image: new ol.style.Circle({
+                        radius: 6,
+                        fill: new ol.style.Fill({ color: color }),
+                        stroke: new ol.style.Stroke({
+                            color: '#FFFFFF',
+                            width: 2
+                        })
+                    })
+                });
+            };
+            
+            // 점포 레이어 생성
+            this.storeLayer = new ol.layer.Vector({
+                source: vectorSource,
+                style: createStoreStyle,
+                zIndex: 20
+            });
+            
+            // 지도에 추가
+            this.map.addLayer(this.storeLayer);
+            
+            // 🚀 성능 개선: 점포가 많을 때는 extent 조정 생략 (이미 행정동 범위로 조정됨)
+            if (storeData.total_stores <= 100) {
+                const storeExtent = vectorSource.getExtent();
+                this.map.getView().fit(storeExtent, {
+                    padding: [30, 30, 30, 30],
+                    duration: 500,
+                    maxZoom: 18
+                });
+            }
+            
+        } catch (error) {
+            console.error('점포 레이어 로드 실패:', error);
+            throw error;
+        }
+    }
+    
+    handleStoreHover(event) {
+        const features = [];
+        this.map.forEachFeatureAtPixel(event.pixel, (feature, layer) => {
+            if (layer === this.storeLayer) {
+                features.push(feature);
+            }
+        }, {
+            hitTolerance: 5
+        });
+        
+        if (features.length > 0) {
+            const feature = features[0];
+            this.setCursor('pointer');
+            this.showStorePopup(event.coordinate, feature.getProperties());
+        } else {
+            this.setCursor('');
+            this.popup.setPosition(undefined);
+        }
+    }
+    
+    showStorePopup(coordinate, properties) {
+        const popupElement = this.popup.getElement();
+        const titleElement = popupElement.querySelector('.ol-popup-title');
+        const bodyElement = popupElement.querySelector('.ol-popup-body');
+        
+        // 제목 설정
+        titleElement.textContent = properties.상호명 || '점포';
+        
+        // 내용 설정
+        bodyElement.innerHTML = `
+            <div class="popup-info-item">
+                <span class="popup-label">상호명</span>
+                <span class="popup-value">${properties.상호명}</span>
+            </div>
+            <div class="popup-info-item">
+                <span class="popup-label">업종</span>
+                <span class="popup-value">${properties.업종명}</span>
+            </div>
+            <div class="popup-info-item">
+                <span class="popup-label">주소</span>
+                <span class="popup-value">${properties.주소}</span>
+            </div>
+            ${properties.인허가일자 ? `
+            <div class="popup-info-item">
+                <span class="popup-label">개업일</span>
+                <span class="popup-value">${properties.인허가일자}</span>
+            </div>
+            ` : ''}
+            ${properties.폐업일자 ? `
+            <div class="popup-info-item">
+                <span class="popup-label">폐업일</span>
+                <span class="popup-value">${properties.폐업일자}</span>
+            </div>
+            ` : ''}
+        `;
+        
+        // 스마트 팝업 위치 설정
+        this.setSmartPopupPosition(coordinate);
+    }
+    
+    returnToDongView() {
+        // 점포 레이어 제거
+        if (this.storeLayer) {
+            this.map.removeLayer(this.storeLayer);
+            this.storeLayer = null;
+        }
+        
+        // 행정동 레이어 다시 표시
+        this.dongLayer.setVisible(true);
+        
+        // 현재 구의 extent로 복귀
+        if (this.dongLayer) {
+            const extent = this.dongLayer.getSource().getExtent();
+            this.map.getView().fit(extent, {
+                padding: [50, 50, 50, 50],
+                duration: 1000,
+                maxZoom: 15
+            });
+        }
+        
+        // 뷰 모드 변경
+        this.currentView = 'dong';
+        this.currentDongCode = null;
+        
+        // 팝업 숨기기
+        this.popup.setPosition(undefined);
+    }
+    
     returnToDistrictView() {
+        // 점포 레이어 제거
+        if (this.storeLayer) {
+            this.map.removeLayer(this.storeLayer);
+            this.storeLayer = null;
+        }
+        
         // 행정동 레이어 제거
         if (this.dongLayer) {
             this.map.removeLayer(this.dongLayer);
@@ -680,11 +945,10 @@ class SeoulCommercialMap {
         // 뷰 모드 변경
         this.currentView = 'district';
         this.currentGuCode = null;
+        this.currentDongCode = null;
         
         // 팝업 숨기기
         this.popup.setPosition(undefined);
-        
-        console.log('구별 뷰로 복귀');
     }
     
     showLoading() {
@@ -750,6 +1014,31 @@ class SeoulCommercialMap {
             this.selectionLayer.getSource().changed();
         }
         this.popup.setPosition(undefined);
+        
+        // 점포 레이어 제거
+        if (this.storeLayer) {
+            this.map.removeLayer(this.storeLayer);
+            this.storeLayer = null;
+        }
+        
+        // 행정동 레이어 제거
+        if (this.dongLayer) {
+            this.map.removeLayer(this.dongLayer);
+            this.dongLayer = null;
+        }
+        
+        // 구별 레이어 다시 표시
+        if (this.districtLayer) {
+            this.districtLayer.setVisible(true);
+        }
+        if (this.selectionLayer) {
+            this.selectionLayer.setVisible(true);
+        }
+        
+        // 뷰 모드 초기화
+        this.currentView = 'district';
+        this.currentGuCode = null;
+        this.currentDongCode = null;
         
         // 서울시 전체 뷰로 복귀
         if (this.districtLayer) {

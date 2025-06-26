@@ -19,4 +19,5 @@ urlpatterns = [
     path('api/geometry/', views.get_geometry_data, name='geometry_data'),
     path('api/seoul-districts/', views.get_seoul_districts_geojson, name='seoul_districts_geojson'),
     path('api/dong-geojson/', views.get_dong_geojson, name='dong_geojson'),
+    path('api/dong-stores/', views.get_dong_stores, name='dong_stores'),
 ] 
