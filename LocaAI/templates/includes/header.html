@@ -170,6 +170,10 @@
         window.sessionLang = 'KOR';
       }
       console.log("[header.js] 설정된 기본 언어:", window.sessionLang);
+      {% if not request.session.language %}
+      console.log("[header.js] 세션 언어 없음 → Ajax로 설정 요청 중...");
+      setSelectedLangValue(window.sessionLang);
+      {% endif %}
     }
 
 		$(window).ready(function() {
@@ -188,9 +192,19 @@
           'X-CSRFToken': getCSRFToken()   // 토큰추가
         },
         success: function(res) {
-          window.sessionLang = lang;    // 전역 변수 업데이트
-          funcChangeLang(lang);         // UI 전환
-          console.log(res.code, res.message, 'session lang changed to', lang)
+          window.sessionLang = lang;
+          funcChangeLang(lang);
+          console.log(res.code, res.message, 'session lang changed to', lang);
+
+          // ✅ 모바일 메뉴 닫기 로직 추가
+          if (document.querySelector('.mobile-nav-active')) {
+            document.body.classList.remove('mobile-nav-active');
+            const toggleBtn = document.querySelector('.mobile-nav-toggle');
+            if (toggleBtn) {
+              toggleBtn.classList.add('bi-list');
+              toggleBtn.classList.remove('bi-x');
+            }
+          }
         },
         error: function(xhr, status, error) {
           console.log('session lang change error', lang)
