@@ -9,7 +9,19 @@ from django.shortcuts import render
 
 # 언어 설정을 세션에서 가져오는 함수
 def getSessionLang(request):
-    return request.session.get('language', 'KOR')
+    if 'language' in request.session:
+        print(f"[getSessionLang] 세션 언어: {request.session['language']}")
+        return request.session['language']
+    accept_lang = request.META.get('HTTP_ACCEPT_LANGUAGE', '')
+    print(f"[getSessionLang] 브라우저 언어: {accept_lang}")
+    if accept_lang.startswith('en'):
+        print("[getSessionLang] 설정 언어: ENG")
+        return 'ENG'
+    elif accept_lang.startswith('es'):
+        print("[getSessionLang] 설정 언어: ESP")
+        return 'ESP'
+    print("[getSessionLang] 설정 언어: KOR (기본값)")
+    return 'KOR'
 
 # 언어 설정을 세션에 저장하는 함수
 def set_language(request):
