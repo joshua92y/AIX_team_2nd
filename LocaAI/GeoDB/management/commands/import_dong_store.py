@@ -82,12 +82,18 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.SUCCESS('dong_store 테이블 생성 중...'))
                 
                 # 컬럼 정보를 바탕으로 동적으로 테이블 생성
+                # EMD_CD 컬럼이 있는지 확인하여 테이블 스키마 결정
+                has_emd_cd = 'EMD_CD' in gdf.columns
+                
                 create_table_sql = """
                     CREATE TABLE dong_store (
                         id SERIAL PRIMARY KEY,
-                        emd_cd VARCHAR(8) UNIQUE,
-                        emd_kor_nm VARCHAR(100),
                 """
+                
+                if has_emd_cd:
+                    create_table_sql += "        emd_cd VARCHAR(8),\n"
+                
+                create_table_sql += "        emd_kor_nm VARCHAR(100),\n"
                 
                 # GPKG 컬럼을 기반으로 테이블 구조 생성
                 for col in gdf.columns:
@@ -108,59 +114,80 @@ class Command(BaseCommand):
                 cursor.execute(create_table_sql)
                 self.stdout.write(self.style.SUCCESS('dong_store 테이블 생성 완료'))
                 
-                # 데이터 삽입
+                # 데이터 삽입 (배치 처리로 최적화)
                 self.stdout.write('데이터 삽입 중...')
                 
+                # 컬럼 구조 미리 준비
+                columns = ['emd_kor_nm']
+                if has_emd_cd:
+                    columns.insert(0, 'emd_cd')
+                
+                # 나머지 컬럼 추가 (EMD_KOR_NM은 이미 emd_kor_nm으로 처리됨)
+                for col in gdf.columns:
+                    if col not in ['geometry', 'EMD_CD', 'EMD_KOR_NM']:
+                        columns.append(f'"{col}"')
+                
+                # SQL 쿼리 미리 준비
+                placeholders = ', '.join(['%s'] * len(columns))
+                columns_str = ', '.join(columns)
+                insert_sql = f"INSERT INTO dong_store ({columns_str}) VALUES ({placeholders})"
+                
+                # 배치 처리용 데이터 준비
+                batch_size = 1000
+                all_values = []
                 success_count = 0
                 error_count = 0
                 
                 for idx, row in gdf.iterrows():
                     try:
-                        # 컬럼과 값 준비
-                        columns = ['emd_cd', 'emd_kor_nm']
-                        values = [
-                            row.get('emd_cd') or row.get('EMD_CD'),
-                            row.get('emd_kor_nm') or row.get('EMD_KOR_NM')
-                        ]
+                        values = []
                         
-                        # 나머지 컬럼 추가
+                        # emd_cd 값 (있는 경우)
+                        if has_emd_cd:
+                            emd_cd_value = row['EMD_CD'] if not pd.isna(row['EMD_CD']) else None
+                            values.append(emd_cd_value)
+                        
+                        # emd_kor_nm 값
+                        emd_kor_nm_value = None
+                        if 'EMD_KOR_NM' in gdf.columns:
+                            emd_kor_nm_value = row['EMD_KOR_NM']
+                        elif 'emd_kor_nm' in gdf.columns:
+                            emd_kor_nm_value = row['emd_kor_nm']
+                        values.append(emd_kor_nm_value)
+                        
+                        # 나머지 컬럼들
                         for col in gdf.columns:
-                            if col not in ['geometry', 'emd_cd', 'emd_kor_nm', 'EMD_CD', 'EMD_KOR_NM']:
-                                columns.append(f'"{col}"')
+                            if col not in ['geometry', 'EMD_CD', 'EMD_KOR_NM']:
                                 value = row[col]
                                 if pd.isna(value):
                                     values.append(None)
                                 else:
                                     values.append(value)
                         
-                        # SQL 실행
-                        placeholders = ', '.join(['%s'] * len(values))
-                        columns_str = ', '.join(columns)
-                        
-                        insert_sql = f"""
-                            INSERT INTO dong_store ({columns_str})
-                            VALUES ({placeholders})
-                            ON CONFLICT (emd_cd) DO UPDATE SET
-                                emd_kor_nm = EXCLUDED.emd_kor_nm,
-                                updated_at = CURRENT_TIMESTAMP
-                        """
-                        
-                        cursor.execute(insert_sql, values)
+                        all_values.append(values)
                         success_count += 1
                         
-                        if success_count % 100 == 0:
+                        # 배치 크기에 도달하면 한번에 삽입
+                        if len(all_values) >= batch_size:
+                            cursor.executemany(insert_sql, all_values)
                             self.stdout.write(f"처리 중: {success_count:,}개 완료")
+                            all_values = []
                     
                     except Exception as e:
                         error_count += 1
                         if error_count <= 5:
                             self.stdout.write(self.style.WARNING(f"오류 (행 {idx}): {str(e)}"))
                 
+                # 남은 데이터 삽입
+                if all_values:
+                    cursor.executemany(insert_sql, all_values)
+                
                 self.stdout.write(self.style.SUCCESS(f"데이터 삽입 완료: 성공 {success_count:,}개, 오류 {error_count:,}개"))
                 
                 # 인덱스 생성
                 self.stdout.write('인덱스 생성 중...')
-                cursor.execute('CREATE INDEX IF NOT EXISTS idx_dong_store_emd_cd ON dong_store(emd_cd);')
+                if has_emd_cd:
+                    cursor.execute('CREATE INDEX IF NOT EXISTS idx_dong_store_emd_cd ON dong_store(emd_cd);')
                 cursor.execute('CREATE INDEX IF NOT EXISTS idx_dong_store_emd_kor_nm ON dong_store(emd_kor_nm);')
                 
                 # 테이블 정보 확인

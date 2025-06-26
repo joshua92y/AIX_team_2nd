@@ -9,3 +9,5 @@ RAG_SETTINGS = {
     "CHAIN_RETRIEVER_K": 5,  # ConversationalRetrievalChain의 retriever에 적용할 k 값
     "CACHE_TIMEOUT": 3600,  # 캐시 타임아웃 (초)
 }
+
+
