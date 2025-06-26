@@ -4,10 +4,70 @@
 // jsPDF와 html2canvas를 사용한 PDF 처리
 // ==================================================
 
+// 다국어 지원을 위한 텍스트 정의
+const PDF_TRANSLATIONS = {
+  ko: {
+    no_preview_data: '미리보기 데이터가 없습니다.',
+    no_preview_content: '미리보기 내용을 찾을 수 없습니다.',
+    generating: '생성 중...',
+    high_quality_pdf: '고품질 PDF (이미지)',
+    lightweight_pdf: '경량 PDF (텍스트)',
+    download_complete: 'PDF 다운로드가 완료되었습니다.',
+    lightweight_download_complete: '경량 PDF 다운로드가 완료되었습니다.',
+    generation_error: 'PDF 생성 중 오류가 발생했습니다: ',
+    lightweight_generation_error: '경량 PDF 생성 중 오류가 발생했습니다: ',
+    no_analysis_result: '분석 결과가 없습니다.',
+    filename_prefix: 'AI_상권분석_보고서_',
+    lightweight_filename_prefix: 'AI_상권분석_경량_'
+  },
+  en: {
+    no_preview_data: 'No preview data available.',
+    no_preview_content: 'Preview content not found.',
+    generating: 'Generating...',
+    high_quality_pdf: 'High Quality PDF (Image)',
+    lightweight_pdf: 'Lightweight PDF (Text)',
+    download_complete: 'PDF download completed.',
+    lightweight_download_complete: 'Lightweight PDF download completed.',
+    generation_error: 'Error occurred during PDF generation: ',
+    lightweight_generation_error: 'Error occurred during lightweight PDF generation: ',
+    no_analysis_result: 'No analysis results available.',
+    filename_prefix: 'AI_Commercial_Analysis_Report_',
+    lightweight_filename_prefix: 'AI_Commercial_Analysis_Light_'
+  },
+  es: {
+    no_preview_data: 'No hay datos de vista previa disponibles.',
+    no_preview_content: 'Contenido de vista previa no encontrado.',
+    generating: 'Generando...',
+    high_quality_pdf: 'PDF de Alta Calidad (Imagen)',
+    lightweight_pdf: 'PDF Ligero (Texto)',
+    download_complete: 'Descarga de PDF completada.',
+    lightweight_download_complete: 'Descarga de PDF ligero completada.',
+    generation_error: 'Error durante la generación del PDF: ',
+    lightweight_generation_error: 'Error durante la generación del PDF ligero: ',
+    no_analysis_result: 'No hay resultados de análisis disponibles.',
+    filename_prefix: 'Informe_Análisis_Comercial_IA_',
+    lightweight_filename_prefix: 'Informe_Análisis_Comercial_IA_Ligero_'
+  }
+};
+
+// 현재 언어 감지 함수
+function getCurrentLanguage() {
+  // HTML lang 속성에서 언어 감지
+  const htmlLang = document.documentElement.lang || 'ko';
+  const langCode = htmlLang.split('-')[0]; // 'ko-kr' -> 'ko'
+  return PDF_TRANSLATIONS[langCode] ? langCode : 'ko';
+}
+
+// 번역 텍스트 가져오기 함수
+function getTranslation(key) {
+  const currentLang = getCurrentLanguage();
+  return PDF_TRANSLATIONS[currentLang][key] || PDF_TRANSLATIONS['ko'][key];
+}
+
 // 미리보기 모달에서 PDF 다운로드 함수 (고품질)
 function downloadPreviewPDF() {
   if (!currentPreviewRequestId) {
-    alert('미리보기 데이터가 없습니다.');
+    alert(getTranslation('no_preview_data'));
     return;
   }
   
@@ -16,12 +76,12 @@ function downloadPreviewPDF() {
     const element = document.getElementById('previewContent');
     
     if (!element) {
-      alert('미리보기 내용을 찾을 수 없습니다.');
+      alert(getTranslation('no_preview_content'));
       return;
     }
     
     // 로딩 상태 표시
-    document.getElementById('previewDownloadPdfBtn').innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>생성 중...';
+    document.getElementById('previewDownloadPdfBtn').innerHTML = `<i class="spinner-border spinner-border-sm me-2"></i>${getTranslation('generating')}`;
     document.getElementById('previewDownloadPdfBtn').disabled = true;
     document.getElementById('previewDownloadLightPdfBtn').disabled = true;
     
@@ -64,34 +124,34 @@ function downloadPreviewPDF() {
       
       // 파일명 생성
       const currentDate = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-      const filename = `AI_상권분석_보고서_${currentDate}.pdf`;
+      const filename = `${getTranslation('filename_prefix')}${currentDate}.pdf`;
       
       // PDF 다운로드
       doc.save(filename);
       
       // 버튼 상태 복원
-      document.getElementById('previewDownloadPdfBtn').innerHTML = '<i class="bi bi-download me-2"></i>고품질 PDF (이미지)';
+      document.getElementById('previewDownloadPdfBtn').innerHTML = `<i class="bi bi-download me-2"></i>${getTranslation('high_quality_pdf')}`;
       document.getElementById('previewDownloadPdfBtn').disabled = false;
       document.getElementById('previewDownloadLightPdfBtn').disabled = false;
       
-      alert('PDF 다운로드가 완료되었습니다.');
+      alert(getTranslation('download_complete'));
       
     }).catch(error => {
       console.error('html2canvas 오류:', error);
-      alert('PDF 생성 중 오류가 발생했습니다: ' + error.message);
+      alert(getTranslation('generation_error') + error.message);
       
       // 버튼 상태 복원
-      document.getElementById('previewDownloadPdfBtn').innerHTML = '<i class="bi bi-download me-2"></i>고품질 PDF (이미지)';
+      document.getElementById('previewDownloadPdfBtn').innerHTML = `<i class="bi bi-download me-2"></i>${getTranslation('high_quality_pdf')}`;
       document.getElementById('previewDownloadPdfBtn').disabled = false;
       document.getElementById('previewDownloadLightPdfBtn').disabled = false;
     });
     
   } catch (error) {
     console.error('PDF 생성 오류:', error);
-    alert('PDF 생성 중 오류가 발생했습니다: ' + error.message);
+    alert(getTranslation('generation_error') + error.message);
     
     // 버튼 상태 복원
-    document.getElementById('previewDownloadPdfBtn').innerHTML = '<i class="bi bi-download me-2"></i>고품질 PDF (이미지)';
+    document.getElementById('previewDownloadPdfBtn').innerHTML = `<i class="bi bi-download me-2"></i>${getTranslation('high_quality_pdf')}`;
     document.getElementById('previewDownloadPdfBtn').disabled = false;
     document.getElementById('previewDownloadLightPdfBtn').disabled = false;
   }
@@ -100,13 +160,13 @@ function downloadPreviewPDF() {
 // 미리보기 모달에서 경량 PDF 다운로드 함수 (한글 폰트 지원)
 function downloadPreviewLightweightPDF() {
   if (!currentPreviewRequestId) {
-    alert('미리보기 데이터가 없습니다.');
+    alert(getTranslation('no_preview_data'));
     return;
   }
   
   try {
     // 로딩 상태 표시
-    document.getElementById('previewDownloadLightPdfBtn').innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>생성 중...';
+    document.getElementById('previewDownloadLightPdfBtn').innerHTML = `<i class="spinner-border spinner-border-sm me-2"></i>${getTranslation('generating')}`;
     document.getElementById('previewDownloadLightPdfBtn').disabled = true;
     document.getElementById('previewDownloadPdfBtn').disabled = true;
     
@@ -114,7 +174,7 @@ function downloadPreviewLightweightPDF() {
     const element = document.getElementById('previewContent');
     
     if (!element) {
-      alert('미리보기 내용을 찾을 수 없습니다.');
+      alert(getTranslation('no_preview_content'));
       return;
     }
     

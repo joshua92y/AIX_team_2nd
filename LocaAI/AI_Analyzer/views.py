@@ -9,6 +9,7 @@ from django.db import connection, transaction
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import user_passes_test
 from django.template.loader import render_to_string
+from django.utils.translation import gettext as _, gettext_lazy as _lazy, get_language
 import json
 import requests
 from pyproj import Proj, Transformer
@@ -2464,24 +2465,34 @@ def get_pdf_data(request, request_id):
         except BusinessType.DoesNotExist:
             business_type_name = "알 수 없음"
 
-        # 서비스 유형명 변환
-        service_type_map = {1: "일반음식점", 2: "휴게음식점", 3: "매장"}
+        # 현재 언어 감지
+        current_language = get_language()
+        
+        # 서비스 유형명 변환 (다국어 지원)
+        service_type_maps = {
+            'ko': {1: "일반음식점", 2: "휴게음식점", 3: "매장"},
+            'en': {1: "General Restaurant", 2: "Snack Bar", 3: "Store"},
+            'es': {1: "Restaurante General", 2: "Bar de Snacks", 3: "Tienda"}
+        }
+        service_type_map = service_type_maps.get(current_language, service_type_maps['ko'])
         service_type_name = service_type_map.get(
-            analysis_request.service_type, "알 수 없음"
+            analysis_request.service_type, _("알 수 없음")
         )
 
-        # AI 분석 결과 판정
+        # AI 분석 결과 판정 (다국어 지원)
         survival_rate = analysis_result.survival_percentage or 0
-        if survival_rate >= 80:
-            analysis_text = "높은 생존 가능성 - 현재 위치는 장기적으로 사업을 지속하기에 매우 좋은 조건을 갖추고 있습니다."
-        elif survival_rate >= 60:
-            analysis_text = "보통 생존 가능성 - 현재 위치는 사업 지속에 적절한 조건을 갖추고 있으나, 추가적인 전략 검토가 필요합니다."
-        else:
-            analysis_text = "낮은 생존 가능성 - 현재 위치는 장기 사업 지속에 어려움이 예상됩니다. 신중한 검토가 필요합니다."
-
-        # PDF용 데이터 구조 생성
+        analysis_texts = get_survival_analysis_texts(current_language, survival_rate)
+        
+        # PDF용 데이터 구조 생성 (다국어 지원)
+        titles = {
+            'ko': "AI 상권분석 보고서",
+            'en': "AI Commercial Area Analysis Report",
+            'es': "Informe de Análisis de Zona Comercial IA"
+        }
+        
         pdf_data = {
-            "title": "AI 상권분석 보고서",
+            "title": titles.get(current_language, titles['ko']),
+            "language": current_language,
             "basic_info": {
                 "address": analysis_request.address,
                 "business_type": business_type_name,
@@ -2501,7 +2512,7 @@ def get_pdf_data(request, request_id):
             },
             "ai_analysis": {
                 "survival_rate": f"{survival_rate:.1f}%",
-                "analysis_text": analysis_text,
+                "analysis_text": analysis_texts,
             },
             "competition_analysis": {
                 "competitor_count": f"{analysis_result.competitor_300m or 0}개",
@@ -2531,6 +2542,40 @@ def get_pdf_data(request, request_id):
         return JsonResponse(
             {"error": f"데이터 조회 중 오류가 발생했습니다: {str(e)}"}, status=500
         )
+
+
+def get_survival_analysis_texts(language: str, survival_rate: float) -> str:
+    """
+    생존 확률에 따른 분석 텍스트를 언어별로 반환
+    
+    Args:
+        language: 언어 코드 ('ko', 'en', 'es')
+        survival_rate: 생존 확률 (0-100)
+    
+    Returns:
+        str: 언어별 분석 텍스트
+    """
+    if language == 'en':
+        if survival_rate >= 80:
+            return "High Survival Probability - The current location has excellent conditions for long-term business sustainability."
+        elif survival_rate >= 60:
+            return "Moderate Survival Probability - The current location has adequate conditions for business sustainability, but additional strategic review is needed."
+        else:
+            return "Low Survival Probability - The current location is expected to face difficulties in long-term business sustainability. Careful review is required."
+    elif language == 'es':
+        if survival_rate >= 80:
+            return "Alta Probabilidad de Supervivencia - La ubicación actual tiene excelentes condiciones para la sostenibilidad empresarial a largo plazo."
+        elif survival_rate >= 60:
+            return "Probabilidad de Supervivencia Moderada - La ubicación actual tiene condiciones adecuadas para la sostenibilidad empresarial, pero se necesita una revisión estratégica adicional."
+        else:
+            return "Baja Probabilidad de Supervivencia - Se espera que la ubicación actual enfrente dificultades en la sostenibilidad empresarial a largo plazo. Se requiere una revisión cuidadosa."
+    else:  # Korean (default)
+        if survival_rate >= 80:
+            return "높은 생존 가능성 - 현재 위치는 장기적으로 사업을 지속하기에 매우 좋은 조건을 갖추고 있습니다."
+        elif survival_rate >= 60:
+            return "보통 생존 가능성 - 현재 위치는 사업 지속에 적절한 조건을 갖추고 있으나, 추가적인 전략 검토가 필요합니다."
+        else:
+            return "낮은 생존 가능성 - 현재 위치는 장기 사업 지속에 어려움이 예상됩니다. 신중한 검토가 필요합니다."
 
 
 def format_currency(value):

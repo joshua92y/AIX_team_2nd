@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-20 16:04+0900\n"
+"POT-Creation-Date: 2025-06-26 17:27+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,108 +18,115 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? "
 "1 : 2;\n"
-#: smtp/models.py:25 smtp/models.py:116
+
+#: .\AI_Analyzer\views.py:2479
+msgid "알 수 없음"
+msgstr "Desconocido"
+
+#: .\smtp\models.py:25 .\smtp\models.py:116
 msgid "사용자"
 msgstr "Usuario"
 
-#: smtp/models.py:29
+#: .\smtp\models.py:29
 msgid "제목"
 msgstr "Asunto"
 
-#: smtp/models.py:30
+#: .\smtp\models.py:30
 msgid "메시지"
 msgstr "Mensaje"
 
-#: smtp/models.py:31
+#: .\smtp\models.py:31
 msgid "수신자"
 msgstr "Destinatario"
 
-#: smtp/models.py:32
+#: .\smtp\models.py:32
 msgid "발신자"
 msgstr "Remitente"
 
-#: smtp/models.py:35
+#: .\smtp\models.py:35
 msgid "상태"
 msgstr "Estado"
 
-#: smtp/models.py:40
+#: .\smtp\models.py:40
 msgid "전송일시"
 msgstr "Fecha de envío"
 
-#: smtp/models.py:41
+#: .\smtp\models.py:41
 msgid "실패일시"
 msgstr "Fecha de fallo"
 
-#: smtp/models.py:42
+#: .\smtp\models.py:42
 msgid "실패 이유"
 msgstr "Motivo del fallo"
 
-#: smtp/models.py:44
+#: .\smtp\models.py:44
 msgid "생성일"
 msgstr "Fecha de creación"
 
-#: smtp/models.py:45
+#: .\smtp\models.py:45
 msgid "수정일"
 msgstr "Fecha de modificación"
 
-#: smtp/models.py:48 smtp/models.py:49 smtp/models.py:119
+#: .\smtp\models.py:48 .\smtp\models.py:49 .\smtp\models.py:119
 msgid "이메일"
 msgstr "Correo electrónico"
 
-#: smtp/models.py:120
+#: .\smtp\models.py:120
 msgid "수신 동의"
 msgstr "Consentimiento de recepción"
 
-#: smtp/models.py:121
+#: .\smtp\models.py:121
 msgid "구독 시작일"
 msgstr "Fecha de inicio de suscripción"
 
-#: smtp/models.py:122
+#: .\smtp\models.py:122
 msgid "구독 해지일"
 msgstr "Fecha de cancelación de suscripción"
 
-#: smtp/models.py:125
+#: .\smtp\models.py:125
 msgid "이름"
 msgstr "Nombre"
 
-#: smtp/models.py:128 smtp/models.py:129
+#: .\smtp\models.py:128 .\smtp\models.py:129
 msgid "뉴스레터 구독자"
 msgstr "Suscriptor del boletín"
 
-#: smtp/utils.py:44
+#: .\smtp\utils.py:53
 msgid "Loca Ai 뉴스레터 구독 감사합니다!"
 msgstr "¡Gracias por suscribirte al boletín de Loca Ai!"
 
-#: templates/newsletter/email_welcome.html:5
+#: .\templates\newsletter\email_welcome.html:6
 msgid "Loca Ai 뉴스레터 구독 환영"
 msgstr "Bienvenido al boletín de Loca Ai"
 
-#: templates/newsletter/email_welcome.html:11
+#: .\templates\newsletter\email_welcome.html:11
 #, python-format
 msgid "%(name)s님, 환영합니다! 🎉"
 msgstr "¡Bienvenido, %(name)s! 🎉"
 
-#: templates/newsletter/email_welcome.html:13
+#: .\templates\newsletter\email_welcome.html:13
 msgid "뉴스레터 구독을 환영합니다."
 msgstr "Gracias por suscribirte a nuestro boletín."
 
-#: templates/newsletter/email_welcome.html:14
+#: .\templates\newsletter\email_welcome.html:14
 msgid "앞으로 상권 분석 인사이트와 유용한 정보를 정기적으로 보내드릴게요."
 msgstr "Te enviaremos análisis de mercado e información útil periódicamente."
 
-#: templates/newsletter/email_welcome.html:18
+#: .\templates\newsletter\email_welcome.html:18
 msgid ""
 "혹시 원치 않으시면 아래 버튼을 눌러 언제든지 구독을 해지하실 수 있습니다."
-msgstr "Si no deseas recibir más correos, puedes darte de baja en cualquier momento usando el botón de abajo."
+msgstr ""
+"Si no deseas recibir más correos, puedes darte de baja en cualquier momento "
+"usando el botón de abajo."
 
-#: templates/newsletter/email_welcome.html:24
+#: .\templates\newsletter\email_welcome.html:24
 msgid "구독 해지하기"
 msgstr "Darse de baja"
 
-#: templates/newsletter/email_welcome.html:29
+#: .\templates\newsletter\email_welcome.html:29
 msgid "이 이메일은 Loca Ai에서 자동 발송되었습니다."
 msgstr "Este correo fue enviado automáticamente por Loca Ai."
 
-#: templates/newsletter/email_welcome.html:30
+#: .\templates\newsletter\email_welcome.html:30
 msgid "문의: aix25best@gmail.com"
 msgstr "Contacto: aix25best@gmail.com"
