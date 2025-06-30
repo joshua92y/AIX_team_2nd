@@ -57,7 +57,40 @@ const SHOPDASH_LANGUAGE_TEXTS = {
     // 차트 관련
     percent: '%',
     loading: '로딩 중...',
-    detailedInfo: '상세 정보'
+    detailedInfo: '상세 정보',
+    
+    // 업종별 다국어 매핑
+    businessTypes: {
+      '편의점': '편의점',
+      '카페': '카페',
+      '치킨': '치킨',
+      '피자': '피자',
+      '한식': '한식',
+      '중식': '중식',
+      '일식': '일식',
+      '양식': '양식',
+      '분식': '분식',
+      '베이커리': '베이커리',
+      '미용실': '미용실',
+      '네일아트': '네일아트',
+      '노래방': '노래방',
+      '음식점': '음식점',
+      '커피전문점': '커피전문점',
+      '술집': '술집',
+      '호프집': '호프집',
+      '패스트푸드': '패스트푸드',
+      '의류': '의류',
+      '신발': '신발',
+      '약국': '약국',
+      '세탁소': '세탁소',
+      '문구점': '문구점',
+      '서점': '서점',
+      '핸드폰': '핸드폰',
+      'PC방': 'PC방',
+      '찜질방': '찜질방',
+      '헬스장': '헬스장',
+      '학원': '학원'
+    }
   },
   en: {
     languageName: 'English',
@@ -111,7 +144,40 @@ const SHOPDASH_LANGUAGE_TEXTS = {
     // 차트 관련
     percent: '%',
     loading: 'Loading...',
-    detailedInfo: 'Detailed Information'
+    detailedInfo: 'Detailed Information',
+    
+    // 업종별 다국어 매핑
+    businessTypes: {
+      '편의점': 'Convenience Store',
+      '카페': 'Cafe',
+      '치킨': 'Chicken',
+      '피자': 'Pizza',
+      '한식': 'Korean Food',
+      '중식': 'Chinese Food',
+      '일식': 'Japanese Food',
+      '양식': 'Western Food',
+      '분식': 'Snack Bar',
+      '베이커리': 'Bakery',
+      '미용실': 'Hair Salon',
+      '네일아트': 'Nail Art',
+      '노래방': 'Karaoke',
+      '음식점': 'Restaurant',
+      '커피전문점': 'Coffee Shop',
+      '술집': 'Bar',
+      '호프집': 'Beer House',
+      '패스트푸드': 'Fast Food',
+      '의류': 'Clothing',
+      '신발': 'Shoes',
+      '약국': 'Pharmacy',
+      '세탁소': 'Laundry',
+      '문구점': 'Stationery',
+      '서점': 'Bookstore',
+      '핸드폰': 'Mobile Phone',
+      'PC방': 'PC Bang',
+      '찜질방': 'Sauna',
+      '헬스장': 'Gym',
+      '학원': 'Academy'
+    }
   },
   es: {
     languageName: 'Español',
@@ -165,7 +231,40 @@ const SHOPDASH_LANGUAGE_TEXTS = {
     // 차트 관련
     percent: '%',
     loading: 'Cargando...',
-    detailedInfo: 'Información Detallada'
+    detailedInfo: 'Información Detallada',
+    
+    // 업종별 다국어 매핑
+    businessTypes: {
+      '편의점': 'Tienda de Conveniencia',
+      '카페': 'Café',
+      '치킨': 'Pollo',
+      '피자': 'Pizza',
+      '한식': 'Comida Coreana',
+      '중식': 'Comida China',
+      '일식': 'Comida Japonesa',
+      '양식': 'Comida Occidental',
+      '분식': 'Bar de Snacks',
+      '베이커리': 'Panadería',
+      '미용실': 'Peluquería',
+      '네일아트': 'Arte de Uñas',
+      '노래방': 'Karaoke',
+      '음식점': 'Restaurante',
+      '커피전문점': 'Cafetería',
+      '술집': 'Bar',
+      '호프집': 'Casa de Cerveza',
+      '패스트푸드': 'Comida Rápida',
+      '의류': 'Ropa',
+      '신발': 'Zapatos',
+      '약국': 'Farmacia',
+      '세탁소': 'Lavandería',
+      '문구점': 'Papelería',
+      '서점': 'Librería',
+      '핸드폰': 'Teléfono Móvil',
+      'PC방': 'PC Bang',
+      '찜질방': 'Sauna',
+      '헬스장': 'Gimnasio',
+      '학원': 'Academia'
+    }
   }
 };
 
@@ -193,6 +292,18 @@ function getShopDashText(key) {
   const language = getCurrentShopDashLanguage();
   const texts = SHOPDASH_LANGUAGE_TEXTS[language] || SHOPDASH_LANGUAGE_TEXTS['ko'];
   return texts[key] || key;
+}
+
+// 업종명 번역 함수
+function translateBusinessType(koreanBusinessType) {
+  const language = getCurrentShopDashLanguage();
+  const texts = SHOPDASH_LANGUAGE_TEXTS[language] || SHOPDASH_LANGUAGE_TEXTS['ko'];
+  
+  if (texts.businessTypes && texts.businessTypes[koreanBusinessType]) {
+    return texts.businessTypes[koreanBusinessType];
+  }
+  
+  return koreanBusinessType; // 번역이 없으면 원본 반환
 }
 
 // 템플릿 문자열 처리 ({count} 등)

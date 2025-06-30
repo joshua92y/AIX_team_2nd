@@ -216,6 +216,11 @@
    */
   document.querySelectorAll('.navmenu a[href^="#"]').forEach(link => {
     link.addEventListener('click', function(e) {
+      // this.hash가 빈 문자열이거나 유효하지 않은 경우 처리
+      if (!this.hash || this.hash.trim() === '') {
+        return;
+      }
+      
       const target = document.querySelector(this.hash);
       if (target) {
         e.preventDefault();
