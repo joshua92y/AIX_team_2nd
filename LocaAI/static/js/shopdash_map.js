@@ -603,7 +603,7 @@ class SeoulCommercialMap {
             </div>
             <div class="popup-info-item">
                 <span class="popup-label">${texts.mainBusinessType}</span>
-                <span class="popup-value">${properties.top_business_type || texts.noInfo} (${properties.top_business_count?.toLocaleString() || 0}${texts.stores})</span>
+                <span class="popup-value">${properties.top_business_type ? translateBusinessType(properties.top_business_type) : texts.noInfo} (${properties.top_business_count?.toLocaleString() || 0}${texts.stores})</span>
             </div>
             <div class="popup-info-item">
                 <span class="popup-hint">${texts.clickForStores}</span>
@@ -872,7 +872,7 @@ class SeoulCommercialMap {
             </div>
             <div class="popup-info-item">
                 <span class="popup-label">${texts.businessType}</span>
-                <span class="popup-value">${properties.업종명}</span>
+                <span class="popup-value">${translateBusinessType(properties.업종명)}</span>
             </div>
             <div class="popup-info-item">
                 <span class="popup-label">${texts.address}</span>
