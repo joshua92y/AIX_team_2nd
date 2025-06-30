@@ -1,4 +1,5 @@
 {% load static %}
+{% load i18n %}
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -51,19 +52,19 @@
 
         <!-- RECOVERY -->
         <div class="recovery">
-          <h2>Password Recovery</h2>
-          <p>Enter either the <strong>email address</strong> or <strong>username</strong> on the account and <strong>click Submit</strong></p>
-          <p>We'll email instructions on how to reset your password.</p>
+          <h2>{% trans "Password Recovery" %}</h2>
+          <p>{% trans "Enter either the email address or username on the account and click Submit." %}</p>
+          <p>{% trans "We'll email instructions on how to reset your password." %}</p>
           <!-- form 태그 -->
           <form class="recovery-form" method="post" data-reset-url="{% url 'custom_auth:custom_password_reset' %}">
           {% csrf_token %}
-            <input type="text" class="input" name="identifier" placeholder="Enter Email or Username Here">
-            <input type="submit" class="button" value="Submit">
+            <input type="text" class="input" name="identifier" placeholder="{% trans 'Enter Email or Username Here' %}">
+            <input type="submit" class="button" value="{% trans 'Submit' %}">
           </form>
           {% if form.errors %}
             <p class="error">{{ form.errors }}</p>
           {% endif %}
-          <p class="mssg">An email has been sent to you with further instructions.</p>
+          <p class="mssg">{% trans "An email has been sent to you with further instructions." %}</p>
         </div>
 
         <!-- FORM -->
@@ -133,6 +134,36 @@
 
   <script>
   document.addEventListener("DOMContentLoaded", function () {
+    const sessionLang = "{{ request.session.language|default:'' }}";
+    if (!sessionLang) {
+      const browserLang = navigator.language || navigator.userLanguage;
+      let lang = 'KOR';
+      if (browserLang.startsWith('en')) {
+        lang = 'ENG';
+      } else if (browserLang.startsWith('es')) {
+        lang = 'ESP';
+      }
+      console.log("[login.js] 감지된 브라우저 언어:", browserLang);
+      console.log("[login.js] 서버에 설정 요청 언어:", lang);
+
+      fetch("{% url 'set_language' %}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "{{ csrf_token }}",
+        },
+        body: JSON.stringify({ lang }),
+      })
+      .then(res => res.json())
+      .then(data => {
+        console.log("[login.js] 언어 설정 결과:", data);
+      });
+    }
+  });
+  </script>
+
+  <script>
+  document.addEventListener("DOMContentLoaded", function () {
     const recoveryForm = document.querySelector(".recovery-form");
 
     if (recoveryForm) {
@@ -196,7 +227,6 @@
     }
   });
   </script>
-
 
 
 

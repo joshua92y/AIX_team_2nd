@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-26 17:37+0900\n"
+"POT-Creation-Date: 2025-06-30 14:28+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,11 +18,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: .\AI_Analyzer\views.py:2479
-msgid "알 수 없음"
-msgstr "Unknown"
+#: custom_auth/views.py:282
+msgid "Password Reset Instructions"
+msgstr ""
 
-#: .\smtp\models.py:25 .\smtp\models.py:116
+#: custom_auth/views.py:283
+msgid "To reset your password, click the following link:"
+msgstr ""
+
+#: smtp/models.py:25 smtp/models.py:116
 msgid "사용자"
 msgstr "User"
 
@@ -90,157 +94,68 @@ msgstr "Name"
 msgid "뉴스레터 구독자"
 msgstr "Newsletter Subscriber"
 
-#: .\smtp\utils.py:53
+#: smtp/utils.py:53
 msgid "Loca Ai 뉴스레터 구독 감사합니다!"
 msgstr "Thank you for subscribing to the Loca Ai newsletter!"
 
-#: .\templates\AI_Analyzer\analyze.html:240
-msgid "주류 판매 여부"
-msgstr "Alcohol Sales"
+#: templates/custom_auth/login.html:54
+msgid "Password Recovery"
+msgstr ""
 
-#: .\templates\AI_Analyzer\analyze.html:241
-msgid "Alcohol Sales"
-msgstr "Alcohol Sales"
-
-#: .\templates\AI_Analyzer\analyze.html:242
-msgid "Venta de Alcohol"
-msgstr "Alcohol Sales"
-
-#: .\templates\AI_Analyzer\analyze.html:245
-msgid "선택"
-msgstr "Select"
-
-#: .\templates\AI_Analyzer\analyze.html:246
-msgid "Select"
-msgstr "Select"
-
-#: .\templates\AI_Analyzer\analyze.html:247
-msgid "Seleccionar"
-msgstr "Select"
-
-#: .\templates\AI_Analyzer\analyze.html:248
-msgid "판매함"
-msgstr "Yes"
-
-#: .\templates\AI_Analyzer\analyze.html:249
-msgid "Yes"
-msgstr "Yes"
-
-#: .\templates\AI_Analyzer\analyze.html:250
-msgid "Sí"
-msgstr "Yes"
-
-#: .\templates\AI_Analyzer\analyze.html:251
-msgid "판매 안함"
-msgstr "No"
-
-#: .\templates\AI_Analyzer\analyze.html:252
-#: .\templates\AI_Analyzer\analyze.html:253
-msgid "No"
-msgstr "No"
-
-#: .\templates\AI_Analyzer\analyze.html:261
-msgid "상권 분석을 시작하세요"
-msgstr "Start Commercial Analysis"
-
-#: .\templates\AI_Analyzer\analyze.html:262
-msgid "Start Commercial Analysis"
-msgstr "Start Commercial Analysis"
-
-#: .\templates\AI_Analyzer\analyze.html:263
-msgid "Iniciar Análisis Comercial"
-msgstr "Start Commercial Analysis"
-
-#: .\templates\AI_Analyzer\analyze.html:819
-msgid "분석결과 상담"
-msgstr "Analysis Consultation"
-
-#: .\templates\AI_Analyzer\analyze.html:820
-msgid "Analysis Consultation"
-msgstr "Analysis Consultation"
-
-#: .\templates\AI_Analyzer\analyze.html:821
-msgid "Consulta de Análisis"
-msgstr "Analysis Consultation"
-
-#: .\templates\AI_Analyzer\analyze.html:824
-msgid "대기중"
-msgstr "Waiting"
-
-#: .\templates\AI_Analyzer\analyze.html:825
-msgid "Waiting"
-msgstr "Waiting"
-
-#: .\templates\AI_Analyzer\analyze.html:826
-msgid "Esperando"
-msgstr "Waiting"
-
-#: .\templates\AI_Analyzer\analyze.html:837
-msgid "분석결과 상담 AI"
-msgstr "Analysis Consultation AI"
-
-#: .\templates\AI_Analyzer\analyze.html:838
-msgid "Analysis Consultation AI"
-msgstr "Analysis Consultation AI"
-
-#: .\templates\AI_Analyzer\analyze.html:839
-msgid "IA de Consulta de Análisis"
-msgstr "Analysis Consultation AI"
-
-#: .\templates\AI_Analyzer\analyze.html:843
-msgid "상권 분석 결과에 대해<br>AI와 상담하려면 로그인이 필요합니다."
-msgstr "Login is required to<br>consult with AI about analysis results."
-
-#: .\templates\AI_Analyzer\analyze.html:844
-msgid "Login is required to<br>consult with AI about analysis results."
-msgstr "Login is required to<br>consult with AI about analysis results."
-
-#: .\templates\AI_Analyzer\analyze.html:845
+#: templates/custom_auth/login.html:55
 msgid ""
-"Se requiere iniciar sesión para<br>consultar con IA sobre los resultados del "
-"análisis."
-msgstr "Login is required to<br>consult with AI about analysis results."
+"Enter either the email address or username on the account and click Submit."
+msgstr ""
 
-#: .\templates\AI_Analyzer\analyze.html:849
-msgid "로그인하기"
-msgstr "Login"
+#: templates/custom_auth/login.html:56
+msgid "We'll email instructions on how to reset your password."
+msgstr ""
 
-#: .\templates\AI_Analyzer\analyze.html:850
-msgid "Login"
-msgstr "Login"
+#: templates/custom_auth/login.html:60
+msgid "Enter Email or Username Here"
+msgstr ""
 
-#: .\templates\AI_Analyzer\analyze.html:851
-msgid "Iniciar Sesión"
-msgstr "Login"
+#: templates/custom_auth/login.html:61
+msgid "Submit"
+msgstr ""
 
-#: .\templates\AI_Analyzer\analyze.html:855
-msgid "상권 분석을 완료하면<br>AI 상담 서비스를 이용할 수 있습니다."
-msgstr "Once commercial analysis is complete,<br>you can use AI consultation service."
+#: templates/custom_auth/login.html:66
+msgid "An email has been sent to you with further instructions."
+msgstr ""
 
-#: .\templates\AI_Analyzer\analyze.html:856
-msgid ""
-"Once commercial analysis is complete,<br>you can use AI consultation service."
-msgstr "Once commercial analysis is complete,<br>you can use AI consultation service."
+#: templates/custom_auth/password_reset_complete.html:3
+msgid "Password Change Complete"
+msgstr ""
 
-#: .\templates\AI_Analyzer\analyze.html:857
-msgid ""
-"Una vez completado el análisis comercial,<br>puede usar el servicio de "
-"consulta IA."
-msgstr "Once commercial analysis is complete,<br>you can use AI consultation service."
+#: templates/custom_auth/password_reset_complete.html:7
+msgid "Your password has been successfully changed!"
+msgstr ""
 
-#: .\templates\AI_Analyzer\analyze.html:862
-msgid "분석 완료 후 자동 활성화"
-msgstr "Auto-activated after analysis"
+#: templates/custom_auth/password_reset_complete.html:8
+msgid "You can now log in with your new password."
+msgstr ""
 
-#: .\templates\AI_Analyzer\analyze.html:863
-msgid "Auto-activated after analysis"
-msgstr "Auto-activated after analysis"
+#: templates/custom_auth/password_reset_complete.html:9
+msgid "Go to Login"
+msgstr ""
 
-#: .\templates\AI_Analyzer\analyze.html:864
-msgid "Activación automática después del análisis"
-msgstr "Auto-activated after analysis"
+#: templates/custom_auth/password_reset_confirm.html:3
+msgid "Reset Password"
+msgstr ""
 
-#: .\templates\newsletter\email_welcome.html:6
+#: templates/custom_auth/password_reset_confirm.html:7
+msgid "Enter New Password"
+msgstr ""
+
+#: templates/custom_auth/password_reset_confirm.html:8
+msgid "Please enter and confirm your new password."
+msgstr ""
+
+#: templates/custom_auth/password_reset_confirm.html:19
+msgid "Change Password"
+msgstr ""
+
+#: templates/newsletter/email_welcome.html:6
 msgid "Loca Ai 뉴스레터 구독 환영"
 msgstr "Welcome to the Loca Ai Newsletter"
 
