@@ -883,8 +883,11 @@ function populateBusinessRecommendations(recommendations) {
       console.log('퍼센트 엘리먼트:', percentageElement);
       
       if (businessTypeElement) {
-        businessTypeElement.textContent = firstPlace.name || '-';
-        console.log('업종명 설정:', firstPlace.name);
+        const currentLang = window.getCurrentAILanguage ? window.getCurrentAILanguage() : 'ko';
+        const translatedName = window.translateBusinessType ? 
+          window.translateBusinessType(firstPlace.name, currentLang) : firstPlace.name;
+        businessTypeElement.textContent = translatedName || '-';
+        console.log('업종명 설정:', firstPlace.name, '->', translatedName);
       }
       if (percentageElement) {
         percentageElement.textContent = (firstPlace.percentage || 0).toFixed(1) + '%';
@@ -908,21 +911,30 @@ function populateBusinessRecommendations(recommendations) {
     // 2위 업종 데이터
     if (recommendations[1]) {
       const secondPlace = recommendations[1];
-      document.getElementById('previewRecommended2nd').textContent = secondPlace.name || '-';
+      const currentLang = window.getCurrentAILanguage ? window.getCurrentAILanguage() : 'ko';
+      const translatedName2nd = window.translateBusinessType ? 
+        window.translateBusinessType(secondPlace.name, currentLang) : secondPlace.name;
+      document.getElementById('previewRecommended2nd').textContent = translatedName2nd || '-';
       document.getElementById('previewRecommended2ndPercent').textContent = (secondPlace.percentage || 0).toFixed(1) + '%';
     }
     
     // 3위 업종 데이터
     if (recommendations[2]) {
       const thirdPlace = recommendations[2];
-      document.getElementById('previewRecommended3rd').textContent = thirdPlace.name || '-';
+      const currentLang = window.getCurrentAILanguage ? window.getCurrentAILanguage() : 'ko';
+      const translatedName3rd = window.translateBusinessType ? 
+        window.translateBusinessType(thirdPlace.name, currentLang) : thirdPlace.name;
+      document.getElementById('previewRecommended3rd').textContent = translatedName3rd || '-';
       document.getElementById('previewRecommended3rdPercent').textContent = (thirdPlace.percentage || 0).toFixed(1) + '%';
     }
     
     // 4위 업종 데이터
     if (recommendations[3]) {
       const fourthPlace = recommendations[3];
-      document.getElementById('previewRecommended4th').textContent = fourthPlace.name || '-';
+      const currentLang = window.getCurrentAILanguage ? window.getCurrentAILanguage() : 'ko';
+      const translatedName4th = window.translateBusinessType ? 
+        window.translateBusinessType(fourthPlace.name, currentLang) : fourthPlace.name;
+      document.getElementById('previewRecommended4th').textContent = translatedName4th || '-';
       document.getElementById('previewRecommended4thPercent').textContent = (fourthPlace.percentage || 0).toFixed(1) + '%';
     }
     

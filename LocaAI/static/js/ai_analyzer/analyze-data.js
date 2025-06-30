@@ -64,10 +64,75 @@ const i18nTexts = {
 
 // 현재 언어는 analyze-i18n.js에서 관리
 
-// 업종 이름 가져오기
+// 업종 이름 가져오기 (ID 기반)
 function getBusinessTypeName(id, lang = 'kor') {
   const businessType = businessTypes.find(type => type.id == id);
   return businessType ? businessType[lang] : `업종 ${id}`;
+}
+
+// 업종 이름 번역 (한국어명 기반)
+function translateBusinessType(koreanName, lang = 'kor') {
+  // 언어가 한국어이거나 지정되지 않은 경우 원본 반환
+  if (!lang || lang === 'ko' || lang === 'kor') {
+    return koreanName;
+  }
+  
+  // 영어 변환
+  if (lang === 'en' || lang === 'eng') {
+    const businessType = businessTypes.find(type => type.kor === koreanName);
+    return businessType ? businessType.eng : koreanName;
+  }
+  
+  // 스페인어 변환
+  if (lang === 'es' || lang === 'esp') {
+    const businessType = businessTypes.find(type => type.kor === koreanName);
+    return businessType ? businessType.esp : koreanName;
+  }
+  
+  // 매칭되지 않는 언어의 경우 원본 반환
+  return koreanName;
+}
+
+// 현재 언어 감지 함수
+function getCurrentAILanguage() {
+  // 1. 네비게이션의 언어 설정 확인 (main.js의 전역 함수 사용)
+  if (typeof window.getCurrentLanguage === 'function') {
+    const navLang = window.getCurrentLanguage();
+    if (navLang) return navLang;
+  }
+  
+  // 2. 전역 currentLanguage 변수 확인
+  if (typeof currentLanguage !== 'undefined') {
+    return currentLanguage;
+  }
+  
+  // 3. 로컬스토리지에서 확인
+  const savedLang = localStorage.getItem('preferred_language');
+  if (savedLang) {
+    return savedLang;
+  }
+  
+  // 4. data-lang 속성이 표시된 요소 확인
+  const visibleLangElements = document.querySelectorAll('[data-lang]:not([style*="display: none"])');
+  if (visibleLangElements.length > 0) {
+    const langCode = visibleLangElements[0].getAttribute('data-lang');
+    const langMap = { 'KOR': 'ko', 'ENG': 'en', 'ESP': 'es' };
+    return langMap[langCode] || 'ko';
+  }
+  
+  // 5. HTML lang 속성에서 확인
+  const htmlLang = document.documentElement.lang;
+  if (htmlLang) {
+    const langMap = {
+      'ko': 'ko', 'ko-kr': 'ko',
+      'en': 'en', 'en-us': 'en',
+      'es': 'es', 'es-es': 'es'
+    };
+    return langMap[htmlLang.toLowerCase()] || 'ko';
+  }
+  
+  // 6. 기본값
+  return 'ko';
 }
 
 // 업종 select 옵션 생성 (언어별)
@@ -104,6 +169,8 @@ function initializeBusinessSelect() {
 // 전역 함수 노출
 window.businessTypes = businessTypes;
 window.getBusinessTypeName = getBusinessTypeName;
+window.translateBusinessType = translateBusinessType;
+window.getCurrentAILanguage = getCurrentAILanguage;
 window.generateBusinessOptions = generateBusinessOptions;
 window.updateBusinessSelect = updateBusinessSelect;
 window.initializeBusinessSelect = initializeBusinessSelect;
