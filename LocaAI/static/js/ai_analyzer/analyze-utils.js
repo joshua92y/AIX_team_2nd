@@ -10,14 +10,36 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-// 공시지가 포맷팅 함수
-function formatLandValue(value) {
+// 공시지가 포맷팅 함수 - 다국어 지원
+function formatLandValue(value, lang = null) {
+  // 언어가 지정되지 않은 경우 현재 언어 감지
+  if (!lang) {
+    lang = window.getCurrentAILanguage ? window.getCurrentAILanguage() : 'ko';
+  }
+  
+  console.log(`💰 formatLandValue 호출: ${value}, 언어: ${lang}`);
+  
+  // 언어별 단위 정의
+  const units = {
+    ko: { hundred_million: '억', ten_thousand: '만', currency: '₩' },
+    en: { hundred_million: ' hundred million', ten_thousand: ' ten thousand', currency: '₩' },
+    es: { hundred_million: ' cien millones', ten_thousand: ' diez mil', currency: '₩' }
+  };
+  
+  const unit = units[lang] || units.ko;
+  
   if (value >= 100000000) {
-    return `₩${(value / 100000000).toFixed(1)}억`;
+    const formatted = `${unit.currency}${(value / 100000000).toFixed(1)}${unit.hundred_million}`;
+    console.log(`✅ 억 단위 포맷팅: ${value} -> ${formatted}`);
+    return formatted;
   } else if (value >= 10000) {
-    return `₩${(value / 10000).toFixed(0)}만`;
+    const formatted = `${unit.currency}${(value / 10000).toFixed(0)}${unit.ten_thousand}`;
+    console.log(`✅ 만 단위 포맷팅: ${value} -> ${formatted}`);
+    return formatted;
   } else {
-    return `₩${value.toLocaleString()}`;
+    const formatted = `${unit.currency}${value.toLocaleString()}`;
+    console.log(`✅ 기본 단위 포맷팅: ${value} -> ${formatted}`);
+    return formatted;
   }
 }
 

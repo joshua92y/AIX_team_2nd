@@ -755,10 +755,23 @@ function populatePreviewData(data, requestId) {
   document.getElementById('previewCompetitors').textContent = 
     (result.competitor_300m || 0) + storeUnit;
   
-  // 공시지가
+  // 공시지가 - 다국어 단위 지원
   const landValue = result.total_land_value || 0;
-  const currencyUnit = currentLang === 'en' ? ' KRW' : currentLang === 'es' ? ' KRW' : '원';
-  let landValueText = landValue > 0 ? Math.round(landValue).toLocaleString() + currencyUnit : '0' + currencyUnit;
+  let landValueText = '₩0';
+  
+  if (landValue > 0) {
+    // formatLandValue 함수 사용 (다국어 단위 지원)
+    if (typeof formatLandValue === 'function') {
+      landValueText = formatLandValue(Math.round(landValue), currentLang);
+      console.log(`✅ PDF 공시지가 포맷팅: ${landValue} -> ${landValueText} (언어: ${currentLang})`);
+    } else {
+      // 폴백: formatLandValue 함수가 없는 경우
+      const currencyUnit = currentLang === 'en' ? ' KRW' : currentLang === 'es' ? ' KRW' : '원';
+      landValueText = Math.round(landValue).toLocaleString() + currencyUnit;
+      console.warn('⚠️ formatLandValue 함수를 찾을 수 없습니다. 폴백 방식 사용:', landValueText);
+    }
+  }
+  
   document.getElementById('previewLandPrice').textContent = landValueText;
   
   // 경쟁강도 분석 (새로 추가된 필드들)

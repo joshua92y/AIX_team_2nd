@@ -81,13 +81,9 @@ function getBusinessTypeName(id, lang = 'kor') {
   return businessType ? businessType[lang] : `업종 ${id}`;
 }
 
-// 업종 이름 번역 (한국어명 기반) - 개선된 버전
+// 업종 이름 번역 (한국어명 기반) - 강화된 버전
 function translateBusinessType(koreanName, lang = 'kor') {
-  console.log(`🔄 translateBusinessType 호출:`, {
-    originalName: koreanName,
-    targetLang: lang,
-    callStack: new Error().stack.split('\n')[1] // 호출 위치 확인
-  });
+  console.log(`🔄 translateBusinessType 호출:`, koreanName, '->', lang);
   
   // 언어가 한국어이거나 지정되지 않은 경우 원본 반환
   if (!lang || lang === 'ko' || lang === 'kor') {
@@ -98,30 +94,51 @@ function translateBusinessType(koreanName, lang = 'kor') {
   // 업종명 정규화 (공백, 특수문자 처리)
   const normalizedName = koreanName.trim();
   
+  // 일반적인 변형 패턴 처리
+  const nameVariations = [
+    normalizedName,
+    // 공백 제거/추가 패턴
+    normalizedName.replace(/\s+/g, ''),
+    normalizedName.replace(/\(/g, ' ('),
+    // 특수문자 차이 처리
+    normalizedName.replace('패밀리레스트랑', '패밀리레스토랑'),
+    normalizedName.replace('패밀리레스토랑', '패밀리레스트랑'),
+    // 외국음식전문점 공백 처리
+    normalizedName.replace('외국음식전문점(인도,태국등)', '외국음식전문점(인도, 태국 등)'),
+    normalizedName.replace('외국음식전문점(인도, 태국 등)', '외국음식전문점(인도,태국등)'),
+    // 기타 공통 패턴
+    normalizedName.replace(/,\s*/g, ', '), // 쉼표 뒤 공백 정규화
+    normalizedName.replace(/\s*,/g, ','),   // 쉼표 앞 공백 제거
+  ];
+  
+  console.log('🔍 시도할 업종명 변형들:', nameVariations);
+  
   // 영어 변환
   if (lang === 'en' || lang === 'eng') {
-    const businessType = businessTypes.find(type => type.kor === normalizedName);
-    if (businessType) {
-      console.log(`✅ 영어 번역 성공:`, normalizedName, '->', businessType.eng);
-      return businessType.eng;
-    } else {
-      console.log(`❌ 영어 번역 실패: "${normalizedName}" 매핑을 찾을 수 없음`);
-      console.log('🔍 사용 가능한 한국어 업종명들:', businessTypes.map(t => t.kor));
-      return koreanName;
+    for (const variation of nameVariations) {
+      const businessType = businessTypes.find(type => type.kor === variation);
+      if (businessType) {
+        console.log(`✅ 영어 번역 성공:`, variation, '->', businessType.eng);
+        return businessType.eng;
+      }
     }
+    console.log(`❌ 영어 번역 실패: "${normalizedName}" 모든 변형 실패`);
+    console.log('🔍 사용 가능한 한국어 업종명들:', businessTypes.map(t => t.kor));
+    return koreanName;
   }
   
   // 스페인어 변환
   if (lang === 'es' || lang === 'esp') {
-    const businessType = businessTypes.find(type => type.kor === normalizedName);
-    if (businessType) {
-      console.log(`✅ 스페인어 번역 성공:`, normalizedName, '->', businessType.esp);
-      return businessType.esp;
-    } else {
-      console.log(`❌ 스페인어 번역 실패: "${normalizedName}" 매핑을 찾을 수 없음`);
-      console.log('🔍 사용 가능한 한국어 업종명들:', businessTypes.map(t => t.kor));
-      return koreanName;
+    for (const variation of nameVariations) {
+      const businessType = businessTypes.find(type => type.kor === variation);
+      if (businessType) {
+        console.log(`✅ 스페인어 번역 성공:`, variation, '->', businessType.esp);
+        return businessType.esp;
+      }
     }
+    console.log(`❌ 스페인어 번역 실패: "${normalizedName}" 모든 변형 실패`);
+    console.log('🔍 사용 가능한 한국어 업종명들:', businessTypes.map(t => t.kor));
+    return koreanName;
   }
   
   // 매칭되지 않는 언어의 경우 원본 반환
@@ -129,31 +146,64 @@ function translateBusinessType(koreanName, lang = 'kor') {
   return koreanName;
 }
 
-// 현재 언어 감지 함수 (개선된 버전)
+// 현재 언어 감지 함수 (안전한 버전)
 function getCurrentAILanguage() {
   console.log('🌍 getCurrentAILanguage 호출됨');
   
-  // 1. data-lang 속성이 표시된 요소 확인 (가장 확실한 방법)
-  const allLangElements = document.querySelectorAll('[data-lang]');
+  // 1. data-lang 속성 확인 (최우선 - 가장 정확)
   const visibleLangElements = document.querySelectorAll('[data-lang]:not([style*="display: none"])');
-  
-  console.log('🔍 모든 data-lang 요소들:', Array.from(allLangElements).map(el => ({
-    lang: el.getAttribute('data-lang'),
-    display: window.getComputedStyle(el).display,
-    visible: !el.style.display.includes('none')
-  })));
-  
   if (visibleLangElements.length > 0) {
     const langCode = visibleLangElements[0].getAttribute('data-lang');
     const langMap = { 'KOR': 'ko', 'ENG': 'en', 'ESP': 'es' };
     const detectedLang = langMap[langCode] || 'ko';
-    console.log('🔍 data-lang 요소로 감지된 언어:', langCode, '->', detectedLang);
+    console.log('✅ data-lang 요소로 감지된 언어:', langCode, '->', detectedLang);
     return detectedLang;
-  } else {
-    console.log('❌ 표시된 data-lang 요소를 찾을 수 없음');
   }
   
-  // 2. 네비게이션의 언어 설정 확인 (main.js의 전역 함수 사용)
+  // 2. URL 기반 언어 감지 시도
+  const currentUrl1 = window.location.href;
+  if (currentUrl1.includes('/es/') || currentUrl1.includes('lang=es')) {
+    console.log('✅ URL에서 스페인어 감지:', currentUrl1);
+    return 'es';
+  }
+  if (currentUrl1.includes('/en/') || currentUrl1.includes('lang=en')) {
+    console.log('✅ URL에서 영어 감지:', currentUrl1);
+    return 'en';
+  }
+  
+  // 3. 보이는 요소의 텍스트만 검사 (숨겨진 요소 제외)
+  const visibleElements = Array.from(document.querySelectorAll('*')).filter(el => {
+    const style = window.getComputedStyle(el);
+    return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
+  });
+  
+  const visibleText = visibleElements.map(el => {
+    // 자식 노드가 아닌 직접 텍스트만 가져오기
+    return Array.from(el.childNodes)
+      .filter(node => node.nodeType === Node.TEXT_NODE)
+      .map(node => node.textContent.trim())
+      .join(' ');
+  }).join(' ');
+  
+  console.log('🔍 보이는 텍스트 샘플:', visibleText.substring(0, 200));
+  
+  // 스페인어 키워드 확인 (보이는 텍스트만)
+  const spanishKeywords1 = ['Tipos de Negocio', 'Recomendados por IA', 'Solo Miembros', 'Supervivencia', 'Ranking de Supervivencia'];
+  const foundSpanish1 = spanishKeywords1.some(keyword => visibleText.includes(keyword));
+  if (foundSpanish1) {
+    console.log('✅ 보이는 영역에서 스페인어 키워드 감지:', spanishKeywords1.filter(k => visibleText.includes(k)));
+    return 'es';
+  }
+  
+  // 영어 키워드 확인 (보이는 텍스트만)
+  const englishKeywords1 = ['Business Type', 'AI Recommended', 'Members Only', 'Survival Rate', 'Ranking'];
+  const foundEnglish1 = englishKeywords1.some(keyword => visibleText.includes(keyword));
+  if (foundEnglish1) {
+    console.log('✅ 보이는 영역에서 영어 키워드 감지:', englishKeywords1.filter(k => visibleText.includes(k)));
+    return 'en';
+  }
+  
+  // 4. 네비게이션의 언어 설정 확인 (main.js의 전역 함수 사용)
   if (typeof window.getCurrentLanguage === 'function') {
     const navLang = window.getCurrentLanguage();
     if (navLang) {
@@ -162,61 +212,30 @@ function getCurrentAILanguage() {
     }
   }
   
-  // 3. 전역 currentLanguage 변수 확인
+  // 5. 전역 currentLanguage 변수 확인
   if (typeof currentLanguage !== 'undefined') {
     console.log('🔍 전역 변수에서 감지된 언어:', currentLanguage);
     return currentLanguage;
   }
   
-  // 4. 로컬스토리지에서 확인
+  // 6. 로컬스토리지에서 확인
   const savedLang = localStorage.getItem('preferred_language');
   if (savedLang) {
     console.log('🔍 로컬스토리지에서 감지된 언어:', savedLang);
     return savedLang;
   }
   
-  // 5. HTML lang 속성에서 확인
+  // 7. HTML lang 속성에서 확인
   const htmlLang = document.documentElement.lang;
   if (htmlLang) {
-    const langMap = {
+    const langMap2 = {
       'ko': 'ko', 'ko-kr': 'ko',
       'en': 'en', 'en-us': 'en',
       'es': 'es', 'es-es': 'es'
     };
-    const mappedLang = langMap[htmlLang.toLowerCase()] || 'ko';
+    const mappedLang = langMap2[htmlLang.toLowerCase()] || 'ko';
     console.log('🔍 HTML lang 속성에서 감지된 언어:', htmlLang, '->', mappedLang);
     return mappedLang;
-  }
-  
-  // 6. URL 기반 언어 감지 시도
-  const currentUrl = window.location.href;
-  if (currentUrl.includes('/es/') || currentUrl.includes('lang=es')) {
-    console.log('🔍 URL에서 스페인어 감지:', currentUrl);
-    return 'es';
-  }
-  if (currentUrl.includes('/en/') || currentUrl.includes('lang=en')) {
-    console.log('🔍 URL에서 영어 감지:', currentUrl);
-    return 'en';
-  }
-  
-  // 7. 페이지 내 특정 언어 키워드로 판단 (더 정확한 방법)
-  const pageText = document.body.textContent || '';
-  console.log('🔍 페이지 텍스트 샘플:', pageText.substring(0, 200));
-  
-  // 스페인어 키워드 확인
-  const spanishKeywords = ['Tipos de Negocio', 'Recomendados por IA', 'Solo Miembros', 'Supervivencia', 'Ranking de Supervivencia'];
-  const foundSpanish = spanishKeywords.some(keyword => pageText.includes(keyword));
-  if (foundSpanish) {
-    console.log('🔍 페이지에서 스페인어 키워드 감지:', spanishKeywords.filter(k => pageText.includes(k)));
-    return 'es';
-  }
-  
-  // 영어 키워드 확인
-  const englishKeywords = ['Business Type', 'AI Recommended', 'Members Only', 'Survival Rate', 'Ranking'];
-  const foundEnglish = englishKeywords.some(keyword => pageText.includes(keyword));
-  if (foundEnglish) {
-    console.log('🔍 페이지에서 영어 키워드 감지:', englishKeywords.filter(k => pageText.includes(k)));
-    return 'en';
   }
   
   // 8. 기본값

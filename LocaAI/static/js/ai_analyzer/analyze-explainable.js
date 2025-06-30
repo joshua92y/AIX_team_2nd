@@ -352,7 +352,10 @@ function updateAIAnalysisSection(result) {
     const detailButtonHtml = `
       <div class="mt-3">
         <button class="btn btn-outline-primary btn-sm" onclick="showDetailedAnalysis()">
-          <i class="fas fa-chart-bar me-2"></i>자세히 보기
+          <i class="fas fa-chart-bar me-2"></i>
+          <span data-lang="KOR">자세히 보기</span>
+          <span data-lang="ENG" style="display: none;">View Details</span>
+          <span data-lang="ESP" style="display: none;">Ver Detalles</span>
         </button>
       </div>
     `;
