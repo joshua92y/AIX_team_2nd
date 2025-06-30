@@ -13,6 +13,40 @@ let featureImportanceChart = null;
 window.analyzeExplainableLoaded = true;
 
 // ===========================================
+// 다국어 텍스트 함수
+// ===========================================
+
+/**
+ * 다국어 텍스트 반환 함수
+ */
+function getTexts(lang) {
+  const textMap = {
+    ko: {
+      analysisExcellent: '이 위치는 매우 좋은 사업 환경을 가지고 있습니다.',
+      analysisGood: '이 위치는 적당한 사업 환경을 가지고 있습니다.',
+      analysisChallenging: '이 위치는 도전적인 사업 환경입니다.',
+      analysisRisky: '이 위치는 높은 위험을 가지고 있습니다.',
+      analysisResult: '분석 결과'
+    },
+    en: {
+      analysisExcellent: 'This location has an excellent business environment.',
+      analysisGood: 'This location has a moderate business environment.',
+      analysisChallenging: 'This location presents a challenging business environment.',
+      analysisRisky: 'This location has high risks.',
+      analysisResult: 'Analysis Result'
+    },
+    es: {
+      analysisExcellent: 'Esta ubicación tiene un excelente entorno empresarial.',
+      analysisGood: 'Esta ubicación tiene un entorno empresarial moderado.',
+      analysisChallenging: 'Esta ubicación presenta un entorno empresarial desafiante.',
+      analysisRisky: 'Esta ubicación tiene altos riesgos.',
+      analysisResult: 'Resultado del Análisis'
+    }
+  };
+  return textMap[lang] || textMap.ko;
+}
+
+// ===========================================
 // AI 설명 결과 표시 함수
 // ===========================================
 
@@ -553,35 +587,6 @@ function drawChart(data) {
   
   // 현재 언어 가져오기
   const currentLang = getCurrentLanguage();
-  
-  // 다국어 텍스트 정의 (간단한 버전)
-  const getTexts = (lang) => {
-    const textMap = {
-      ko: {
-        analysisExcellent: '이 위치는 매우 좋은 사업 환경을 가지고 있습니다.',
-        analysisGood: '이 위치는 적당한 사업 환경을 가지고 있습니다.',
-        analysisChallenging: '이 위치는 도전적인 사업 환경입니다.',
-        analysisRisky: '이 위치는 높은 위험을 가지고 있습니다.',
-        analysisResult: '분석 결과'
-      },
-      en: {
-        analysisExcellent: 'This location has an excellent business environment.',
-        analysisGood: 'This location has a moderate business environment.',
-        analysisChallenging: 'This location presents a challenging business environment.',
-        analysisRisky: 'This location has high risks.',
-        analysisResult: 'Analysis Result'
-      },
-      es: {
-        analysisExcellent: 'Esta ubicación tiene un excelente entorno empresarial.',
-        analysisGood: 'Esta ubicación tiene un entorno empresarial moderado.',
-        analysisChallenging: 'Esta ubicación presenta un entorno empresarial desafiante.',
-        analysisRisky: 'Esta ubicación tiene altos riesgos.',
-        analysisResult: 'Resultado del Análisis'
-      }
-    };
-    return textMap[lang] || textMap.ko;
-  };
-  
   const texts = getTexts(currentLang);
   
   const features = [
