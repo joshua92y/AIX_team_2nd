@@ -783,6 +783,111 @@ def get_seoul_districts_geojson(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+def get_dong_stores(request):
+    """행정동별 점포 데이터 API - 행정동 이름으로 직접 조회 (성능 최적화)"""
+    try:
+        emd_cd = request.GET.get('emd_cd')  # 행정동 코드
+        
+        if not emd_cd:
+            return JsonResponse({'error': 'emd_cd parameter required'}, status=400)
+        
+        from django.db import connection
+        
+        with connection.cursor() as cursor:
+            # 행정동 이름 조회
+            cursor.execute("""
+                SELECT emd_kor_nm FROM "행정동구역" WHERE emd_cd = %s
+            """, [emd_cd])
+            
+            dong_result = cursor.fetchone()
+            if not dong_result:
+                return JsonResponse({'error': 'Invalid emd_cd'}, status=400)
+            
+            emd_kor_nm = dong_result[0]
+            
+            # 🚀 성능 최적화: 한 번의 쿼리로 모든 점포 데이터와 좌표 변환을 동시에 처리
+            cursor.execute("""
+                SELECT 
+                    "BPLCNM",
+                    "UPTAENM", 
+                    "SITEWHLADDR",
+                    "result",
+                    ST_X(ST_Transform(ST_SetSRID(ST_MakePoint("X", "Y"), 2097), 4326)) as lon,
+                    ST_Y(ST_Transform(ST_SetSRID(ST_MakePoint("X", "Y"), 2097), 4326)) as lat
+                FROM dong_store
+                WHERE emd_kor_nm = %s
+                    AND "X" IS NOT NULL 
+                    AND "Y" IS NOT NULL
+                    AND "UPTAENM" IS NOT NULL
+                ORDER BY "UPTAENM"
+                LIMIT 500
+            """, [emd_kor_nm])
+            
+            stores = cursor.fetchall()
+
+            # GeoJSON 형태로 변환 (이미 변환된 좌표 사용)
+            features = []
+            conversion_success = 0
+            conversion_failed = 0
+            
+            for store in stores:
+                상호명, 업종명, 주소, 생존예측, lon, lat = store
+                
+                # NULL 값 처리
+                상호명 = 상호명 or 업종명 or '상호명 미상'
+                업종명 = 업종명 or '업종 미상'
+                주소 = 주소 or '주소 미상'
+                
+                # 좌표 유효성 검사
+                if lon is None or lat is None:
+                    conversion_failed += 1
+                    continue
+                
+                # 변환된 좌표가 서울 범위 내인지 확인
+                if not (126.7 <= lon <= 127.3 and 37.4 <= lat <= 37.7):
+                    conversion_failed += 1
+                    continue
+                
+                conversion_success += 1
+                
+                # 생존 상태 처리
+                if 생존예측 is True:
+                    생존상태 = '생존 예상'
+                elif 생존예측 is False:
+                    생존상태 = '위험'
+                else:
+                    생존상태 = '분석중'
+                
+                # GeoJSON Feature 생성 (이미 변환된 좌표 사용)
+                feature = {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [lon, lat]
+                    },
+                    "properties": {
+                        "상호명": 상호명,
+                        "업종명": 업종명,
+                        "주소": 주소,
+                        "생존상태": 생존상태
+                    }
+                }
+                features.append(feature)
+            
+            result = {
+                "type": "FeatureCollection",
+                "features": features,
+                "dong_name": emd_kor_nm,
+                "total_stores": len(features)
+            }
+            
+            return JsonResponse(result)
+            
+    except Exception as e:
+        print(f"❌ 점포 데이터 조회 실패: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+
 def get_dong_geojson(request):
     """행정동별 경계면 GeoJSON 데이터 API"""
     try:

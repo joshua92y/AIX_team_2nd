@@ -166,6 +166,13 @@ class AnalysisResult(django_models.Model):
     ai_summary = django_models.CharField(max_length=100, verbose_name="AI 요약", blank=True, default="")
     is_member_analysis = django_models.BooleanField(verbose_name="회원 분석 여부", default=False)
     
+    # 업종 추천 결과
+    recommended_business_type_id = django_models.IntegerField(verbose_name="추천 업종 ID", null=True, blank=True)
+    recommended_business_type_name = django_models.CharField(max_length=50, verbose_name="추천 업종명", blank=True, default="")
+    business_recommendations = django_models.JSONField(verbose_name="전체 업종 추천 결과", default=list, blank=True)
+    recommended_survival_probability = django_models.FloatField(verbose_name="추천 업종 생존 확률 (0-1)", default=0)
+    recommended_survival_percentage = django_models.FloatField(verbose_name="추천 업종 생존 확률 (%)", default=0)
+    
     created_at = django_models.DateTimeField(auto_now_add=True)
     
     class Meta:

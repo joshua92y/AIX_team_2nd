@@ -4,10 +4,70 @@
 // jsPDF와 html2canvas를 사용한 PDF 처리
 // ==================================================
 
+// 다국어 지원을 위한 텍스트 정의
+const PDF_TRANSLATIONS = {
+  ko: {
+    no_preview_data: '미리보기 데이터가 없습니다.',
+    no_preview_content: '미리보기 내용을 찾을 수 없습니다.',
+    generating: '생성 중...',
+    high_quality_pdf: '고품질 PDF (이미지)',
+    lightweight_pdf: '경량 PDF (텍스트)',
+    download_complete: 'PDF 다운로드가 완료되었습니다.',
+    lightweight_download_complete: '경량 PDF 다운로드가 완료되었습니다.',
+    generation_error: 'PDF 생성 중 오류가 발생했습니다: ',
+    lightweight_generation_error: '경량 PDF 생성 중 오류가 발생했습니다: ',
+    no_analysis_result: '분석 결과가 없습니다.',
+    filename_prefix: 'AI_상권분석_보고서_',
+    lightweight_filename_prefix: 'AI_상권분석_경량_'
+  },
+  en: {
+    no_preview_data: 'No preview data available.',
+    no_preview_content: 'Preview content not found.',
+    generating: 'Generating...',
+    high_quality_pdf: 'High Quality PDF (Image)',
+    lightweight_pdf: 'Lightweight PDF (Text)',
+    download_complete: 'PDF download completed.',
+    lightweight_download_complete: 'Lightweight PDF download completed.',
+    generation_error: 'Error occurred during PDF generation: ',
+    lightweight_generation_error: 'Error occurred during lightweight PDF generation: ',
+    no_analysis_result: 'No analysis results available.',
+    filename_prefix: 'AI_Commercial_Analysis_Report_',
+    lightweight_filename_prefix: 'AI_Commercial_Analysis_Light_'
+  },
+  es: {
+    no_preview_data: 'No hay datos de vista previa disponibles.',
+    no_preview_content: 'Contenido de vista previa no encontrado.',
+    generating: 'Generando...',
+    high_quality_pdf: 'PDF de Alta Calidad (Imagen)',
+    lightweight_pdf: 'PDF Ligero (Texto)',
+    download_complete: 'Descarga de PDF completada.',
+    lightweight_download_complete: 'Descarga de PDF ligero completada.',
+    generation_error: 'Error durante la generación del PDF: ',
+    lightweight_generation_error: 'Error durante la generación del PDF ligero: ',
+    no_analysis_result: 'No hay resultados de análisis disponibles.',
+    filename_prefix: 'Informe_Análisis_Comercial_IA_',
+    lightweight_filename_prefix: 'Informe_Análisis_Comercial_IA_Ligero_'
+  }
+};
+
+// 현재 언어 감지 함수
+function getCurrentLanguage() {
+  // HTML lang 속성에서 언어 감지
+  const htmlLang = document.documentElement.lang || 'ko';
+  const langCode = htmlLang.split('-')[0]; // 'ko-kr' -> 'ko'
+  return PDF_TRANSLATIONS[langCode] ? langCode : 'ko';
+}
+
+// 번역 텍스트 가져오기 함수
+function getTranslation(key) {
+  const currentLang = getCurrentLanguage();
+  return PDF_TRANSLATIONS[currentLang][key] || PDF_TRANSLATIONS['ko'][key];
+}
+
 // 미리보기 모달에서 PDF 다운로드 함수 (고품질)
 function downloadPreviewPDF() {
   if (!currentPreviewRequestId) {
-    alert('미리보기 데이터가 없습니다.');
+    alert(getTranslation('no_preview_data'));
     return;
   }
   
@@ -16,12 +76,12 @@ function downloadPreviewPDF() {
     const element = document.getElementById('previewContent');
     
     if (!element) {
-      alert('미리보기 내용을 찾을 수 없습니다.');
+      alert(getTranslation('no_preview_content'));
       return;
     }
     
     // 로딩 상태 표시
-    document.getElementById('previewDownloadPdfBtn').innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>생성 중...';
+    document.getElementById('previewDownloadPdfBtn').innerHTML = `<i class="spinner-border spinner-border-sm me-2"></i>${getTranslation('generating')}`;
     document.getElementById('previewDownloadPdfBtn').disabled = true;
     document.getElementById('previewDownloadLightPdfBtn').disabled = true;
     
@@ -64,34 +124,34 @@ function downloadPreviewPDF() {
       
       // 파일명 생성
       const currentDate = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-      const filename = `AI_상권분석_보고서_${currentDate}.pdf`;
+      const filename = `${getTranslation('filename_prefix')}${currentDate}.pdf`;
       
       // PDF 다운로드
       doc.save(filename);
       
       // 버튼 상태 복원
-      document.getElementById('previewDownloadPdfBtn').innerHTML = '<i class="bi bi-download me-2"></i>고품질 PDF (이미지)';
+      document.getElementById('previewDownloadPdfBtn').innerHTML = `<i class="bi bi-download me-2"></i>${getTranslation('high_quality_pdf')}`;
       document.getElementById('previewDownloadPdfBtn').disabled = false;
       document.getElementById('previewDownloadLightPdfBtn').disabled = false;
       
-      alert('PDF 다운로드가 완료되었습니다.');
+      alert(getTranslation('download_complete'));
       
     }).catch(error => {
       console.error('html2canvas 오류:', error);
-      alert('PDF 생성 중 오류가 발생했습니다: ' + error.message);
+      alert(getTranslation('generation_error') + error.message);
       
       // 버튼 상태 복원
-      document.getElementById('previewDownloadPdfBtn').innerHTML = '<i class="bi bi-download me-2"></i>고품질 PDF (이미지)';
+      document.getElementById('previewDownloadPdfBtn').innerHTML = `<i class="bi bi-download me-2"></i>${getTranslation('high_quality_pdf')}`;
       document.getElementById('previewDownloadPdfBtn').disabled = false;
       document.getElementById('previewDownloadLightPdfBtn').disabled = false;
     });
     
   } catch (error) {
     console.error('PDF 생성 오류:', error);
-    alert('PDF 생성 중 오류가 발생했습니다: ' + error.message);
+    alert(getTranslation('generation_error') + error.message);
     
     // 버튼 상태 복원
-    document.getElementById('previewDownloadPdfBtn').innerHTML = '<i class="bi bi-download me-2"></i>고품질 PDF (이미지)';
+    document.getElementById('previewDownloadPdfBtn').innerHTML = `<i class="bi bi-download me-2"></i>${getTranslation('high_quality_pdf')}`;
     document.getElementById('previewDownloadPdfBtn').disabled = false;
     document.getElementById('previewDownloadLightPdfBtn').disabled = false;
   }
@@ -100,13 +160,13 @@ function downloadPreviewPDF() {
 // 미리보기 모달에서 경량 PDF 다운로드 함수 (한글 폰트 지원)
 function downloadPreviewLightweightPDF() {
   if (!currentPreviewRequestId) {
-    alert('미리보기 데이터가 없습니다.');
+    alert(getTranslation('no_preview_data'));
     return;
   }
   
   try {
     // 로딩 상태 표시
-    document.getElementById('previewDownloadLightPdfBtn').innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>생성 중...';
+    document.getElementById('previewDownloadLightPdfBtn').innerHTML = `<i class="spinner-border spinner-border-sm me-2"></i>${getTranslation('generating')}`;
     document.getElementById('previewDownloadLightPdfBtn').disabled = true;
     document.getElementById('previewDownloadPdfBtn').disabled = true;
     
@@ -114,7 +174,7 @@ function downloadPreviewLightweightPDF() {
     const element = document.getElementById('previewContent');
     
     if (!element) {
-      alert('미리보기 내용을 찾을 수 없습니다.');
+      alert(getTranslation('no_preview_content'));
       return;
     }
     
@@ -594,13 +654,39 @@ function showPdfPreview(requestId) {
 
 // 미리보기 데이터 채우기 함수
 function populatePreviewData(data, requestId) {
+  console.log('PDF 미리보기 데이터:', data);
   const request = data.request;
   const result = data.result;
   
+  console.log('Request 데이터:', request);
+  console.log('Result 데이터:', result);
+  
   // 기본 정보
-  document.getElementById('previewAddr').textContent = request.address || '-';
-  document.getElementById('previewBizType').textContent = getBusinessTypeName(request.business_type_id) || '-';
-  document.getElementById('previewAreaSize').textContent = request.area || '-';
+  console.log('주소:', request.address);
+  console.log('업종 ID:', request.business_type_id);
+  console.log('면적:', request.area);
+  
+  const addressElement = document.getElementById('previewAddr');
+  const businessTypeElement = document.getElementById('previewBizType');
+  const areaElement = document.getElementById('previewAreaSize');
+  
+  console.log('주소 엘리먼트:', addressElement);
+  console.log('업종 엘리먼트:', businessTypeElement);
+  console.log('면적 엘리먼트:', areaElement);
+  
+  if (addressElement) {
+    addressElement.textContent = request.address || '-';
+    console.log('주소 설정 완료:', request.address);
+  }
+  if (businessTypeElement) {
+    const businessTypeName = getBusinessTypeName(request.business_type_id);
+    businessTypeElement.textContent = businessTypeName || '-';
+    console.log('업종 설정 완료:', businessTypeName);
+  }
+  if (areaElement) {
+    areaElement.textContent = request.area || '-';
+    console.log('면적 설정 완료:', request.area);
+  }
   
   // 분석일시
   const analysisDate = new Date(request.created_at).toLocaleDateString('ko-KR', {
@@ -614,8 +700,16 @@ function populatePreviewData(data, requestId) {
   document.getElementById('previewReportGeneratedDate').textContent = analysisDate;
   
   // AI 생존 확률
-  const survivalRate = Math.round(result.survival_percentage || 0);
-  document.getElementById('previewSurvivalRate').textContent = survivalRate + '%';
+  console.log('생존 확률:', result.survival_percentage);
+  const survivalRate = (result.survival_percentage || 0).toFixed(1);
+  
+  const survivalElement = document.getElementById('previewSurvivalRate');
+  console.log('생존 확률 엘리먼트:', survivalElement);
+  
+  if (survivalElement) {
+    survivalElement.textContent = survivalRate + '%';
+    console.log('생존 확률 설정 완료:', survivalRate + '%');
+  }
   
   // 프로그레스 바 설정
   const progressBar = document.getElementById('previewSurvivalProgressBar');
@@ -623,31 +717,48 @@ function populatePreviewData(data, requestId) {
   
   // 생존 확률에 따른 색상 및 메시지
   const survivalComment = document.getElementById('previewSurvivalComment');
+  const currentLang = getCurrentLanguage();
+  const texts = getTranslation('survivalTexts') || {};
+  
   if (survivalRate >= 80) {
     progressBar.className = 'progress-bar bg-success';
-    survivalComment.textContent = '높은 생존 가능성 - 장기적 사업 지속에 매우 좋은 조건';
+    survivalComment.textContent = texts.high || (currentLang === 'en' ? 'High survival possibility - Very good conditions for long-term business sustainability' : 
+                                                 currentLang === 'es' ? 'Alta posibilidad de supervivencia - Muy buenas condiciones para la sostenibilidad empresarial a largo plazo' : 
+                                                 '높은 생존 가능성 - 장기적 사업 지속에 매우 좋은 조건');
     survivalComment.className = 'text-success mb-0';
   } else if (survivalRate >= 60) {
     progressBar.className = 'progress-bar bg-warning';
-    survivalComment.textContent = '보통 생존 가능성 - 적절한 조건이나 추가 전략 검토 필요';
+    survivalComment.textContent = texts.moderate || (currentLang === 'en' ? 'Moderate survival possibility - Appropriate conditions or additional strategy review needed' : 
+                                                     currentLang === 'es' ? 'Posibilidad de supervivencia moderada - Se necesita revisión de condiciones apropiadas o estrategia adicional' : 
+                                                     '보통 생존 가능성 - 적절한 조건이나 추가 전략 검토 필요');
     survivalComment.className = 'text-warning mb-0';
   } else {
     progressBar.className = 'progress-bar bg-danger';
-    survivalComment.textContent = '낮은 생존 가능성 - 장기 사업 지속에 어려움 예상';
+    survivalComment.textContent = texts.low || (currentLang === 'en' ? 'Low survival possibility - Difficulties expected in long-term business sustainability' : 
+                                                currentLang === 'es' ? 'Baja posibilidad de supervivencia - Se esperan dificultades en la sostenibilidad empresarial a largo plazo' : 
+                                                '낮은 생존 가능성 - 장기 사업 지속에 어려움 예상');
     survivalComment.className = 'text-danger mb-0';
   }
   
   // 핵심 지표
+  console.log('생활인구:', result.life_pop_300m);
+  console.log('직장인구:', result.working_pop_300m);
+  console.log('경쟁업체:', result.competitor_300m);
+  
+  const peopleUnit = currentLang === 'en' ? ' people' : currentLang === 'es' ? ' personas' : '명';
+  const storeUnit = currentLang === 'en' ? ' stores' : currentLang === 'es' ? ' tiendas' : '개';
+  
   document.getElementById('previewLifePopulation').textContent = 
-    Math.round(result.life_pop_300m || 0).toLocaleString() + '명';
+    Math.round(result.life_pop_300m || 0).toLocaleString() + peopleUnit;
   document.getElementById('previewWorkingPopulation').textContent = 
-    Math.round(result.working_pop_300m || 0).toLocaleString() + '명';
+    Math.round(result.working_pop_300m || 0).toLocaleString() + peopleUnit;
   document.getElementById('previewCompetitors').textContent = 
-    (result.competitor_300m || 0) + '개';
+    (result.competitor_300m || 0) + storeUnit;
   
   // 공시지가
   const landValue = result.total_land_value || 0;
-  let landValueText = formatLandValue(landValue);
+  const currencyUnit = currentLang === 'en' ? ' KRW' : currentLang === 'es' ? ' KRW' : '원';
+  let landValueText = landValue > 0 ? Math.round(landValue).toLocaleString() + currencyUnit : '0' + currencyUnit;
   document.getElementById('previewLandPrice').textContent = landValueText;
   
   // 경쟁강도 분석 (새로 추가된 필드들)
@@ -656,8 +767,8 @@ function populatePreviewData(data, requestId) {
   const adjacentBiz = result.adjacent_biz_300m || 0;
   
   // 경쟁강도 미리보기 데이터 업데이트
-  document.getElementById('previewCompetitorCount').textContent = (result.competitor_300m || 0) + '개';
-  document.getElementById('previewAdjacentBiz').textContent = adjacentBiz + '개';
+  document.getElementById('previewCompetitorCount').textContent = (result.competitor_300m || 0) + storeUnit;
+  document.getElementById('previewAdjacentBiz').textContent = adjacentBiz + storeUnit;
   
   // 경쟁강도 진행률 바 설정
   const previewCompetitionBar = document.getElementById('previewCompetitionBar');
@@ -669,15 +780,21 @@ function populatePreviewData(data, requestId) {
     if (competitorRatio <= 20) {
       previewCompetitionBar.className = 'progress-bar bg-success';
       previewCompetitionLevel.className = 'badge bg-success fs-6';
-      previewCompetitionLevel.textContent = `낮음 (${competitorRatio}%)`;
+      previewCompetitionLevel.textContent = currentLang === 'en' ? `Low (${competitorRatio}%)` : 
+                                           currentLang === 'es' ? `Bajo (${competitorRatio}%)` : 
+                                           `낮음 (${competitorRatio}%)`;
     } else if (competitorRatio <= 50) {
       previewCompetitionBar.className = 'progress-bar bg-warning';
       previewCompetitionLevel.className = 'badge bg-warning fs-6';
-      previewCompetitionLevel.textContent = `보통 (${competitorRatio}%)`;
+      previewCompetitionLevel.textContent = currentLang === 'en' ? `Medium (${competitorRatio}%)` : 
+                                           currentLang === 'es' ? `Medio (${competitorRatio}%)` : 
+                                           `보통 (${competitorRatio}%)`;
     } else {
       previewCompetitionBar.className = 'progress-bar bg-danger';
       previewCompetitionLevel.className = 'badge bg-danger fs-6';
-      previewCompetitionLevel.textContent = `높음 (${competitorRatio}%)`;
+      previewCompetitionLevel.textContent = currentLang === 'en' ? `High (${competitorRatio}%)` : 
+                                           currentLang === 'es' ? `Alto (${competitorRatio}%)` : 
+                                           `높음 (${competitorRatio}%)`;
     }
   }
   
@@ -687,8 +804,8 @@ function populatePreviewData(data, requestId) {
   const longCNRatio1000 = result['2A_Long_CN'] || result.long_foreign_cn_1000m || 0;
   
   // 외국인 분석 미리보기 데이터 업데이트
-  document.getElementById('previewTempForeign').textContent = tempTotal > 0 ? Math.round(tempTotal).toLocaleString() + '명' : '0명';
-  document.getElementById('previewLongForeign').textContent = longTotal300 > 0 ? Math.round(longTotal300).toLocaleString() + '명' : '0명';
+  document.getElementById('previewTempForeign').textContent = tempTotal > 0 ? Math.round(tempTotal).toLocaleString() + peopleUnit : '0' + peopleUnit;
+  document.getElementById('previewLongForeign').textContent = longTotal300 > 0 ? Math.round(longTotal300).toLocaleString() + peopleUnit : '0' + peopleUnit;
   document.getElementById('previewChinaRatio').textContent = longCNRatio1000 > 0 ? longCNRatio1000.toFixed(1) + '%' : '0.0%';
   
   // 연령대별 인구 분석 (새로 추가된 필드들)
@@ -712,8 +829,154 @@ function populatePreviewData(data, requestId) {
   // 강점과 주의사항 분석
   populateStrengthsAndCautions(result);
   
+  // 업종 추천 데이터 처리 (회원 전용)
+  console.log('회원 분석 여부:', result.is_member_analysis);
+  console.log('업종 추천 데이터:', result.business_recommendations);
+  
+  if (result.is_member_analysis && result.business_recommendations) {
+    populateBusinessRecommendations(result.business_recommendations);
+    document.getElementById('previewBusinessRecommendations').style.display = 'block';
+  } else {
+    document.getElementById('previewBusinessRecommendations').style.display = 'none';
+  }
+  
+  // AI 분석 리포트 처리 (회원 전용)
+  if (result.is_member_analysis && result.ai_explanation) {
+    populateAiReport(result.ai_explanation);
+    document.getElementById('previewAiReport').style.display = 'block';
+  } else {
+    document.getElementById('previewAiReport').style.display = 'none';
+  }
+  
   // 현재 미리보기 중인 requestId를 전역 변수에 저장 (PDF 다운로드용)
   currentPreviewRequestId = requestId;
+}
+
+// 업종 추천 데이터를 PDF 미리보기에 채우는 함수
+function populateBusinessRecommendations(recommendations) {
+  try {
+    console.log('populateBusinessRecommendations 호출됨:', recommendations);
+    if (!recommendations || recommendations.length === 0) {
+      console.log('업종 추천 데이터가 없음');
+      return;
+    }
+    
+    // 1위 업종 데이터
+    if (recommendations[0]) {
+      const firstPlace = recommendations[0];
+      console.log('1위 업종 데이터:', firstPlace);
+      
+      const businessTypeElement = document.getElementById('previewRecommendedBusinessType');
+      const percentageElement = document.getElementById('previewRecommendedPercentage');
+      
+      console.log('업종명 엘리먼트:', businessTypeElement);
+      console.log('퍼센트 엘리먼트:', percentageElement);
+      
+      if (businessTypeElement) {
+        businessTypeElement.textContent = firstPlace.name || '-';
+        console.log('업종명 설정:', firstPlace.name);
+      }
+      if (percentageElement) {
+        percentageElement.textContent = (firstPlace.percentage || 0).toFixed(1) + '%';
+        console.log('퍼센트 설정:', firstPlace.percentage);
+      }
+      
+      // 1위 업종 진행바
+      const progressBar = document.getElementById('previewRecommendedProgressBar');
+      progressBar.style.width = (firstPlace.percentage || 0) + '%';
+      
+      // 생존확률에 따른 색상 설정
+      if (firstPlace.percentage >= 80) {
+        progressBar.className = 'progress-bar bg-success';
+      } else if (firstPlace.percentage >= 60) {
+        progressBar.className = 'progress-bar bg-warning';
+      } else {
+        progressBar.className = 'progress-bar bg-danger';
+      }
+    }
+    
+    // 2위 업종 데이터
+    if (recommendations[1]) {
+      const secondPlace = recommendations[1];
+      document.getElementById('previewRecommended2nd').textContent = secondPlace.name || '-';
+      document.getElementById('previewRecommended2ndPercent').textContent = (secondPlace.percentage || 0).toFixed(1) + '%';
+    }
+    
+    // 3위 업종 데이터
+    if (recommendations[2]) {
+      const thirdPlace = recommendations[2];
+      document.getElementById('previewRecommended3rd').textContent = thirdPlace.name || '-';
+      document.getElementById('previewRecommended3rdPercent').textContent = (thirdPlace.percentage || 0).toFixed(1) + '%';
+    }
+    
+    // 4위 업종 데이터
+    if (recommendations[3]) {
+      const fourthPlace = recommendations[3];
+      document.getElementById('previewRecommended4th').textContent = fourthPlace.name || '-';
+      document.getElementById('previewRecommended4thPercent').textContent = (fourthPlace.percentage || 0).toFixed(1) + '%';
+    }
+    
+  } catch (error) {
+    console.error('업종 추천 데이터 처리 오류:', error);
+  }
+}
+
+// AI 분석 리포트를 PDF 미리보기에 채우는 함수
+function populateAiReport(aiExplanation) {
+  try {
+    if (!aiExplanation) {
+      return;
+    }
+    
+    const reportContainer = document.getElementById('previewAiReportContent');
+    
+    // 마크다운 형식의 AI 분석 리포트를 HTML로 변환
+    let htmlContent = aiExplanation
+      // 제목 변환 (##, ###)
+      .replace(/^### (.+)$/gm, '<h5 class="text-primary mt-3 mb-2">$1</h5>')
+      .replace(/^## (.+)$/gm, '<h4 class="text-primary mt-4 mb-3">$1</h4>')
+      .replace(/^# (.+)$/gm, '<h3 class="text-primary mt-4 mb-3">$1</h3>')
+      
+      // 굵은 글씨 변환
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      
+      // 이탤릭 변환
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      
+      // 불릿 포인트 변환
+      .replace(/^[\s]*[-•]\s(.+)$/gm, '<li>$1</li>')
+      
+      // 숫자 리스트 변환
+      .replace(/^[\s]*\d+\.\s(.+)$/gm, '<li>$1</li>')
+      
+      // 줄바꿈 변환
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/\n/g, '<br>');
+    
+    // 리스트 태그로 감싸기
+    htmlContent = htmlContent.replace(/(<li>.*?<\/li>)/gs, function(match) {
+      return '<ul class="mb-3">' + match + '</ul>';
+    });
+    
+    // 문단 태그로 감싸기
+    if (!htmlContent.includes('<h3>') && !htmlContent.includes('<h4>') && !htmlContent.includes('<h5>')) {
+      htmlContent = '<p>' + htmlContent + '</p>';
+    }
+    
+    // 생존확률 수치 강조
+    htmlContent = htmlContent.replace(/(\d+\.?\d*%)/g, '<span class="badge bg-primary">$1</span>');
+    
+    // 컨테이너에 HTML 삽입
+    reportContainer.innerHTML = htmlContent;
+    
+    // 스타일 추가
+    reportContainer.style.lineHeight = '1.6';
+    reportContainer.style.fontSize = '14px';
+    
+  } catch (error) {
+    console.error('AI 분석 리포트 처리 오류:', error);
+    document.getElementById('previewAiReportContent').innerHTML = '<p class="text-muted">AI 분석 리포트를 불러올 수 없습니다.</p>';
+  }
 }
 
 // 강점과 주의사항 분석 함수 (미리보기용)
