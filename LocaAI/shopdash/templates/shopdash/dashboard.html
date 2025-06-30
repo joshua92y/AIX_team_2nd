@@ -702,11 +702,22 @@ Chart.defaults.color = '#444444';
 
 // 전역 변수
 let charts = {};
+let isLoadingCharts = false;
+let lastLanguageChange = 0;
 
 // 페이지 로드 시 실행
 document.addEventListener('DOMContentLoaded', function() {
     loadDashboardStats();
-    loadAllCharts();
+    
+    // 초기 차트 로드 (1회만)
+    if (!isLoadingCharts) {
+        isLoadingCharts = true;
+        loadAllCharts();
+        
+        setTimeout(() => {
+            isLoadingCharts = false;
+        }, 3000);
+    }
 });
 
 // 대시보드 통계 로드
@@ -1013,39 +1024,37 @@ function getChartOptions(chartType, chartId) {
 
 // 언어 변경 감지 및 차트 업데이트
 function handleLanguageChange() {
-    console.log('ShopDash 언어 변경 감지됨');
+    const now = Date.now();
     
-    // 짧은 지연 후 차트 다시 로드하여 업종명 번역 적용
+    // 이전 언어 변경으로부터 최소 2초 이상 경과해야 함
+    if (now - lastLanguageChange < 2000 || isLoadingCharts) {
+        return;
+    }
+    
+    lastLanguageChange = now;
+    isLoadingCharts = true;
+    
+    console.log('ShopDash 언어 변경 감지됨 - 차트 업데이트 시작');
+    
+    // 차트 다시 로드하여 업종명 번역 적용
     setTimeout(() => {
         loadAllCharts();
-    }, 200);
+        
+        // 로딩 완료 후 플래그 해제
+        setTimeout(() => {
+            isLoadingCharts = false;
+        }, 3000);
+    }, 500);
 }
 
-// 언어 변경 이벤트 리스너 등록
-window.addEventListener('languageChanged', handleLanguageChange);
-
-// 페이지 로드 완료 시 언어 변경 감지 설정
-document.addEventListener('DOMContentLoaded', function() {
-    // MutationObserver로 언어 변경 감지
-    const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.type === 'attributes' && 
-                (mutation.target.hasAttribute('data-lang') || 
-                 mutation.target.style.display !== undefined)) {
-                // 언어 관련 변경이 감지되면 차트 업데이트
-                handleLanguageChange();
-            }
-        });
-    });
-    
-    // data-lang 속성을 가진 모든 요소 감시
-    document.querySelectorAll('[data-lang]').forEach(element => {
-        observer.observe(element, { 
-            attributes: true, 
-            attributeFilter: ['style', 'data-lang'] 
-        });
-    });
-});
+// 언어 변경 이벤트 리스너 등록 (기존 전역 언어 변경 함수에서 호출)
+if (typeof window.funcChangeLang === 'function') {
+    const originalFuncChangeLang = window.funcChangeLang;
+    window.funcChangeLang = function(lang) {
+        originalFuncChangeLang(lang);
+        handleLanguageChange();
+    };
+}
 
 // 에러 처리
 window.addEventListener('error', function(e) {
