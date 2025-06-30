@@ -366,8 +366,8 @@ class SeoulCommercialMap {
             console.log('구별 레이어 추가 완료');
             
         } catch (error) {
-            console.error('구별 데이터 로드 실패:', error);
-            this.showError('구별 데이터를 불러오는데 실패했습니다: ' + error.message);
+            console.error(getShopDashText('districtDataLoadFailed') + ':', error);
+            this.showError(getShopDashText('districtDataLoadFailed') + ': ' + error.message);
         } finally {
             this.hideLoading();
         }
@@ -534,30 +534,33 @@ class SeoulCommercialMap {
         // 제목 설정
         titleElement.textContent = properties.full_name || properties.district_name;
         
+        // 다국어 텍스트 가져오기
+        const texts = getLocalizedPopupTexts();
+        
         // 내용 설정
         bodyElement.innerHTML = `
             <div class="popup-info-item">
-                <span class="popup-label">구 이름</span>
+                <span class="popup-label">${texts.districtName}</span>
                 <span class="popup-value">${properties.district_name}</span>
             </div>
             <div class="popup-info-item">
-                <span class="popup-label">행정동 수</span>
-                <span class="popup-value">${properties.dong_count}개</span>
+                <span class="popup-label">${texts.dongCount}</span>
+                <span class="popup-value">${properties.dong_count}${texts.stores}</span>
             </div>
             <div class="popup-info-item">
-                <span class="popup-label">총 인구</span>
-                <span class="popup-value">${properties.total_population?.toLocaleString()}명</span>
+                <span class="popup-label">${texts.totalPopulation}</span>
+                <span class="popup-value">${properties.total_population?.toLocaleString()}${texts.people}</span>
             </div>
             <div class="popup-info-item">
-                <span class="popup-label">업체 수</span>
-                <span class="popup-value">${properties.total_businesses?.toLocaleString()}개</span>
+                <span class="popup-label">${texts.businessCount}</span>
+                <span class="popup-value">${properties.total_businesses?.toLocaleString()}${texts.stores}</span>
             </div>
             <div class="popup-info-item">
-                <span class="popup-label">면적</span>
-                <span class="popup-value">${properties.area_sqkm?.toFixed(2)}km²</span>
+                <span class="popup-label">${texts.area}</span>
+                <span class="popup-value">${properties.area_sqkm?.toFixed(2)}${texts.km2}</span>
             </div>
             <div class="popup-info-item">
-                <span class="popup-hint">💡 클릭하면 해당 구의 행정동을 볼 수 있습니다</span>
+                <span class="popup-hint">${texts.clickForDongInfo}</span>
             </div>
         `;
         
@@ -571,36 +574,39 @@ class SeoulCommercialMap {
         const bodyElement = popupElement.querySelector('.ol-popup-body');
         
         // 제목 설정
-        titleElement.textContent = properties.emd_kor_nm || '행정동';
+        titleElement.textContent = properties.emd_kor_nm || getShopDashText('dongName');
+        
+        // 다국어 텍스트 가져오기
+        const texts = getLocalizedPopupTexts();
         
         // 내용 설정
         bodyElement.innerHTML = `
             <div class="popup-info-item">
-                <span class="popup-label">행정동</span>
+                <span class="popup-label">${texts.dongName}</span>
                 <span class="popup-value">${properties.emd_kor_nm}</span>
             </div>
             <div class="popup-info-item">
-                <span class="popup-label">거주인구</span>
-                <span class="popup-value">${properties.dong_life?.toLocaleString() || 0}명</span>
+                <span class="popup-label">${texts.residentPopulation}</span>
+                <span class="popup-value">${properties.dong_life?.toLocaleString() || 0}${texts.people}</span>
             </div>
             <div class="popup-info-item">
-                <span class="popup-label">직장인구</span>
-                <span class="popup-value">${properties.dong_work?.toLocaleString() || 0}명</span>
+                <span class="popup-label">${texts.workingPopulation}</span>
+                <span class="popup-value">${properties.dong_work?.toLocaleString() || 0}${texts.people}</span>
             </div>
             <div class="popup-info-item">
-                <span class="popup-label">업체 수</span>
-                <span class="popup-value">${properties.total_businesses?.toLocaleString() || 0}개</span>
+                <span class="popup-label">${texts.businessCount}</span>
+                <span class="popup-value">${properties.total_businesses?.toLocaleString() || 0}${texts.stores}</span>
             </div>
             <div class="popup-info-item">
-                <span class="popup-label">평균 생존률</span>
-                <span class="popup-value">${properties.avg_survival_rate || 0}%</span>
+                <span class="popup-label">${texts.avgSurvivalRate}</span>
+                <span class="popup-value">${properties.avg_survival_rate || 0}${texts.percent}</span>
             </div>
             <div class="popup-info-item">
-                <span class="popup-label">주요 업종</span>
-                <span class="popup-value">${properties.top_business_type || '정보없음'} (${properties.top_business_count?.toLocaleString() || 0}개)</span>
+                <span class="popup-label">${texts.mainBusinessType}</span>
+                <span class="popup-value">${properties.top_business_type || texts.noInfo} (${properties.top_business_count?.toLocaleString() || 0}${texts.stores})</span>
             </div>
             <div class="popup-info-item">
-                <span class="popup-hint">💡 클릭하면 점포를 확인할 수 있습니다 (더블클릭으로 뒤로)</span>
+                <span class="popup-hint">${texts.clickForStores}</span>
             </div>
         `;
         
@@ -658,8 +664,8 @@ class SeoulCommercialMap {
             console.log('🏘️ dongLayer 상태:', !!this.dongLayer, 'visible:', this.dongLayer?.getVisible());
             
         } catch (error) {
-            console.error('구 확대 실패:', error);
-            this.showError('행정동 데이터를 불러오는데 실패했습니다.');
+            console.error(getShopDashText('dongDataLoadFailed') + ':', error);
+            this.showError(getShopDashText('dongDataLoadFailed'));
         } finally {
             this.hideLoading();
         }
@@ -718,7 +724,7 @@ class SeoulCommercialMap {
     async zoomToDong(dongFeature, dongCode) {
         try {
             // 🚀 성능 개선: 즉시 로딩 표시
-            this.showLoading('점포 데이터를 불러오는 중...');
+            this.showLoading(getShopDashText('loadingStoreData'));
             
             // 행정동 레이어 숨기기
             this.dongLayer.setVisible(false);
@@ -734,8 +740,8 @@ class SeoulCommercialMap {
             this.currentDongCode = dongCode;
             
         } catch (error) {
-            console.error('행정동 확대 실패:', error);
-            this.showError('점포 데이터를 불러오는데 실패했습니다.');
+            console.error(getShopDashText('storeDataLoadFailed') + ':', error);
+            this.showError(getShopDashText('storeDataLoadFailed'));
         } finally {
             this.hideLoading();
         }
@@ -822,7 +828,7 @@ class SeoulCommercialMap {
             }
             
         } catch (error) {
-            console.error('점포 레이어 로드 실패:', error);
+            console.error(getShopDashText('storeDataLoadFailed') + ':', error);
             throw error;
         }
     }
@@ -852,32 +858,35 @@ class SeoulCommercialMap {
         const titleElement = popupElement.querySelector('.ol-popup-title');
         const bodyElement = popupElement.querySelector('.ol-popup-body');
         
+        // 다국어 텍스트 가져오기
+        const texts = getLocalizedPopupTexts();
+        
         // 제목 설정
-        titleElement.textContent = properties.상호명 || '점포';
+        titleElement.textContent = properties.상호명 || texts.storeName;
         
         // 내용 설정
         bodyElement.innerHTML = `
             <div class="popup-info-item">
-                <span class="popup-label">상호명</span>
+                <span class="popup-label">${texts.storeName}</span>
                 <span class="popup-value">${properties.상호명}</span>
             </div>
             <div class="popup-info-item">
-                <span class="popup-label">업종</span>
+                <span class="popup-label">${texts.businessType}</span>
                 <span class="popup-value">${properties.업종명}</span>
             </div>
             <div class="popup-info-item">
-                <span class="popup-label">주소</span>
+                <span class="popup-label">${texts.address}</span>
                 <span class="popup-value">${properties.주소}</span>
             </div>
             ${properties.인허가일자 ? `
             <div class="popup-info-item">
-                <span class="popup-label">개업일</span>
+                <span class="popup-label">${texts.openingDate}</span>
                 <span class="popup-value">${properties.인허가일자}</span>
             </div>
             ` : ''}
             ${properties.폐업일자 ? `
             <div class="popup-info-item">
-                <span class="popup-label">폐업일</span>
+                <span class="popup-label">${texts.closingDate}</span>
                 <span class="popup-value">${properties.폐업일자}</span>
             </div>
             ` : ''}

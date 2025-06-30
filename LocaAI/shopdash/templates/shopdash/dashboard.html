@@ -680,6 +680,9 @@
 <!-- Proj4js 좌표계 변환 라이브러리 -->
 <script src="https://cdn.jsdelivr.net/npm/proj4@2.9.2/dist/proj4.js"></script>
 
+<!-- ShopDash 다국어화 -->
+<script src="{% static 'js/shopdash-i18n.js' %}"></script>
+
 <!-- 서울시 상권 분석 지도 -->
 <script src="{% static 'js/shopdash_map.js' %}"></script>
 
@@ -723,7 +726,7 @@ function loadDashboardStats() {
             }
         })
         .catch(error => {
-            console.error('통계 데이터 로드 실패:', error);
+            console.error(getShopDashText('statsLoadFailed') + ':', error);
             document.getElementById('total-analysis').textContent = '0';
             document.getElementById('avg-survival-rate').textContent = '0%';
             document.getElementById('total-businesses').textContent = '0';
@@ -799,7 +802,7 @@ function loadChart(chartId, apiUrl, chartType, primaryColor) {
             }
         })
         .catch(error => {
-            console.error(`${chartId} 차트 로드 실패:`, error);
+            console.error(`${chartId} ${getShopDashText('chartLoadFailed')}:`, error);
         });
 }
 
@@ -839,11 +842,7 @@ function loadTopBusinessSurvivalChart() {
                                     const avgArea = (data.avg_area && data.avg_area[index]) || 0;
                                     const storeCount = (data.store_counts && data.store_counts[index]) || 0;
                                     
-                                    return [
-                                        `분석 건수: ${analysisCount}건`,
-                                        `평균 면적: ${avgArea}㎡`,
-                                        `매장 수: ${storeCount.toLocaleString()}개`
-                                    ];
+                                    return getLocalizedTooltipText(analysisCount, avgArea, storeCount);
                                 }
                             }
                         }
@@ -876,12 +875,12 @@ function loadTopBusinessSurvivalChart() {
             }
         })
         .catch(error => {
-            console.error('평균 생존률 상위 업종 차트 로드 실패:', error);
+            console.error(getShopDashText('chartLoadFailed') + ':', error);
             // 에러 발생 시 기본 상세 정보 표시
             document.getElementById('topBusinessDetails').innerHTML = `
                 <div class="text-center text-muted">
                     <i class="bi bi-exclamation-triangle mb-2"></i>
-                    <p>데이터를 불러올 수 없습니다.</p>
+                    <p>${getShopDashText('cannotLoadData')}</p>
                 </div>
             `;
         });
@@ -895,7 +894,7 @@ function updateTopBusinessDetails(data) {
         detailsContainer.innerHTML = `
             <div class="text-center text-muted">
                 <i class="bi bi-exclamation-triangle mb-2"></i>
-                <p>데이터를 불러올 수 없습니다.</p>
+                <p>${getShopDashText('cannotLoadData')}</p>
             </div>
         `;
         return;
@@ -918,8 +917,8 @@ function updateTopBusinessDetails(data) {
                 <div class="text-end">
                     <div class="business-rate">${rate}%</div>
                     <div class="business-stats-small">
-                        ${analysisCount}건 분석 / 평균 ${avgArea}㎡<br>
-                        총 ${storeCount.toLocaleString()}개 매장
+                        ${analysisCount}${getShopDashText('cases')} ${getShopDashText('analysisCount')} / ${getShopDashText('avgArea')} ${avgArea}${getShopDashText('sqm')}<br>
+                        ${formatShopDashText(getShopDashText('totalStores'), {count: storeCount.toLocaleString()})}
                     </div>
                 </div>
             </div>

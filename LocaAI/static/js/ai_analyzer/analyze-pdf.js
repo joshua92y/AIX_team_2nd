@@ -850,6 +850,16 @@ function populatePreviewData(data, requestId) {
   
   // 현재 미리보기 중인 requestId를 전역 변수에 저장 (PDF 다운로드용)
   currentPreviewRequestId = requestId;
+  
+  // PDF 미리보기 모달 다국어화 적용
+  if (typeof updatePdfPreviewTexts === 'function') {
+    const currentLanguage = getCurrentLanguage();
+    const texts = LANGUAGE_TEXTS ? LANGUAGE_TEXTS[currentLanguage] : null;
+    if (texts) {
+      console.log('📄 PDF 미리보기 모달 다국어화 적용:', currentLanguage);
+      updatePdfPreviewTexts(texts);
+    }
+  }
 }
 
 // 업종 추천 데이터를 PDF 미리보기에 채우는 함수
