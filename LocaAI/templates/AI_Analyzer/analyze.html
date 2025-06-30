@@ -896,16 +896,29 @@
               
               <!-- 추천 질문 버튼 -->
               <div class="mb-3">
-                <small class="text-muted">💡 추천 질문</small>
+                <small class="text-muted">
+                  <span data-lang="KOR">💡 추천 질문</span>
+                  <span data-lang="ENG" style="display: none;">💡 Recommended Questions</span>
+                  <span data-lang="ESP" style="display: none;">💡 Preguntas Recomendadas</span>
+                </small>
                 <div class="mt-2">
-                  <button class="btn btn-sm btn-outline-primary me-1 mb-1" onclick="fillExampleQuestion('이 상권의 생존 확률이 높은 이유는 무엇인가요?')">
-                    <i class="bi bi-graph-up me-1"></i>생존 확률
+                  <button class="btn btn-sm btn-outline-primary me-1 mb-1" data-question-type="survival">
+                    <i class="bi bi-graph-up me-1"></i>
+                    <span data-lang="KOR">생존 확률</span>
+                    <span data-lang="ENG" style="display: none;">Survival Rate</span>
+                    <span data-lang="ESP" style="display: none;">Probabilidad</span>
                   </button>
-                  <button class="btn btn-sm btn-outline-warning me-1 mb-1" onclick="fillExampleQuestion('경쟁업체가 많은 편인가요?')">
-                    <i class="bi bi-shop me-1"></i>경쟁 현황
+                  <button class="btn btn-sm btn-outline-warning me-1 mb-1" data-question-type="competition">
+                    <i class="bi bi-shop me-1"></i>
+                    <span data-lang="KOR">경쟁 현황</span>
+                    <span data-lang="ENG" style="display: none;">Competition</span>
+                    <span data-lang="ESP" style="display: none;">Competencia</span>
                   </button>
-                  <button class="btn btn-sm btn-outline-success me-1 mb-1" onclick="fillExampleQuestion('창업 시 주의해야 할 점은 무엇인가요?')">
-                    <i class="bi bi-exclamation-triangle me-1"></i>주의사항
+                  <button class="btn btn-sm btn-outline-success me-1 mb-1" data-question-type="precautions">
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+                    <span data-lang="KOR">주의사항</span>
+                    <span data-lang="ENG" style="display: none;">Precautions</span>
+                    <span data-lang="ESP" style="display: none;">Precauciones</span>
                   </button>
                 </div>
           </div>
