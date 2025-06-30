@@ -5,23 +5,6 @@ from django.http import JsonResponse
 from border.models import Post  # 추가
 
 # Create your views here.
-from django.shortcuts import render
-
-# 언어 설정을 세션에서 가져오는 함수
-def getSessionLang(request):
-    if 'language' in request.session:
-        print(f"[getSessionLang] 세션 언어: {request.session['language']}")
-        return request.session['language']
-    accept_lang = request.META.get('HTTP_ACCEPT_LANGUAGE', '')
-    print(f"[getSessionLang] 브라우저 언어: {accept_lang}")
-    if accept_lang.startswith('en'):
-        print("[getSessionLang] 설정 언어: ENG")
-        return 'ENG'
-    elif accept_lang.startswith('es'):
-        print("[getSessionLang] 설정 언어: ESP")
-        return 'ESP'
-    print("[getSessionLang] 설정 언어: KOR (기본값)")
-    return 'KOR'
 
 # 언어 설정을 세션에 저장하는 함수
 def set_language(request):
@@ -30,25 +13,30 @@ def set_language(request):
     print(f"[set_language] 요청된 언어: {selected_lang}")  # 디버깅용
 
     if selected_lang:
-        request.session['language'] = selected_lang
-        print(f"[set_language] 세션에 저장된 언어: {request.session.get('language')}")  # 디버깅용
+        # 이미 같은 언어면 굳이 덮지 않음
+        if request.session.get('django_language') == selected_lang:
+            print("[set_language] 기존 언어와 동일하여 스킵")  # 디버깅용
+            return JsonResponse({"code": "0001", "message": "이미 설정된 언어"})
+
+        request.session['django_language'] = selected_lang
+        print(f"[set_language] 세션에 저장된 언어: {request.session.get('django_language')}")  # 디버깅용
         return JsonResponse({"code": "0000", "message": "언어변환성공"})
 
     print("[set_language] 언어 선택 실패")  # 디버깅용
     return JsonResponse({"code": "9999", "message": "언어변환실패"})
 
 def index(request):
-    lang = getSessionLang(request)
+    lang = request.session.get('django_language', 'KOR')
     topic_posts = Post.objects.filter(board_type='topic').order_by('-created_at')[:3]
     return render(request, 'index.html', {'lang': lang, 'topic_posts': topic_posts})
 
 def blog(request):
-    lang = getSessionLang(request)
+    lang = request.session.get('django_language', 'KOR')
     # AI_Analyzer 앱의 분석 페이지로 리다이렉트
     return redirect('AI_Analyzer:analyze_page', {'lang': lang})
 
 def blog_detail(request):
-    lang = getSessionLang(request)
+    lang = request.session.get('django_language', 'KOR')
     return render(request, 'blog-details.html', {'lang': lang})
 
 def blog_api(request):
@@ -73,7 +61,7 @@ def blog_api(request):
     return render(request, 'blog.html')
 
 def guidebook(request):
-    lang = getSessionLang(request)
+    lang = request.session.get('django_language', 'KOR')
     print(lang)
     return render(request, 'guidebook.html', {'lang': lang})
 

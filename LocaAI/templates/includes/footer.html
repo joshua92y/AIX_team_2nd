@@ -2,45 +2,7 @@
 
 <footer id="footer" class="footer">
 
-  <div class="footer-newsletter">
-    <div class="container">
-      <div class="row justify-content-center text-center">
-        <div class="col-lg-6">
-          <h4>
-            <span data-lang="KOR">뉴스레터 구독</span>
-            <span data-lang="ENG">Join Our Newsletter</span>
-            <span data-lang="ESP">Suscríbete a Nuestro Boletín</span>
-          </h4>
-          <p>
-            <span data-lang="KOR">뉴스레터를 구독하고 최신 소식을 받아보세요!</span>
-            <span data-lang="ENG">Subscribe to our newsletter and receive the latest news about our products and services!</span>
-            <span data-lang="ESP">Suscríbete a nuestro boletín y recibe las últimas noticias sobre nuestros productos y servicios.</span>
-          </p>
-          <form id="newsletter-form" action="#" method="post" class="newsletter-form">
-            <input
-              type="email"
-              name="email"
-              id="newsletter-email"
-              placeholder="Enter your email"
-              required
-              class="flex-grow px-4 py-3 text-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            >
-            <button type="submit" class="btn btn-primary">
-              Subscribe
-            </button>
-          </form>
-          <!-- ✅ form 아래 메시지 출력 -->
-          <div id="newsletter-feedback" style="margin-top: 0.5rem;">
-            <div class="loading text-sm text-gray-500" style="display: none;">Loading...</div>
-            <div class="error-message text-sm text-red-500" style="display: none;"></div>
-            <div class="sent-message text-sm text-green-600" style="display: none;"></div>
-          </div>
-          <div class="loading" style="display: none;">Loading...</div>
-          <div class="sent-message" style="display: none; color: green;">Your subscription request has been sent. Thank you!</div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <!-- 구독 영역 인덱스로 이동 -->
 
   <div class="container footer-top">
   <div class="row justify-content-between text-center text-lg-start align-items-start">
@@ -108,71 +70,4 @@
 </footer>
 
 
-<script>
-document.getElementById('newsletter-form').addEventListener('submit', async function (e) {
-  e.preventDefault();
-
-  const form = e.target;
-  const emailInput = form.querySelector('#newsletter-email');
-  const email = emailInput.value.trim();
-
-  const feedbackContainer = document.getElementById('newsletter-feedback');
-  const loading = feedbackContainer.querySelector('.loading');
-  const error = feedbackContainer.querySelector('.error-message');
-  const success = feedbackContainer.querySelector('.sent-message');
-
-  loading.style.display = 'block';
-  error.style.display = 'none';
-  success.style.display = 'none';
-
-  try {
-    const response = await fetch('/api/smtp/newsletter/subscribe/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCookie('csrftoken'),
-      },
-      body: JSON.stringify({ email }),
-    });
-
-    const data = await response.json();
-    loading.style.display = 'none';
-
-    if (!response.ok) {
-      error.innerText = data.email?.[0] || data.detail || '구독 요청 중 오류가 발생했습니다.';
-      error.style.color = '';  // 인라인 스타일 초기화
-      error.classList.remove('text-green-600');
-      error.classList.add('text-red-500');
-      error.style.display = 'block';
-    } else {
-      success.innerText = data.message || '구독이 완료되었습니다!';
-      success.classList.remove('text-red-500');
-      success.classList.add('text-green-600');
-      success.style.display = 'block';
-      emailInput.value = '';
-    }
-
-  } catch (err) {
-    loading.style.display = 'none';
-    error.innerText = '서버에 연결할 수 없습니다.';
-    error.classList.remove('text-green-600');
-    error.classList.add('text-red-500');
-    error.style.display = 'block';
-  }
-
-  function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].trim();
-        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          break;
-        }
-      }
-    }
-    return cookieValue;
-  }
-});
-</script>
+<!-- 구독 스크립트 인덱스로 이동 -->
