@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-30 14:27+0900\n"
+"POT-Creation-Date: 2025-06-30 16:16+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
+
+#: AI_Analyzer/views.py:2504
+msgid "알 수 없음"
+msgstr ""
+
 #: custom_auth/views.py:282
 msgid "Password Reset Instructions"
 msgstr "비밀번호 재설정 안내"
@@ -97,28 +102,68 @@ msgstr ""
 msgid "Loca Ai 뉴스레터 구독 감사합니다!"
 msgstr ""
 
-#: templates/custom_auth/login.html:54
+#: templates/AI_Analyzer/result.html:7
+msgid "분석 결과"
+msgstr ""
+
+#: templates/AI_Analyzer/result.html:103
+msgid "상권분석 결과"
+msgstr ""
+
+#: templates/AI_Analyzer/result.html:107
+msgid "새로운 분석하기"
+msgstr ""
+
+#: templates/border/post_form.html:7 templates/border/post_form.html:90
+msgid "게시글 수정"
+msgstr ""
+
+#: templates/border/post_form.html:9 templates/border/post_form.html:92
+msgid "게시글 작성"
+msgstr ""
+
+#: templates/border/post_form.html:98
+msgid "비밀번호 확인"
+msgstr ""
+
+#: templates/border/post_form.html:102
+msgid "비밀번호"
+msgstr ""
+
+#: templates/border/post_form.html:105
+msgid "확인"
+msgstr ""
+
+#: templates/border/post_form.html:203
+msgid "저장"
+msgstr ""
+
+#: templates/border/post_form.html:205 templates/border/post_form.html:207
+msgid "취소"
+msgstr ""
+
+#: templates/custom_auth/login.html:55
 msgid "Password Recovery"
 msgstr "비밀번호 찾기"
 
-#: templates/custom_auth/login.html:55
+#: templates/custom_auth/login.html:56
 msgid ""
 "Enter either the email address or username on the account and click Submit."
 msgstr "계정의 이메일 주소 또는 사용자 이름을 입력하고 제출을 클릭하세요."
 
-#: templates/custom_auth/login.html:56
+#: templates/custom_auth/login.html:57
 msgid "We'll email instructions on how to reset your password."
 msgstr "비밀번호 재설정 방법을 이메일로 보내드릴게요."
 
-#: templates/custom_auth/login.html:60
+#: templates/custom_auth/login.html:61
 msgid "Enter Email or Username Here"
 msgstr "이메일 또는 사용자 이름을 입력하세요"
 
-#: templates/custom_auth/login.html:61
+#: templates/custom_auth/login.html:62
 msgid "Submit"
 msgstr "제출"
 
-#: templates/custom_auth/login.html:66
+#: templates/custom_auth/login.html:67
 msgid "An email has been sent to you with further instructions."
 msgstr "비밀번호 재설정 방법이 포함된 이메일이 전송되었습니다."
 

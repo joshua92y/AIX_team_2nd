@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-30 14:28+0900\n"
+"POT-Creation-Date: 2025-06-30 16:16+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,6 +18,10 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? "
 "1 : 2;\n"
+
+#: AI_Analyzer/views.py:2504
+msgid "알 수 없음"
+msgstr ""
 
 #: custom_auth/views.py:282
 msgid "Password Reset Instructions"
@@ -31,67 +35,67 @@ msgstr "Para restablecer tu contraseña, haz clic en el siguiente enlace:"
 msgid "사용자"
 msgstr "Usuario"
 
-#: .\smtp\models.py:29
+#: smtp/models.py:29
 msgid "제목"
 msgstr "Asunto"
 
-#: .\smtp\models.py:30
+#: smtp/models.py:30
 msgid "메시지"
 msgstr "Mensaje"
 
-#: .\smtp\models.py:31
+#: smtp/models.py:31
 msgid "수신자"
 msgstr "Destinatario"
 
-#: .\smtp\models.py:32
+#: smtp/models.py:32
 msgid "발신자"
 msgstr "Remitente"
 
-#: .\smtp\models.py:35
+#: smtp/models.py:35
 msgid "상태"
 msgstr "Estado"
 
-#: .\smtp\models.py:40
+#: smtp/models.py:40
 msgid "전송일시"
 msgstr "Fecha de envío"
 
-#: .\smtp\models.py:41
+#: smtp/models.py:41
 msgid "실패일시"
 msgstr "Fecha de fallo"
 
-#: .\smtp\models.py:42
+#: smtp/models.py:42
 msgid "실패 이유"
 msgstr "Motivo del fallo"
 
-#: .\smtp\models.py:44
+#: smtp/models.py:44
 msgid "생성일"
 msgstr "Fecha de creación"
 
-#: .\smtp\models.py:45
+#: smtp/models.py:45
 msgid "수정일"
 msgstr "Fecha de modificación"
 
-#: .\smtp\models.py:48 .\smtp\models.py:49 .\smtp\models.py:119
+#: smtp/models.py:48 smtp/models.py:49 smtp/models.py:119
 msgid "이메일"
 msgstr "Correo electrónico"
 
-#: .\smtp\models.py:120
+#: smtp/models.py:120
 msgid "수신 동의"
 msgstr "Consentimiento de recepción"
 
-#: .\smtp\models.py:121
+#: smtp/models.py:121
 msgid "구독 시작일"
 msgstr "Fecha de inicio de suscripción"
 
-#: .\smtp\models.py:122
+#: smtp/models.py:122
 msgid "구독 해지일"
 msgstr "Fecha de cancelación de suscripción"
 
-#: .\smtp\models.py:125
+#: smtp/models.py:125
 msgid "이름"
 msgstr "Nombre"
 
-#: .\smtp\models.py:128 .\smtp\models.py:129
+#: smtp/models.py:128 smtp/models.py:129
 msgid "뉴스레터 구독자"
 msgstr "Suscriptor del boletín"
 
@@ -99,28 +103,72 @@ msgstr "Suscriptor del boletín"
 msgid "Loca Ai 뉴스레터 구독 감사합니다!"
 msgstr "¡Gracias por suscribirte al boletín de Loca Ai!"
 
-#: templates/custom_auth/login.html:54
+#: templates/AI_Analyzer/result.html:7
+msgid "분석 결과"
+msgstr "Resultados del análisis"
+
+#: templates/AI_Analyzer/result.html:103
+msgid "상권분석 결과"
+msgstr "Resultados del análisis comercial"
+
+#: templates/AI_Analyzer/result.html:107
+msgid "새로운 분석하기"
+msgstr "Iniciar nuevo análisis"
+
+#: templates/border/post_form.html:7 templates/border/post_form.html:90
+msgid "게시글 수정"
+msgstr "Editar publicación"
+
+#: templates/border/post_form.html:9 templates/border/post_form.html:92
+msgid "게시글 작성"
+msgstr "Crear publicación"
+
+#: templates/border/post_form.html:98
+msgid "비밀번호 확인"
+msgstr "Confirmación de contraseña"
+
+#: templates/border/post_form.html:102
+msgid "비밀번호"
+msgstr "Contraseña"
+
+#: templates/border/post_form.html:105
+msgid "확인"
+msgstr "Confirmar"
+
+#: templates/border/post_form.html:203
+msgid "저장"
+msgstr "Guardar"
+
+#: templates/border/post_form.html:205 templates/border/post_form.html:207
+msgid "취소"
+msgstr "Cancelar"
+
+#: templates/custom_auth/login.html:55
 msgid "Password Recovery"
 msgstr "Recuperación de contraseña"
 
-#: templates/custom_auth/login.html:55
+#: templates/custom_auth/login.html:56
 msgid ""
 "Enter either the email address or username on the account and click Submit."
-msgstr "Introduce la dirección de correo electrónico o el nombre de usuario de la cuenta y haz clic en Enviar."
+msgstr ""
+"Introduce la dirección de correo electrónico o el nombre de usuario de la "
+"cuenta y haz clic en Enviar."
 
-#: templates/custom_auth/login.html:56
+#: templates/custom_auth/login.html:57
 msgid "We'll email instructions on how to reset your password."
-msgstr "Te enviaremos un correo electrónico con instrucciones para restablecer tu contraseña."
+msgstr ""
+"Te enviaremos un correo electrónico con instrucciones para restablecer tu "
+"contraseña."
 
-#: templates/custom_auth/login.html:60
+#: templates/custom_auth/login.html:61
 msgid "Enter Email or Username Here"
 msgstr "Introduce tu correo electrónico o nombre de usuario aquí"
 
-#: templates/custom_auth/login.html:61
+#: templates/custom_auth/login.html:62
 msgid "Submit"
 msgstr "Enviar"
 
-#: templates/custom_auth/login.html:66
+#: templates/custom_auth/login.html:67
 msgid "An email has been sent to you with further instructions."
 msgstr "Se ha enviado un correo electrónico con más instrucciones."
 
@@ -160,34 +208,34 @@ msgstr "Cambiar la contraseña"
 msgid "Loca Ai 뉴스레터 구독 환영"
 msgstr "Bienvenido al boletín de Loca Ai"
 
-#: .\templates\newsletter\email_welcome.html:11
+#: templates/newsletter/email_welcome.html:11
 #, python-format
 msgid "%(name)s님, 환영합니다! 🎉"
 msgstr "¡Bienvenido, %(name)s! 🎉"
 
-#: .\templates\newsletter\email_welcome.html:13
+#: templates/newsletter/email_welcome.html:13
 msgid "뉴스레터 구독을 환영합니다."
 msgstr "Gracias por suscribirte a nuestro boletín."
 
-#: .\templates\newsletter\email_welcome.html:14
+#: templates/newsletter/email_welcome.html:14
 msgid "앞으로 상권 분석 인사이트와 유용한 정보를 정기적으로 보내드릴게요."
 msgstr "Te enviaremos análisis de mercado e información útil periódicamente."
 
-#: .\templates\newsletter\email_welcome.html:18
+#: templates/newsletter/email_welcome.html:18
 msgid ""
 "혹시 원치 않으시면 아래 버튼을 눌러 언제든지 구독을 해지하실 수 있습니다."
 msgstr ""
 "Si no deseas recibir más correos, puedes darte de baja en cualquier momento "
 "usando el botón de abajo."
 
-#: .\templates\newsletter\email_welcome.html:24
+#: templates/newsletter/email_welcome.html:24
 msgid "구독 해지하기"
 msgstr "Darse de baja"
 
-#: .\templates\newsletter\email_welcome.html:29
+#: templates/newsletter/email_welcome.html:29
 msgid "이 이메일은 Loca Ai에서 자동 발송되었습니다."
 msgstr "Este correo fue enviado automáticamente por Loca Ai."
 
-#: .\templates\newsletter\email_welcome.html:30
+#: templates/newsletter/email_welcome.html:30
 msgid "문의: aix25best@gmail.com"
 msgstr "Contacto: aix25best@gmail.com"
