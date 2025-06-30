@@ -20,46 +20,90 @@ window.analyzeExplainableLoaded = true;
  * 마크다운 형식을 HTML로 변환
  */
 function formatMarkdownContent(content) {
-  if (!content) return '분석 내용을 불러오는 중...';
+  if (!content || content.trim() === '') {
+    const currentLang = getCurrentLanguage();
+    return currentLang === 'en' ? 'Loading analysis content...' : 
+           currentLang === 'es' ? 'Cargando contenido de análisis...' : 
+           '분석 내용을 불러오는 중...';
+  }
   
-  return content
-    // 첫 번째 줄 (50자 이내) 제거
-    .replace(/^1\.\s*첫\s*번째\s*줄[^:]*:[^.\n]*\.\s*\n*/i, '')
-    // 제목 변환 (##, ###)
-    .replace(/^###\s+(.+)$/gm, '<h5 class="mt-3 mb-2 text-primary">$1</h5>')
-    .replace(/^##\s+(.+)$/gm, '<h4 class="mt-3 mb-2 text-primary">$1</h4>')
-    // 번호 목록 변환 (2., 3., 4., 5.)
-    .replace(/^(\d+)\.\s+(.+)$/gm, '<h5 class="mt-3 mb-2 text-secondary">$2</h5>')
-    // 불릿 포인트 변환
-    .replace(/^\s*-\s+\*\*([^*]+)\*\*:\s*(.+)$/gm, '<div class="mb-2"><strong class="text-primary">$1:</strong> $2</div>')
-    .replace(/^\s*-\s+(.+)$/gm, '<div class="mb-1">• $1</div>')
-    // 볼드 텍스트 변환
+  console.log('🔍 formatMarkdownContent 원본 내용:', content.substring(0, 200) + '...');
+  
+  // 간단하고 안전한 포맷팅
+  const formatted = content
+    // 볼드 텍스트 변환 (**text** -> <strong>text</strong>)
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-    // 줄바꿈 변환
+    // 번호 목록 변환 (1. text -> <h6>text</h6>)
+    .replace(/^(\d+)\.\s+(.+)$/gm, '<h6 class="mt-3 mb-2 text-secondary">$2</h6>')
+    // 불릿 포인트 변환 (- **title**: content)
+    .replace(/^\s*-\s+\*\*([^*]+)\*\*:\s*(.+)$/gm, '<div class="mb-2 ms-3"><strong class="text-primary">$1:</strong> $2</div>')
+    // 일반 불릿 포인트 (- content)
+    .replace(/^\s*-\s+(.+)$/gm, '<div class="mb-1 ms-3">• $1</div>')
+    // 줄바꿈을 <br>로 변환
     .replace(/\n/g, '<br>');
+    
+  console.log('🔍 formatMarkdownContent 변환 결과:', formatted.substring(0, 200) + '...');
+  
+  return formatted;
 }
 
 /**
- * 실제 생존확률을 기반으로 한 요약 생성 (150자 정도)
+ * 실제 생존확률을 기반으로 한 요약 생성 (150자 정도) - 다국어 지원
  */
 function extractCleanSummary(summary, actualSurvivalRate) {
-  if (!actualSurvivalRate && actualSurvivalRate !== 0) return '분석 중...';
+  if (!actualSurvivalRate && actualSurvivalRate !== 0) {
+    const currentLang = getCurrentLanguage();
+    return currentLang === 'en' ? 'Analyzing...' : currentLang === 'es' ? 'Analizando...' : '분석 중...';
+  }
   
   // 실제 생존확률 사용 (result.survival_percentage)
   const survivalRate = parseFloat(actualSurvivalRate);
+  const currentLang = getCurrentLanguage();
+  
+  // 다국어 메시지 템플릿
+  const getAnalysisMessage = (lang, rate, level) => {
+    const messages = {
+      ko: {
+        excellent: `예측 생존확률 ${rate}%로 매우 양호한 사업 환경입니다. 창업에 적합한 입지 조건을 갖추고 있으며, 성공 가능성이 높은 것으로 분석됩니다.`,
+        good: `예측 생존확률 ${rate}%로 양호한 사업 환경입니다. 적절한 마케팅 전략과 운영 계획을 수립한다면 성공할 가능성이 높습니다.`,
+        moderate: `예측 생존확률 ${rate}%로 보통 수준의 사업 환경입니다. 경쟁력 있는 차별화 전략과 신중한 사업 계획이 필요합니다.`,
+        challenging: `예측 생존확률 ${rate}%로 도전적인 사업 환경입니다. 위험 요인을 면밀히 검토하고 전문적인 컨설팅을 받아보시기 바랍니다.`,
+        risky: `예측 생존확률 ${rate}%로 높은 위험이 예상됩니다. 입지 변경을 고려하거나 사업 모델을 전면 재검토하시기 바랍니다.`
+      },
+      en: {
+        excellent: `AI Analysis Result: Predicted survival probability is ${rate}% with excellent business environment. This location is suitable for startup with high success potential.`,
+        good: `AI Analysis Result: Predicted survival probability is ${rate}% with good business environment. Success is likely with proper marketing strategies and operational planning.`,
+        moderate: `AI Analysis Result: Predicted survival probability is ${rate}% with moderate business environment. Competitive differentiation strategies and careful business planning are needed.`,
+        challenging: `AI Analysis Result: Predicted survival probability is ${rate}% with challenging business environment. Please carefully review risk factors and consider professional consulting.`,
+        risky: `AI Analysis Result: Predicted survival probability is ${rate}% with high risk expected. Please consider changing location or completely reviewing business model.`
+      },
+      es: {
+        excellent: `Resultado del Análisis de IA: La probabilidad de supervivencia predicha es ${rate}% con excelente entorno empresarial. Esta ubicación es adecuada para startup con alto potencial de éxito.`,
+        good: `Resultado del Análisis de IA: La probabilidad de supervivencia predicha es ${rate}% con buen entorno empresarial. El éxito es probable con estrategias de marketing adecuadas y planificación operativa.`,
+        moderate: `Resultado del Análisis de IA: La probabilidad de supervivencia predicha es ${rate}% con entorno empresarial moderado. Se necesitan estrategias de diferenciación competitiva y planificación empresarial cuidadosa.`,
+        challenging: `Resultado del Análisis de IA: La probabilidad de supervivencia predicha es ${rate}% con entorno empresarial desafiante. Por favor revise cuidadosamente los factores de riesgo y considere consultoría profesional.`,
+        risky: `Resultado del Análisis de IA: La probabilidad de supervivencia predicha es ${rate}% con alto riesgo esperado. Por favor considere cambiar la ubicación o revisar completamente el modelo de negocio.`
+      }
+    };
+    
+    return messages[lang] || messages.ko;
+  };
   
   // 150자 정도의 더 자세한 분석 요약 생성
+  const rateStr = survivalRate.toFixed(1);
+  const langMessages = getAnalysisMessage(currentLang, rateStr);
+  
   let detailedSummary = '';
   if (survivalRate >= 80) {
-    detailedSummary = `예측 생존확률 ${survivalRate}%로 매우 양호한 사업 환경입니다. 창업에 적합한 입지 조건을 갖추고 있으며, 성공 가능성이 높은 것으로 분석됩니다.`;
+    detailedSummary = langMessages.excellent;
   } else if (survivalRate >= 65) {
-    detailedSummary = `예측 생존확률 ${survivalRate}%로 양호한 사업 환경입니다. 적절한 마케팅 전략과 운영 계획을 수립한다면 성공할 가능성이 높습니다.`;
+    detailedSummary = langMessages.good;
   } else if (survivalRate >= 50) {
-    detailedSummary = `예측 생존확률 ${survivalRate}%로 보통 수준의 사업 환경입니다. 경쟁력 있는 차별화 전략과 신중한 사업 계획이 필요합니다.`;
+    detailedSummary = langMessages.moderate;
   } else if (survivalRate >= 35) {
-    detailedSummary = `예측 생존확률 ${survivalRate}%로 도전적인 사업 환경입니다. 위험 요인을 면밀히 검토하고 전문적인 컨설팅을 받아보시기 바랍니다.`;
+    detailedSummary = langMessages.challenging;
   } else {
-    detailedSummary = `예측 생존확률 ${survivalRate}%로 높은 위험이 예상됩니다. 입지 변경을 고려하거나 사업 모델을 전면 재검토하시기 바랍니다.`;
+    detailedSummary = langMessages.risky;
   }
   
   return detailedSummary;
@@ -283,7 +327,11 @@ function updateAIAnalysisSection(result) {
       .addClass('alert alert-info')
       .html(`
         <div>
-          <strong><i class="fas fa-robot me-2"></i>AI 분석 결과:</strong> 
+          <strong><i class="fas fa-robot me-2"></i>
+            <span data-lang="KOR">AI 분석 결과:</span>
+            <span data-lang="ENG" style="display: none;">AI Analysis Result:</span>
+            <span data-lang="ESP" style="display: none;">Resultado del Análisis de IA:</span>
+          </strong> 
           <span>${cleanSummary}</span>
         </div>
         ${detailButtonHtml}
@@ -296,32 +344,78 @@ function updateAIAnalysisSection(result) {
     window.currentAnalysisResult = result;
     
   } else {
-    // 비회원: 기존 하드코딩된 메시지
+    // 비회원: 다국어화된 메시지
     const survivalPercent = result.survival_percentage || 0;
     let barClass = 'bg-danger';
     let analysisText = '';
     
+    // 현재 언어 가져오기
+    const currentLang = getCurrentLanguage();
+    const texts = getTexts(currentLang);
+    
     if (survivalPercent >= 80) {
       barClass = 'bg-success';
-      analysisText = '이 위치는 매우 좋은 사업 환경을 가지고 있습니다.';
+      analysisText = texts.analysisExcellent || '이 위치는 매우 좋은 사업 환경을 가지고 있습니다.';
     } else if (survivalPercent >= 60) {
       barClass = 'bg-warning';
-      analysisText = '이 위치는 적당한 사업 환경을 가지고 있습니다.';
+      analysisText = texts.analysisGood || '이 위치는 적당한 사업 환경을 가지고 있습니다.';
     } else if (survivalPercent >= 40) {
       barClass = 'bg-warning';
-      analysisText = '이 위치는 도전적인 사업 환경입니다.';
+      analysisText = texts.analysisChallenging || '이 위치는 도전적인 사업 환경입니다.';
     } else {
-      analysisText = '이 위치는 높은 위험을 가지고 있습니다.';
+      analysisText = texts.analysisRisky || '이 위치는 높은 위험을 가지고 있습니다.';
     }
+    
+    const analysisResultLabel = texts.analysisResult || '분석 결과';
     
     analysisSection.removeClass('alert-success alert-warning alert-danger alert-info')
       .addClass('alert alert-' + barClass.split('-')[1])
-      .html('<strong>분석 결과:</strong> ' + analysisText);
+      .html('<strong>' + analysisResultLabel + ':</strong> ' + analysisText);
       
     // 비회원은 기존 방식으로 강점/주의사항 표시 (analyze-core.js의 displayStrengthsAndCautions 함수 사용)
     if (typeof displayStrengthsAndCautions === 'function') {
       displayStrengthsAndCautions(result);
     }
+  }
+}
+
+/**
+ * AI 설명 텍스트 가져오기 (여러 필드명 시도)
+ */
+function getAIExplanationText(result) {
+  const currentLang = getCurrentLanguage();
+  
+  console.log('🔍 getAIExplanationText 호출됨, result:', result);
+  
+  // 다양한 필드명 시도 (우선순위 순)
+  const possibleFields = [
+    'ai_explanation',  // 가장 가능성 높은 필드
+    'ai_summary',      // 두 번째 가능성
+    'analysis_result', // 세 번째 가능성
+    'ai_analysis',     // 네 번째 가능성
+    'explanation',     // 다섯 번째 가능성
+    'summary'          // 여섯 번째 가능성
+  ];
+  
+  for (const field of possibleFields) {
+    console.log(`🔍 필드 확인: ${field} =`, result[field]);
+    if (result[field] && typeof result[field] === 'string' && result[field].trim().length > 0) {
+      const content = result[field].trim();
+      console.log(`✅ AI 설명 텍스트 발견: ${field}`, content.substring(0, 100) + '...');
+      console.log(`📝 전체 내용 길이: ${content.length}자`);
+      return content;
+    }
+  }
+  
+  // 모든 필드에서 찾지 못한 경우 기본 메시지
+  console.warn('⚠️ AI 설명 텍스트를 찾을 수 없습니다. 사용 가능한 필드들:', Object.keys(result));
+  
+  if (currentLang === 'en') {
+    return 'AI analysis content is being generated. Please wait a moment or try refreshing the page.';
+  } else if (currentLang === 'es') {
+    return 'El contenido del análisis de IA se está generando. Por favor espere un momento o intente actualizar la página.';
+  } else {
+    return 'AI 분석 내용을 생성 중입니다. 잠시 기다리시거나 페이지를 새로고침해 주세요.';
   }
 }
 
@@ -337,37 +431,65 @@ function showDetailedAnalysis() {
   const data = window.currentAnalysisData;
   const result = data.result || data; // API 응답 구조에 따라 유연하게 처리
   
+  // 디버깅: 데이터 구조 확인
+  console.log('🔍 [DEBUG] currentAnalysisData:', data);
+  console.log('🔍 [DEBUG] result:', result);
+  console.log('🔍 [DEBUG] AI 설명 필드들 확인:');
+  console.log('- result.ai_summary:', result.ai_summary);
+  console.log('- result.ai_explanation:', result.ai_explanation);
+  console.log('- result.analysis_result:', result.analysis_result);
+  console.log('- result.ai_analysis:', result.ai_analysis);
+  
   const modalHtml = `
     <div class="modal fade" id="detailAnalysisModal" tabindex="-1">
       <div class="modal-dialog modal-xl">
         <div class="modal-content">
           <div class="modal-header bg-primary text-white">
-            <h5 class="modal-title">XGBoost AI 상세 분석 결과</h5>
+            <h5 class="modal-title">
+              <span data-lang="KOR">XGBoost AI 상세 분석 결과</span>
+              <span data-lang="ENG" style="display: none;">XGBoost AI Detailed Analysis Results</span>
+              <span data-lang="ESP" style="display: none;">Resultados de Análisis Detallado XGBoost AI</span>
+            </h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
             <div class="row">
               <div class="col-lg-7">
                 <div class="card">
-                  <div class="card-header">AI 분석 리포트</div>
+                  <div class="card-header">
+                    <span data-lang="KOR">AI 분석 리포트</span>
+                    <span data-lang="ENG" style="display: none;">AI Analysis Report</span>
+                    <span data-lang="ESP" style="display: none;">Informe de Análisis de IA</span>
+                  </div>
                   <div class="card-body">
                     <div style="line-height: 1.6; max-height: 400px; overflow-y: auto;">
-                      ${formatMarkdownContent(result.ai_explanation || '분석 내용을 불러오는 중...')}
+                      ${formatMarkdownContent(getAIExplanationText(result))}
                     </div>
                   </div>
                 </div>
                 <div class="card mt-3">
-                  <div class="card-header">다운로드</div>
+                  <div class="card-header">
+                    <span data-lang="KOR">다운로드</span>
+                    <span data-lang="ENG" style="display: none;">Download</span>
+                    <span data-lang="ESP" style="display: none;">Descargar</span>
+                  </div>
                   <div class="card-body">
                     <button class="btn btn-success" onclick="downloadAnalysisReport()">
-                      <i class="fas fa-download me-2"></i>분석 리포트 다운로드
+                      <i class="fas fa-download me-2"></i>
+                      <span data-lang="KOR">분석 리포트 다운로드</span>
+                      <span data-lang="ENG" style="display: none;">Download Analysis Report</span>
+                      <span data-lang="ESP" style="display: none;">Descargar Informe de Análisis</span>
                     </button>
                   </div>
                 </div>
               </div>
               <div class="col-lg-5">
                 <div class="card">
-                  <div class="card-header">주요 피쳐 분석</div>
+                  <div class="card-header">
+                    <span data-lang="KOR">주요 피쳐 분석</span>
+                    <span data-lang="ENG" style="display: none;">Key Feature Analysis</span>
+                    <span data-lang="ESP" style="display: none;">Análisis de Características Clave</span>
+                  </div>
                   <div class="card-body">
                     <canvas id="featureChart" width="400" height="300"></canvas>
                   </div>
@@ -382,6 +504,25 @@ function showDetailedAnalysis() {
   
   $('#detailAnalysisModal').remove();
   $('body').append(modalHtml);
+  
+  // 모달이 생성된 후 언어 업데이트 적용
+  const currentLang = getCurrentLanguage();
+  console.log('🌐 모달 생성 후 언어 업데이트:', currentLang);
+  
+  // data-lang 속성 기반 언어 업데이트
+  const langMap = {
+    'ko': 'KOR',
+    'en': 'ENG', 
+    'es': 'ESP'
+  };
+  
+  const targetLang = langMap[currentLang] || 'KOR';
+  
+  // 모든 data-lang 요소 숨기기
+  $('#detailAnalysisModal [data-lang]').hide();
+  
+  // 현재 언어에 해당하는 요소만 표시
+  $('#detailAnalysisModal [data-lang="' + targetLang + '"]').show();
   
   const modal = new bootstrap.Modal(document.getElementById('detailAnalysisModal'));
   modal.show();
@@ -410,12 +551,65 @@ function drawChart(data) {
     lifePopulation, workingPopulation, competitors, landValue, businessDiversity
   });
   
+  // 현재 언어 가져오기
+  const currentLang = getCurrentLanguage();
+  
+  // 다국어 텍스트 정의 (간단한 버전)
+  const getTexts = (lang) => {
+    const textMap = {
+      ko: {
+        analysisExcellent: '이 위치는 매우 좋은 사업 환경을 가지고 있습니다.',
+        analysisGood: '이 위치는 적당한 사업 환경을 가지고 있습니다.',
+        analysisChallenging: '이 위치는 도전적인 사업 환경입니다.',
+        analysisRisky: '이 위치는 높은 위험을 가지고 있습니다.',
+        analysisResult: '분석 결과'
+      },
+      en: {
+        analysisExcellent: 'This location has an excellent business environment.',
+        analysisGood: 'This location has a moderate business environment.',
+        analysisChallenging: 'This location presents a challenging business environment.',
+        analysisRisky: 'This location has high risks.',
+        analysisResult: 'Analysis Result'
+      },
+      es: {
+        analysisExcellent: 'Esta ubicación tiene un excelente entorno empresarial.',
+        analysisGood: 'Esta ubicación tiene un entorno empresarial moderado.',
+        analysisChallenging: 'Esta ubicación presenta un entorno empresarial desafiante.',
+        analysisRisky: 'Esta ubicación tiene altos riesgos.',
+        analysisResult: 'Resultado del Análisis'
+      }
+    };
+    return textMap[lang] || textMap.ko;
+  };
+  
+  const texts = getTexts(currentLang);
+  
   const features = [
-    { name: '생활인구', value: lifePopulation / 1000, unit: 'K명' },
-    { name: '직장인구', value: workingPopulation / 1000, unit: 'K명' },
-    { name: '경쟁업체', value: competitors, unit: '개' },
-    { name: '토지가치', value: landValue / 100000000, unit: '억원' },
-    { name: '업종다양성', value: businessDiversity, unit: '개' }
+    { 
+      name: currentLang === 'en' ? 'Residents' : currentLang === 'es' ? 'Residentes' : '생활인구', 
+      value: lifePopulation / 1000, 
+      unit: currentLang === 'en' ? 'K people' : currentLang === 'es' ? 'K personas' : 'K명' 
+    },
+    { 
+      name: currentLang === 'en' ? 'Workers' : currentLang === 'es' ? 'Trabajadores' : '직장인구', 
+      value: workingPopulation / 1000, 
+      unit: currentLang === 'en' ? 'K people' : currentLang === 'es' ? 'K personas' : 'K명' 
+    },
+    { 
+      name: currentLang === 'en' ? 'Competitors' : currentLang === 'es' ? 'Competidores' : '경쟁업체', 
+      value: competitors, 
+      unit: currentLang === 'en' ? 'stores' : currentLang === 'es' ? 'tiendas' : '개' 
+    },
+    { 
+      name: currentLang === 'en' ? 'Land Value' : currentLang === 'es' ? 'Valor del Terreno' : '토지가치', 
+      value: landValue / 100000000, 
+      unit: currentLang === 'en' ? '100M KRW' : currentLang === 'es' ? '100M KRW' : '억원' 
+    },
+    { 
+      name: currentLang === 'en' ? 'Business Diversity' : currentLang === 'es' ? 'Diversidad de Negocios' : '업종다양성', 
+      value: businessDiversity, 
+      unit: currentLang === 'en' ? 'types' : currentLang === 'es' ? 'tipos' : '개' 
+    }
   ];
   
   featureImportanceChart = new Chart(ctx, {
@@ -447,13 +641,13 @@ function drawChart(data) {
           beginAtZero: true,
           title: {
             display: true,
-            text: '상대적 수치'
+            text: currentLang === 'en' ? 'Relative Value' : currentLang === 'es' ? 'Valor Relativo' : '상대적 수치'
           }
         },
         x: {
           title: {
             display: true,
-            text: '주요 분석 요소'
+            text: currentLang === 'en' ? 'Key Analysis Factors' : currentLang === 'es' ? 'Factores de Análisis Clave' : '주요 분석 요소'
           }
         }
       }
@@ -512,7 +706,7 @@ function animateSurvivalGauge(percentage) {
     fill.style.transform = `rotate(${rotation}deg)`;
     
     // 텍스트 업데이트
-    text.textContent = Math.round(currentPercent) + '%';
+    text.textContent = currentPercent.toFixed(1) + '%';
     
     // 색상 변경
     let color = '#dc3545'; // 빨간색 (위험)

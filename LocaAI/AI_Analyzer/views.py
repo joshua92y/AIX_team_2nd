@@ -9,6 +9,7 @@ from django.db import connection, transaction
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import user_passes_test
 from django.template.loader import render_to_string
+from django.utils.translation import gettext as _, gettext_lazy as _lazy, get_language
 import json
 import requests
 from pyproj import Proj, Transformer
@@ -196,6 +197,104 @@ def predict_survival_probability(features_dict):
     except Exception as e:
         print(f"❌ AI 모델 예측 중 오류가 발생했습니다: {e}")
         return 0.0
+
+
+def recommend_business_type(features_dict, current_business_type_id):
+    """
+    모든 업종에 대해 생존확률을 분석하여 상위 업종들을 추천하는 함수
+
+    Args:
+        features_dict (dict): 분석 결과에서 추출한 피쳐 딕셔너리 (업종 ID 제외)
+        current_business_type_id (int): 현재 선택된 업종 ID
+
+    Returns:
+        dict: {
+            'recommended_business_type_id': int,
+            'recommended_business_type_name': str, 
+            'recommended_survival_probability': float,
+            'recommended_survival_percentage': float,
+            'top_recommendations': list,  # 상위 10개 업종 리스트
+            'all_recommendations': list   # 모든 업종 리스트 (생존확률 순)
+        }
+
+    Note:
+        - 현재 선택된 업종을 제외한 모든 업종에 대해 예측 수행
+        - 생존확률 순으로 정렬하여 상위 업종들 반환
+    """
+    try:
+        print("\n🎯 [업종 추천] 모든 업종 생존확률 분석 시작...")
+        
+        # 모든 업종 조회
+        all_business_types = BusinessType.objects.all().order_by('id')
+        print(f"   📋 총 {len(all_business_types)}개 업종 분석 예정")
+        
+        business_results = []
+        analyzed_count = 0
+        
+        for business_type in all_business_types:
+            # 현재 선택된 업종은 제외
+            if business_type.id == current_business_type_id:
+                continue
+                
+            # 해당 업종에 대한 피쳐 딕셔너리 생성
+            business_features = features_dict.copy()
+            business_features['UPTAENM_ID'] = business_type.id
+            
+            # 생존확률 예측
+            probability = predict_survival_probability(business_features)
+            analyzed_count += 1
+            
+            print(f"   📊 {business_type.name} (ID: {business_type.id}): {probability*100:.1f}%")
+            
+            # 결과 리스트에 추가
+            business_results.append({
+                'id': business_type.id,
+                'name': business_type.name,
+                'probability': probability,
+                'percentage': round(probability * 100, 1)
+            })
+        
+        print(f"   ✅ {analyzed_count}개 업종 분석 완료")
+        
+        # 생존확률 순으로 정렬 (높은 순)
+        business_results.sort(key=lambda x: x['probability'], reverse=True)
+        
+        if business_results:
+            # 1위 업종
+            best_business = business_results[0]
+            
+            result = {
+                'recommended_business_type_id': best_business['id'],
+                'recommended_business_type_name': best_business['name'],
+                'recommended_survival_probability': best_business['probability'],
+                'recommended_survival_percentage': best_business['percentage'],
+                'top_recommendations': business_results[:10],  # 상위 10개
+                'all_recommendations': business_results       # 전체 리스트
+            }
+            
+            print(f"🏆 추천 업종: {best_business['name']} ({best_business['percentage']}%)")
+            return result
+        else:
+            print("❌ 추천할 업종을 찾을 수 없습니다.")
+            return {
+                'recommended_business_type_id': None,
+                'recommended_business_type_name': '',
+                'recommended_survival_probability': 0.0,
+                'recommended_survival_percentage': 0.0,
+                'top_recommendations': [],
+                'all_recommendations': []
+            }
+            
+    except Exception as e:
+        print(f"❌ 업종 추천 중 오류 발생: {e}")
+        return {
+            'recommended_business_type_id': None,
+            'recommended_business_type_name': '',
+            'recommended_survival_probability': 0.0,
+            'recommended_survival_percentage': 0.0,
+            'top_recommendations': [],
+            'all_recommendations': []
+        }
 
 
 def index(request):
@@ -389,6 +488,7 @@ def analyze_location(request):
         latitude = data["latitude"]
         x_coord = data["x_coord"]
         y_coord = data["y_coord"]
+        language = data.get("language", "ko")  # 언어 정보 추출 (기본값: 한국어)
 
         # 디버깅: 추출된 값들 출력
         print(f"🔍 [DEBUG] 추출된 값들:")
@@ -400,6 +500,12 @@ def analyze_location(request):
         print(f"   y_coord: {y_coord}")
         print(f"   longitude: {longitude}")
         print(f"   latitude: {latitude}")
+        print(f"   language: {language}")
+        
+        # 언어 활성화
+        from django.utils.translation import activate
+        activate(language)
+        print(f"🌍 언어 활성화: {language}")
 
         # 분석 요청 저장 - 원본 AI_Analyzer와 동일
         try:
@@ -426,7 +532,7 @@ def analyze_location(request):
             )
 
             # 공간 분석 수행
-            result = perform_spatial_analysis(analysis_request)
+            result = perform_spatial_analysis(analysis_request, language=language)
 
             return JsonResponse(
                 {"success": True, "request_id": analysis_request.id, "result": result, "is_guest": False}
@@ -449,7 +555,7 @@ def analyze_location(request):
             )
 
             # 공간 분석 수행 (저장하지 않는 버전)
-            result = perform_spatial_analysis_guest(temp_request)
+            result = perform_spatial_analysis_guest(temp_request, language=language)
 
             return JsonResponse(
                 {"success": True, "request_id": 0, "result": result, "is_guest": True}
@@ -473,8 +579,7 @@ def analyze_location(request):
         )
 
 
-@transaction.atomic
-def perform_spatial_analysis_guest(temp_request):
+def perform_spatial_analysis_guest(temp_request, language='ko'):
     """
     비회원용 공간 분석 (데이터베이스에 저장하지 않음)
     
@@ -502,6 +607,7 @@ def perform_spatial_analysis_guest(temp_request):
             results = {}
 
             print("\n📊 [1/6] 생활인구 분석 시작...")
+            step_start = time.time()
             # 1. 생활인구 분석 (300m)
             try:
                 cursor.execute(
@@ -659,13 +765,15 @@ def perform_spatial_analysis_guest(temp_request):
                 )
 
             time.sleep(0.1)
+            print("✅ [1/6] 생활인구 분석 완료")
 
+            print("\n👔 [2/6] 직장인구 분석 시작...")
             # 3. 직장인구 분석 (300m)
             try:
                 cursor.execute(
                     f"""
-                    SELECT COALESCE(SUM("총직장인구수"), 0) as working_pop
-                    FROM working_pop_grid_10m_5186 
+                    SELECT COALESCE(SUM("총_직장_인구_수"), 0) as working_pop
+                    FROM workgrid_10m_5186 
                     WHERE ST_Intersects(geom, ST_Buffer(ST_GeomFromText('POINT({x_coord} {y_coord})', 5186), 300))
                 """
                 )
@@ -678,45 +786,215 @@ def perform_spatial_analysis_guest(temp_request):
                 results["working_pop_300m"] = 0
 
             time.sleep(0.1)
+            print("✅ [2/6] 직장인구 분석 완료")
 
-            # 3. 외국인 분석 (간소화)
+            print("\n🌍 [3/6] 외국인 분석 시작...")
+            # 3. 단기체류외국인 분석
             try:
-                cursor.execute(
-                    f"""
-                    SELECT 
-                        COALESCE(SUM("단기체류외국인"), 0) as temp_foreign,
-                        COALESCE(SUM("중국"), 0) as temp_cn
-                    FROM foreign_pop_grid_10m_5186 
-                    WHERE ST_Intersects(geom, ST_Buffer(ST_GeomFromText('POINT({x_coord} {y_coord})', 5186), 1000))
-                """
-                )
-                row = cursor.fetchone()
-                temp_foreign_1000m = int(row[0]) if row[0] else 0
-                temp_cn_1000m = int(row[1]) if row[1] else 0
+                print(f"=== 단기체류외국인 분석 시작 ===")
+                print(f"테스트 좌표: ({x_coord}, {y_coord})")
+
+                # 새로운 테이블명을 우선순위로
+                foreign_tables = [
+                    "temp_25m_5186",
+                    "temp_foreign_25m_5186",
+                    "_단기체류외국인_25m_5186",
+                    "단기체류외국인_25m_5186",
+                ]
+                temp_total_1000m = 0
+                temp_cn_1000m = 0
+                temp_cn_300m = 0
+                used_table = None
+
+                # 사용 가능한 테이블 확인
+                for table_name in foreign_tables:
+                    try:
+                        # 테이블 존재 여부 확인 (PostgreSQL 문법)
+                        cursor.execute(
+                            """
+                            SELECT EXISTS (
+                                SELECT FROM pg_catalog.pg_tables 
+                                WHERE schemaname = 'public' 
+                                AND tablename = %s
+                            )
+                        """,
+                            [table_name],
+                        )
+
+                        if not cursor.fetchone()[0]:
+                            print(f"테이블 {table_name}: 존재하지 않음")
+                            continue
+
+                        cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
+                        table_count = cursor.fetchone()[0]
+                        print(f"테이블 {table_name}: {table_count:,}개 레코드 존재")
+
+                        if table_count == 0:
+                            print(f"테이블 {table_name}: 데이터가 없음")
+                            continue
+
+                        # 1000m 쿼리 - 총수와 중국인수 조회
+                        cursor.execute(
+                            f"""
+                            SELECT COALESCE(SUM("총생활인구수"), 0) as temp_total,
+                                   COALESCE(SUM("중국인체류인구수"), 0) as temp_cn
+                            FROM {table_name} 
+                            WHERE ST_Intersects(geom, ST_Buffer(ST_GeomFromText('POINT({x_coord} {y_coord})', 5186), 1000))
+                        """
+                        )
+                        row = cursor.fetchone()
+                        temp_total_1000m = row[0] if row[0] else 0
+                        temp_cn_1000m = row[1] if row[1] else 0
+                        print(f"단기체류외국인 1000m - 테이블 {table_name} 사용: 총 {temp_total_1000m}명, 중국인 {temp_cn_1000m}명")
+
+                        used_table = table_name
+                        break
+                    except Exception as e:
+                        print(f"단기체류외국인 테이블 {table_name} 시도 실패: {e}")
+                        continue
+
+                if not used_table:
+                    print("❌ 사용 가능한 단기체류외국인 테이블이 없습니다. 기본값 0 사용")
+
+                time.sleep(0.1)
+
+                # 300m 내 중국인 (같은 테이블 사용)
+                if used_table:
+                    try:
+                        cursor.execute(
+                            f"""
+                            SELECT COALESCE(SUM("중국인체류인구수"), 0) as temp_cn
+                            FROM {used_table} 
+                            WHERE ST_Intersects(geom, ST_Buffer(ST_GeomFromText('POINT({x_coord} {y_coord})', 5186), 300))
+                        """
+                        )
+                        row = cursor.fetchone()
+                        temp_cn_300m = row[0] if row[0] else 0
+                        print(f"단기체류외국인 300m - 테이블 {used_table} 사용: 중국인 {temp_cn_300m}명")
+                    except Exception as e:
+                        print(f"단기체류외국인 300m 쿼리 실패: {e}")
+                        temp_cn_300m = 0
 
                 results.update({
-                    "temp_foreign_1000m": temp_foreign_1000m,
-                    "temp_foreign_cn_1000m": round((temp_cn_1000m / temp_foreign_1000m * 100) if temp_foreign_1000m > 0 else 0, 2),
-                    "long_foreign_300m": 0,  # 비회원은 간소화
-                    "long_foreign_cn_1000m": 0,
+                    "temp_foreign_1000m": int(temp_total_1000m),
+                    "temp_foreign_cn_300m": round((temp_cn_300m / temp_total_1000m * 100) if temp_total_1000m > 0 else 0, 2),
+                    "temp_foreign_cn_1000m": round((temp_cn_1000m / temp_total_1000m * 100) if temp_total_1000m > 0 else 0, 2),
                 })
-                print(f"   ✅ 1000m 단기체류외국인: {temp_foreign_1000m:,}명")
+                print(f"   ✅ 단기체류외국인 분석 완료: 1000m {int(temp_total_1000m):,}명")
             except Exception as e:
-                print(f"   ❌ 외국인 분석 오류: {e}")
+                print(f"단기체류외국인 전체 분석 오류: {e}")
                 results.update({
                     "temp_foreign_1000m": 0,
+                    "temp_foreign_cn_300m": 0,
                     "temp_foreign_cn_1000m": 0,
-                    "long_foreign_300m": 0,
-                    "long_foreign_cn_1000m": 0,
                 })
 
             time.sleep(0.1)
 
-            # 4. 경쟁업체 분석 (300m)
+            # 4. 장기체류외국인 분석
+            try:
+                print(f"=== 장기체류외국인 분석 시작 ===")
+                print(f"분석 좌표: ({x_coord}, {y_coord})")
+
+                # 새로운 테이블명을 우선순위로
+                long_tables = [
+                    "long_25m_5186",
+                    "long_foreign_25m_5186",
+                    "_장기체류외국인_25m_5186",
+                    "장기체류외국인_25m_5186",
+                ]
+                print(f"확인할 테이블 목록: {long_tables}")
+                long_total_300m = 0
+                long_total_1000m = 0
+                long_cn_1000m = 0
+                used_table = None
+
+                # 사용 가능한 테이블 확인 및 300m 쿼리
+                for table_name in long_tables:
+                    try:
+                        # 테이블 존재 여부 확인 (PostgreSQL 문법)
+                        cursor.execute(
+                            """
+                            SELECT EXISTS (
+                                SELECT FROM pg_catalog.pg_tables 
+                                WHERE schemaname = 'public' 
+                                AND tablename = %s
+                            )
+                        """,
+                            [table_name],
+                        )
+
+                        if not cursor.fetchone()[0]:
+                            print(f"테이블 {table_name}: 존재하지 않음")
+                            continue
+
+                        cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
+                        table_count = cursor.fetchone()[0]
+                        print(f"테이블 {table_name}: {table_count:,}개 레코드 존재")
+
+                        if table_count == 0:
+                            print(f"테이블 {table_name}: 데이터가 없음")
+                            continue
+
+                        # 300m 쿼리
+                        cursor.execute(
+                            f"""
+                            SELECT COALESCE(SUM("총생활인구수"), 0) as long_total
+                            FROM {table_name} 
+                            WHERE ST_Intersects(geom, ST_Buffer(ST_GeomFromText('POINT({x_coord} {y_coord})', 5186), 300))
+                        """
+                        )
+                        row = cursor.fetchone()
+                        long_total_300m = row[0] if row[0] else 0
+                        print(f"장기체류외국인 300m - 테이블 {table_name} 사용: 총 {long_total_300m}명")
+
+                        # 1000m 쿼리 - 총수와 중국인수 조회
+                        cursor.execute(
+                            f"""
+                            SELECT COALESCE(SUM("총생활인구수"), 0) as long_total,
+                                   COALESCE(SUM("중국인체류인구수"), 0) as long_cn
+                            FROM {table_name} 
+                            WHERE ST_Intersects(geom, ST_Buffer(ST_GeomFromText('POINT({x_coord} {y_coord})', 5186), 1000))
+                        """
+                        )
+                        row = cursor.fetchone()
+                        long_total_1000m = row[0] if row[0] else 0
+                        long_cn_1000m = row[1] if row[1] else 0
+                        print(f"장기체류외국인 1000m - 테이블 {table_name} 사용: 총 {long_total_1000m}명, 중국인 {long_cn_1000m}명")
+
+                        used_table = table_name
+                        break
+                    except Exception as e:
+                        print(f"장기체류외국인 테이블 {table_name} 시도 실패: {e}")
+                        continue
+
+                if not used_table:
+                    print("❌ 사용 가능한 장기체류외국인 테이블이 없습니다. 기본값 0 사용")
+
+                results.update({
+                    "long_foreign_300m": int(long_total_300m),
+                    "long_foreign_1000m": int(long_total_1000m),
+                    "long_foreign_cn_1000m": round((long_cn_1000m / long_total_1000m * 100) if long_total_1000m > 0 else 0, 2),
+                })
+                print(f"   ✅ 장기체류외국인 분석 완료: 300m {int(long_total_300m):,}명, 1000m {int(long_total_1000m):,}명")
+            except Exception as e:
+                print(f"장기체류외국인 전체 분석 오류: {e}")
+                results.update({
+                    "long_foreign_300m": 0,
+                    "long_foreign_1000m": 0,
+                    "long_foreign_cn_1000m": 0,
+                })
+
+            time.sleep(0.1)
+            print("✅ [3/6] 외국인 분석 완료")
+
+            print("\n🏪 [5/6] 경쟁업체 분석 시작...")
+            # 5. 경쟁업체 분석 (300m)
             try:
                 business_type_name = temp_request.business_type.name
-                print(f"   검색 대상 업종: {business_type_name}")
+                print(f"   검색 대상 업종: {business_type_name} (ID: {business_type_id})")
 
+                # 동일 업종 경쟁업체 - 업종명으로 매칭
                 cursor.execute(
                     f"""
                     SELECT COUNT(*) as competitor_count
@@ -728,6 +1006,9 @@ def perform_spatial_analysis_guest(temp_request):
                 row = cursor.fetchone()
                 competitor_count = int(row[0]) if row[0] else 0
 
+                time.sleep(0.1)
+
+                # 전체 요식업체
                 cursor.execute(
                     f"""
                     SELECT COUNT(*) as total_biz,
@@ -739,6 +1020,24 @@ def perform_spatial_analysis_guest(temp_request):
                 row = cursor.fetchone()
                 total_biz = int(row[0]) if row[0] else 0
                 diversity = int(row[1]) if row[1] else 0
+
+                # 디버깅: 주변 업종들 출력
+                if competitor_count == 0:
+                    print(f"   ⚠️  '{business_type_name}' 업종 경쟁업체가 0개입니다.")
+                    print("   주변 업종들 확인 중...")
+                    cursor.execute(
+                        f"""
+                        SELECT uptaenm, COUNT(*) as count
+                        FROM store_point_5186 
+                        WHERE ST_Intersects(geom, ST_Buffer(ST_GeomFromText('POINT({x_coord} {y_coord})', 5186), 300))
+                        GROUP BY uptaenm
+                        ORDER BY count DESC
+                        LIMIT 5
+                    """
+                    )
+                    nearby_types = cursor.fetchall()
+                    for uptae, count in nearby_types:
+                        print(f"     - {uptae}: {count}개")
 
                 results.update(
                     {
@@ -755,7 +1054,7 @@ def perform_spatial_analysis_guest(temp_request):
                         "business_diversity_300m": diversity,
                     }
                 )
-                print(f"   ✅ 300m 경쟁업체: {competitor_count}개 / 전체 {total_biz}개")
+                print(f"   ✅ 300m 경쟁업체: {competitor_count}개 / 전체 {total_biz}개 (비율: {round((competitor_count / total_biz * 100) if total_biz > 0 else 0, 1)}%)")
             except Exception as e:
                 print(f"   ❌ 상권 분석 오류: {e}")
                 results.update(
@@ -768,8 +1067,10 @@ def perform_spatial_analysis_guest(temp_request):
                 )
 
             time.sleep(0.1)
+            print("✅ [5/6] 경쟁업체 분석 완료")
 
-            # 5. 공시지가 분석
+            print("\n💰 [6/6] 공시지가 분석 시작...")
+            # 6. 공시지가 분석
             try:
                 cursor.execute(
                     f"""
@@ -795,23 +1096,69 @@ def perform_spatial_analysis_guest(temp_request):
                 results.update({
                     "total_land_value": total_land_value,
                 })
+                print(f"   ✅ 공시지가: {land_price:,.0f}원/㎡")
                 print(f"   ✅ 총 공시지가: {total_land_value:,.0f}원")
             except Exception as e:
                 print(f"   ❌ 공시지가 분석 오류: {e}")
                 results.update({
                     "total_land_value": 0,
                 })
+            print("✅ [6/6] 공시지가 분석 완료")
+
+            print("\n🏫 [7/7] 시설 분석 시작...")
+            # 7. 시설 분석 (250m)
+            try:
+                # 공공시설 분석
+                cursor.execute(
+                    f"""
+                    SELECT COUNT(*) as public_count
+                    FROM public_facility_point_5186 
+                    WHERE ST_Intersects(geom, ST_Buffer(ST_GeomFromText('POINT({x_coord} {y_coord})', 5186), 250))
+                """
+                )
+                row = cursor.fetchone()
+                public_building_250m = int(row[0]) if row[0] else 0
+
+                # 학교 분석
+                cursor.execute(
+                    f"""
+                    SELECT COUNT(*) as school_count
+                    FROM school_point_5186 
+                    WHERE ST_Intersects(geom, ST_Buffer(ST_GeomFromText('POINT({x_coord} {y_coord})', 5186), 250))
+                """
+                )
+                row = cursor.fetchone()
+                school_250m = int(row[0]) if row[0] else 0
+
+                print(f"   ✅ 250m 공공시설: {public_building_250m}개")
+                print(f"   ✅ 250m 학교: {school_250m}개")
+            except Exception as e:
+                print(f"   ❌ 시설 분석 오류: {e}")
+                public_building_250m = 0
+                school_250m = 0
+            print("✅ [7/7] 시설 분석 완료")
 
             # 기본 정보 추가
             results.update({
                 "area": area,
                 "service_type": service_type,
-                "public_building_250m": 0,  # 비회원은 간소화
-                "school_250m": 0,
+                "public_building_250m": public_building_250m,
+                "school_250m": school_250m,
             })
 
-            # AI 모델용 변수들 추가 (2A_* 형식)
+            # AI 모델용 변수들 추가 (1A_*, 2A_* 형식으로 모든 변수 포함)
             results.update({
+                # 1A_* 변수들 (300m 생활인구)
+                "1A_Total": results.get("life_pop_300m", 0),
+                "1A_20": results.get("life_pop_20_300m", 0),
+                "1A_30": results.get("life_pop_30_300m", 0),
+                "1A_40": results.get("life_pop_40_300m", 0),
+                "1A_50": results.get("life_pop_50_300m", 0),
+                "1A_60": results.get("life_pop_60_300m", 0),
+                "1A_Long_Total": results.get("long_foreign_300m", 0),
+                "1A_Temp_CN": results.get("temp_foreign_cn_300m", 0),
+                
+                # 2A_* 변수들 (1000m 생활인구 및 외국인)
                 "2A_20": results.get("life_pop_20_1000m", 0),
                 "2A_30": results.get("life_pop_30_1000m", 0), 
                 "2A_40": results.get("life_pop_40_1000m", 0),
@@ -819,80 +1166,68 @@ def perform_spatial_analysis_guest(temp_request):
                 "2A_60": results.get("life_pop_60_1000m", 0),
                 "2A_Temp_Total": results.get("temp_foreign_1000m", 0),
                 "2A_Temp_CN": results.get("temp_foreign_cn_1000m", 0),
+                "2A_Long_Total": results.get("long_foreign_1000m", 0),
                 "2A_Long_CN": results.get("long_foreign_cn_1000m", 0),
+                
+                # 기타 변수들
+                "Working_Pop": results.get("working_pop_300m", 0),
+                "PubBuilding": results.get("public_building_250m", 0),
+                "School": results.get("school_250m", 0),
+                "Competitor_C": results.get("competitor_300m", 0),
+                "Competitor_R": results.get("competitor_ratio_300m", 0),
+                "Adjacent_BIZ": results.get("adjacent_biz_300m", 0),
+                "Business_D": results.get("business_diversity_300m", 0),
+                "Area": area,
+                "Total_LV": results.get("total_land_value", 0),
+                "Service": service_type,
             })
 
             # 비회원 분석에서도 28개 피쳐를 모두 사용하여 AI 예측 수행
             try:
-                # 변수 매핑 (회원 분석과 동일하게)
-                _1A_Total = results.get('life_pop_300m', 0)
-                _1A_20 = results.get('life_pop_20_300m', 0)
-                _1A_30 = results.get('life_pop_30_300m', 0)
-                _1A_40 = results.get('life_pop_40_300m', 0)
-                _1A_50 = results.get('life_pop_50_300m', 0)
-                _1A_60 = results.get('life_pop_60_300m', 0)
-                _2A_20 = results.get('life_pop_20_1000m', 0)
-                _2A_30 = results.get('life_pop_30_1000m', 0)
-                _2A_40 = results.get('life_pop_40_1000m', 0)
-                _2A_50 = results.get('life_pop_50_1000m', 0)
-                _2A_60 = results.get('life_pop_60_1000m', 0)
-                _1A_Temp_CN = results.get('temp_foreign_cn_300m', 0)
-                _2A_Temp_Total = results.get('temp_foreign_1000m', 0)
-                _2A_Temp_CN = results.get('temp_foreign_cn_1000m', 0)
-                _1A_Long_Total = results.get('long_foreign_300m', 0)
-                _2A_Long_Total = results.get('long_foreign_1000m', 0)
-                _2A_Long_CN = results.get('long_foreign_cn_1000m', 0)
-                Working_Pop = results.get('working_pop_300m', 0)
-                PubBuilding = results.get('public_building_250m', 0)
-                School = results.get('school_250m', 0)
-                Competitor_C = results.get('competitor_300m', 0)
-                Competitor_R = results.get('competitor_ratio_300m', 0)
-                Adjacent_BIZ = results.get('adjacent_biz_300m', 0)
-                Business_D = results.get('business_diversity_300m', 0)
-                Area = area
-                Total_LV = results.get('total_land_value', 0)
-                Service = service_type
-
-                # 28개 피쳐로 AI 예측 수행
+                # 28개 피쳐로 AI 예측 수행 (results에서 직접 가져오기)
                 features_for_ai = {
-                    "Area": Area,
-                    "Adjacent_BIZ": Adjacent_BIZ,
-                    "1A_Total": _1A_Total,
-                    "Total_LV": Total_LV,
-                    "Business_D": Business_D,
-                    "Working_Pop": Working_Pop,
-                    "2A_20": _2A_20,
-                    "2A_30": _2A_30,
-                    "2A_40": _2A_40,
-                    "2A_50": _2A_50,
-                    "2A_60": _2A_60,
-                    "1A_20": _1A_20,
-                    "1A_30": _1A_30,
-                    "1A_40": _1A_40,
-                    "1A_50": _1A_50,
-                    "1A_60": _1A_60,
-                    "1A_Long_Total": _1A_Long_Total,
-                    "2A_Long_Total": _2A_Long_Total,
-                    "1A_Temp_CN": _1A_Temp_CN,
-                    "2A_Temp_CN": _2A_Temp_CN,
-                    "2A_Temp_Total": _2A_Temp_Total,
-                    "2A_Long_CN": _2A_Long_CN,
-                    "Competitor_C": Competitor_C,
-                    "Competitor_R": Competitor_R,
-                    "Service": Service,
-                    "School": School,
-                    "PubBuilding": PubBuilding,
+                    "Area": results.get("Area", 0),
+                    "Adjacent_BIZ": results.get("Adjacent_BIZ", 0),
+                    "1A_Total": results.get("1A_Total", 0),
+                    "Total_LV": results.get("Total_LV", 0),
+                    "Business_D": results.get("Business_D", 0),
+                    "Working_Pop": results.get("Working_Pop", 0),
+                    "2A_20": results.get("2A_20", 0),
+                    "2A_30": results.get("2A_30", 0),
+                    "2A_40": results.get("2A_40", 0),
+                    "2A_50": results.get("2A_50", 0),
+                    "2A_60": results.get("2A_60", 0),
+                    "1A_20": results.get("1A_20", 0),
+                    "1A_30": results.get("1A_30", 0),
+                    "1A_40": results.get("1A_40", 0),
+                    "1A_50": results.get("1A_50", 0),
+                    "1A_60": results.get("1A_60", 0),
+                    "1A_Long_Total": results.get("1A_Long_Total", 0),
+                    "2A_Long_Total": results.get("2A_Long_Total", 0),
+                    "1A_Temp_CN": results.get("1A_Temp_CN", 0),
+                    "2A_Temp_CN": results.get("2A_Temp_CN", 0),
+                    "2A_Temp_Total": results.get("2A_Temp_Total", 0),
+                    "2A_Long_CN": results.get("2A_Long_CN", 0),
+                    "Competitor_C": results.get("Competitor_C", 0),
+                    "Competitor_R": results.get("Competitor_R", 0),
+                    "Service": results.get("Service", 0),
+                    "School": results.get("School", 0),
+                    "PubBuilding": results.get("PubBuilding", 0),
                     "UPTAENM_ID": business_type_id,  # 업종 ID
                 }
 
                 survival_probability = predict_survival_probability(features_for_ai)
                 survival_percentage = round(survival_probability * 100, 1)
+                
                 results['survival_percentage'] = survival_percentage
+                results['survival_probability'] = survival_probability
                 results['is_member_analysis'] = False  # 비회원 분석 표시
+                
                 print(f"   ✅ AI 생존 확률 (28개 피쳐): {survival_percentage}%")
             except Exception as e:
                 print(f"   ❌ AI 예측 오류: {e}")
                 results['survival_percentage'] = 50  # 기본값
+                results['survival_probability'] = 0.5
 
             print("✅ === 비회원 상권분석 완료 ===")
             return results
@@ -903,7 +1238,7 @@ def perform_spatial_analysis_guest(temp_request):
         raise e
 
 @transaction.atomic
-def perform_spatial_analysis(analysis_request):
+def perform_spatial_analysis(analysis_request, language='ko'):
     """
     실제 공간 분석 수행
 
@@ -1684,19 +2019,40 @@ def perform_spatial_analysis(analysis_request):
                 survival_probability = predict_survival_probability(features_for_ai)
                 survival_percentage = round(survival_probability * 100, 1)
 
+                # 업종 추천 기능 수행
+                recommendation_result = recommend_business_type(features_for_ai, business_type_id)
+
                 # 회원의 경우 ChatGPT를 통한 AI 설명 생성
                 ai_explanation = ""
                 ai_summary = ""
                 if analysis_request.user.is_authenticated:
                     try:
+                        # 언어 활성화 (AI 설명 생성 전)
+                        from django.utils.translation import activate
+                        activate(language)
+                        print(f"🌍 AI 설명 생성을 위한 언어 활성화: {language}")
+                        
                         from .ai_explainer import get_xgboost_explanation, extract_summary_line
                         ai_explanation = get_xgboost_explanation(features_for_ai, survival_percentage)
                         ai_summary = extract_summary_line(ai_explanation)
                         print(f"   ✅ AI 설명 생성 완료: {ai_summary}")
                     except Exception as e:
                         print(f"   ❌ AI 설명 생성 오류: {e}")
-                        ai_explanation = f"생존 확률 {survival_percentage}%로 예측되었습니다.\n\n상세한 분석을 위해 잠시 후 다시 시도해주세요."
-                        ai_summary = f"생존 확률 {survival_percentage}%로 예측되었습니다."
+                        
+                        # 오류 메시지도 다국어화
+                        error_messages = {
+                            'ko': f"생존 확률 {survival_percentage}%로 예측되었습니다.\n\n상세한 분석을 위해 잠시 후 다시 시도해주세요.",
+                            'en': f"Survival probability predicted as {survival_percentage}%.\n\nPlease try again later for detailed analysis.",
+                            'es': f"Probabilidad de supervivencia predicha como {survival_percentage}%.\n\nPor favor, inténtelo de nuevo más tarde para un análisis detallado."
+                        }
+                        summary_messages = {
+                            'ko': f"생존 확률 {survival_percentage}%로 예측되었습니다.",
+                            'en': f"Survival probability predicted as {survival_percentage}%.",
+                            'es': f"Probabilidad de supervivencia predicha como {survival_percentage}%."
+                        }
+                        
+                        ai_explanation = error_messages.get(language, error_messages['ko'])
+                        ai_summary = summary_messages.get(language, summary_messages['ko'])
 
                 # AI 예측 결과를 results에 추가
                 results.update(
@@ -1706,6 +2062,12 @@ def perform_spatial_analysis(analysis_request):
                         "ai_explanation": ai_explanation,
                         "ai_summary": ai_summary,
                         "is_member_analysis": True,
+                        # 업종 추천 결과 추가
+                        "recommended_business_type_id": recommendation_result.get('recommended_business_type_id'),
+                        "recommended_business_type_name": recommendation_result.get('recommended_business_type_name'),
+                        "recommended_survival_probability": recommendation_result.get('recommended_survival_probability'),
+                        "recommended_survival_percentage": recommendation_result.get('recommended_survival_percentage'),
+                        "business_recommendations": recommendation_result.get('all_recommendations', []),
                     }
                 )
 
@@ -1933,6 +2295,13 @@ def get_analysis_result_api(request, request_id):
                 "ai_explanation": analysis_result.ai_explanation or "",
                 "ai_summary": analysis_result.ai_summary or "",
                 "is_member_analysis": analysis_result.is_member_analysis or False,
+                
+                # 업종 추천 관련 필드들
+                "recommended_business_type_id": analysis_result.recommended_business_type_id,
+                "recommended_business_type_name": analysis_result.recommended_business_type_name or "",
+                "recommended_survival_probability": float(analysis_result.recommended_survival_probability or 0),
+                "recommended_survival_percentage": float(analysis_result.recommended_survival_percentage or 0),
+                "business_recommendations": analysis_result.business_recommendations or [],
             },
         }
 
@@ -2121,24 +2490,34 @@ def get_pdf_data(request, request_id):
         except BusinessType.DoesNotExist:
             business_type_name = "알 수 없음"
 
-        # 서비스 유형명 변환
-        service_type_map = {1: "일반음식점", 2: "휴게음식점", 3: "매장"}
+        # 현재 언어 감지
+        current_language = get_language()
+        
+        # 서비스 유형명 변환 (다국어 지원)
+        service_type_maps = {
+            'ko': {1: "일반음식점", 2: "휴게음식점", 3: "매장"},
+            'en': {1: "General Restaurant", 2: "Snack Bar", 3: "Store"},
+            'es': {1: "Restaurante General", 2: "Bar de Snacks", 3: "Tienda"}
+        }
+        service_type_map = service_type_maps.get(current_language, service_type_maps['ko'])
         service_type_name = service_type_map.get(
-            analysis_request.service_type, "알 수 없음"
+            analysis_request.service_type, _("알 수 없음")
         )
 
-        # AI 분석 결과 판정
+        # AI 분석 결과 판정 (다국어 지원)
         survival_rate = analysis_result.survival_percentage or 0
-        if survival_rate >= 80:
-            analysis_text = "높은 생존 가능성 - 현재 위치는 장기적으로 사업을 지속하기에 매우 좋은 조건을 갖추고 있습니다."
-        elif survival_rate >= 60:
-            analysis_text = "보통 생존 가능성 - 현재 위치는 사업 지속에 적절한 조건을 갖추고 있으나, 추가적인 전략 검토가 필요합니다."
-        else:
-            analysis_text = "낮은 생존 가능성 - 현재 위치는 장기 사업 지속에 어려움이 예상됩니다. 신중한 검토가 필요합니다."
-
-        # PDF용 데이터 구조 생성
+        analysis_texts = get_survival_analysis_texts(current_language, survival_rate)
+        
+        # PDF용 데이터 구조 생성 (다국어 지원)
+        titles = {
+            'ko': "AI 상권분석 보고서",
+            'en': "AI Commercial Area Analysis Report",
+            'es': "Informe de Análisis de Zona Comercial IA"
+        }
+        
         pdf_data = {
-            "title": "AI 상권분석 보고서",
+            "title": titles.get(current_language, titles['ko']),
+            "language": current_language,
             "basic_info": {
                 "address": analysis_request.address,
                 "business_type": business_type_name,
@@ -2158,7 +2537,7 @@ def get_pdf_data(request, request_id):
             },
             "ai_analysis": {
                 "survival_rate": f"{survival_rate:.1f}%",
-                "analysis_text": analysis_text,
+                "analysis_text": analysis_texts,
             },
             "competition_analysis": {
                 "competitor_count": f"{analysis_result.competitor_300m or 0}개",
@@ -2188,6 +2567,40 @@ def get_pdf_data(request, request_id):
         return JsonResponse(
             {"error": f"데이터 조회 중 오류가 발생했습니다: {str(e)}"}, status=500
         )
+
+
+def get_survival_analysis_texts(language: str, survival_rate: float) -> str:
+    """
+    생존 확률에 따른 분석 텍스트를 언어별로 반환
+    
+    Args:
+        language: 언어 코드 ('ko', 'en', 'es')
+        survival_rate: 생존 확률 (0-100)
+    
+    Returns:
+        str: 언어별 분석 텍스트
+    """
+    if language == 'en':
+        if survival_rate >= 80:
+            return "High Survival Probability - The current location has excellent conditions for long-term business sustainability."
+        elif survival_rate >= 60:
+            return "Moderate Survival Probability - The current location has adequate conditions for business sustainability, but additional strategic review is needed."
+        else:
+            return "Low Survival Probability - The current location is expected to face difficulties in long-term business sustainability. Careful review is required."
+    elif language == 'es':
+        if survival_rate >= 80:
+            return "Alta Probabilidad de Supervivencia - La ubicación actual tiene excelentes condiciones para la sostenibilidad empresarial a largo plazo."
+        elif survival_rate >= 60:
+            return "Probabilidad de Supervivencia Moderada - La ubicación actual tiene condiciones adecuadas para la sostenibilidad empresarial, pero se necesita una revisión estratégica adicional."
+        else:
+            return "Baja Probabilidad de Supervivencia - Se espera que la ubicación actual enfrente dificultades en la sostenibilidad empresarial a largo plazo. Se requiere una revisión cuidadosa."
+    else:  # Korean (default)
+        if survival_rate >= 80:
+            return "높은 생존 가능성 - 현재 위치는 장기적으로 사업을 지속하기에 매우 좋은 조건을 갖추고 있습니다."
+        elif survival_rate >= 60:
+            return "보통 생존 가능성 - 현재 위치는 사업 지속에 적절한 조건을 갖추고 있으나, 추가적인 전략 검토가 필요합니다."
+        else:
+            return "낮은 생존 가능성 - 현재 위치는 장기 사업 지속에 어려움이 예상됩니다. 신중한 검토가 필요합니다."
 
 
 def format_currency(value):

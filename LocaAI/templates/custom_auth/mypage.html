@@ -491,7 +491,7 @@
               </div>
               <h4 class="performance-title">최고 성과</h4>
             </div>
-            <div class="performance-value text-success">{{ best_analysis.survival_percentage }}%</div>
+                                            <div class="performance-value text-success">{{ best_analysis.survival_percentage|floatformat:1 }}%</div>
             <div class="performance-subtitle">{{ best_analysis.request.address }}</div>
           </div>
           {% endif %}
@@ -553,7 +553,7 @@
               {{ result.request.business_type.name }} • {{ result.request.area|floatformat:0 }}㎡
             </div>
             <div class="activity-time">
-              생존율: <strong class="text-success">{{ result.survival_percentage }}%</strong> • 
+                                      생존율: <strong class="text-success">{{ result.survival_percentage|floatformat:1 }}%</strong> • 
               {{ result.created_at|date:"m월 d일" }}
             </div>
           </div>

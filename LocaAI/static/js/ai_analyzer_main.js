@@ -332,7 +332,7 @@ class AnalyzerMain {
 - 생활인구: ${Math.round(this.currentAnalysisData.result?.life_pop_300m || 0).toLocaleString()}명
 - 직장인구: ${Math.round(this.currentAnalysisData.result?.working_pop_300m || 0).toLocaleString()}명
 - 경쟁업체: ${this.currentAnalysisData.result?.competitor_300m || 0}개
-- AI 생존확률: ${Math.round(this.currentAnalysisData.result?.survival_percentage || 0)}%
+        - AI 생존확률: ${(this.currentAnalysisData.result?.survival_percentage || 0).toFixed(1)}%
 - 공시지가: ${this.formatLandValue(this.currentAnalysisData.result?.total_land_value || 0)}
 
 사용자 질문: ${userMessage}
