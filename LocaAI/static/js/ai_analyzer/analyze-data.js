@@ -70,54 +70,87 @@ function getBusinessTypeName(id, lang = 'kor') {
   return businessType ? businessType[lang] : `업종 ${id}`;
 }
 
-// 업종 이름 번역 (한국어명 기반)
+// 업종 이름 번역 (한국어명 기반) - 개선된 버전
 function translateBusinessType(koreanName, lang = 'kor') {
+  console.log(`🔄 translateBusinessType 호출:`, {
+    originalName: koreanName,
+    targetLang: lang
+  });
+  
   // 언어가 한국어이거나 지정되지 않은 경우 원본 반환
   if (!lang || lang === 'ko' || lang === 'kor') {
+    console.log('✅ 한국어 반환:', koreanName);
     return koreanName;
   }
   
+  // 업종명 정규화 (공백, 특수문자 처리)
+  const normalizedName = koreanName.trim();
+  
   // 영어 변환
   if (lang === 'en' || lang === 'eng') {
-    const businessType = businessTypes.find(type => type.kor === koreanName);
-    return businessType ? businessType.eng : koreanName;
+    const businessType = businessTypes.find(type => type.kor === normalizedName);
+    if (businessType) {
+      console.log(`✅ 영어 번역 성공:`, normalizedName, '->', businessType.eng);
+      return businessType.eng;
+    } else {
+      console.log(`❌ 영어 번역 실패: "${normalizedName}" 매핑을 찾을 수 없음`);
+      console.log('🔍 사용 가능한 한국어 업종명들:', businessTypes.map(t => t.kor));
+      return koreanName;
+    }
   }
   
   // 스페인어 변환
   if (lang === 'es' || lang === 'esp') {
-    const businessType = businessTypes.find(type => type.kor === koreanName);
-    return businessType ? businessType.esp : koreanName;
+    const businessType = businessTypes.find(type => type.kor === normalizedName);
+    if (businessType) {
+      console.log(`✅ 스페인어 번역 성공:`, normalizedName, '->', businessType.esp);
+      return businessType.esp;
+    } else {
+      console.log(`❌ 스페인어 번역 실패: "${normalizedName}" 매핑을 찾을 수 없음`);
+      console.log('🔍 사용 가능한 한국어 업종명들:', businessTypes.map(t => t.kor));
+      return koreanName;
+    }
   }
   
   // 매칭되지 않는 언어의 경우 원본 반환
+  console.log(`❓ 지원하지 않는 언어: ${lang}, 원본 반환:`, koreanName);
   return koreanName;
 }
 
-// 현재 언어 감지 함수
+// 현재 언어 감지 함수 (개선된 버전)
 function getCurrentAILanguage() {
-  // 1. 네비게이션의 언어 설정 확인 (main.js의 전역 함수 사용)
-  if (typeof window.getCurrentLanguage === 'function') {
-    const navLang = window.getCurrentLanguage();
-    if (navLang) return navLang;
-  }
+  console.log('🌍 getCurrentAILanguage 호출됨');
   
-  // 2. 전역 currentLanguage 변수 확인
-  if (typeof currentLanguage !== 'undefined') {
-    return currentLanguage;
-  }
-  
-  // 3. 로컬스토리지에서 확인
-  const savedLang = localStorage.getItem('preferred_language');
-  if (savedLang) {
-    return savedLang;
-  }
-  
-  // 4. data-lang 속성이 표시된 요소 확인
+  // 1. data-lang 속성이 표시된 요소 확인 (가장 확실한 방법)
   const visibleLangElements = document.querySelectorAll('[data-lang]:not([style*="display: none"])');
   if (visibleLangElements.length > 0) {
     const langCode = visibleLangElements[0].getAttribute('data-lang');
     const langMap = { 'KOR': 'ko', 'ENG': 'en', 'ESP': 'es' };
-    return langMap[langCode] || 'ko';
+    const detectedLang = langMap[langCode] || 'ko';
+    console.log('🔍 data-lang 요소로 감지된 언어:', langCode, '->', detectedLang);
+    return detectedLang;
+  }
+  
+  // 2. 네비게이션의 언어 설정 확인 (main.js의 전역 함수 사용)
+  if (typeof window.getCurrentLanguage === 'function') {
+    const navLang = window.getCurrentLanguage();
+    if (navLang) {
+      console.log('🔍 네비게이션에서 감지된 언어:', navLang);
+      return navLang;
+    }
+  }
+  
+  // 3. 전역 currentLanguage 변수 확인
+  if (typeof currentLanguage !== 'undefined') {
+    console.log('🔍 전역 변수에서 감지된 언어:', currentLanguage);
+    return currentLanguage;
+  }
+  
+  // 4. 로컬스토리지에서 확인
+  const savedLang = localStorage.getItem('preferred_language');
+  if (savedLang) {
+    console.log('🔍 로컬스토리지에서 감지된 언어:', savedLang);
+    return savedLang;
   }
   
   // 5. HTML lang 속성에서 확인
@@ -128,10 +161,13 @@ function getCurrentAILanguage() {
       'en': 'en', 'en-us': 'en',
       'es': 'es', 'es-es': 'es'
     };
-    return langMap[htmlLang.toLowerCase()] || 'ko';
+    const mappedLang = langMap[htmlLang.toLowerCase()] || 'ko';
+    console.log('🔍 HTML lang 속성에서 감지된 언어:', htmlLang, '->', mappedLang);
+    return mappedLang;
   }
   
   // 6. 기본값
+  console.log('🔍 기본 언어 사용: ko');
   return 'ko';
 }
 
