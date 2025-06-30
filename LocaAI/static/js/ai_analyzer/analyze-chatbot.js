@@ -216,12 +216,19 @@ async function sendChatMessage() {
   const contextualMessage = createContextualMessage(message);
   console.log('📝 컨텍스트 메시지 길이:', contextualMessage.length);
   
+  // 현재 언어 감지
+  const currentLanguage = getCurrentLanguage();
+  
+  // 언어별 컬렉션 이름 설정
+  const collectionName = getCollectionNameByLanguage(currentLanguage);
+  
   // WebSocket으로 메시지 전송
   const messageData = {
     user_id: USER_ID,
     session_id: currentSessionId,
     question: contextualMessage,
-    collection: 'analysis_result_consultation'
+    collection: collectionName,
+    language: currentLanguage
   };
   
   console.log('📤 WebSocket 메시지 전송:', messageData);
@@ -862,8 +869,55 @@ function createBotMessageHTML(content) {
   `;
 }
 
-// 환영 메시지 HTML 생성
+// 환영 메시지 HTML 생성 (다국어 지원)
 function createWelcomeMessageHTML() {
+  const currentLanguage = getCurrentLanguage();
+  
+  const messages = {
+    ko: {
+      title: '분석결과 상담 AI',
+      status: '온라인',
+      greeting: '안녕하세요! 🎯 방금 완료된 상권 분석 결과에 대해 궁금한 점이 있으시면 언제든 물어보세요.',
+      consultationTitle: '상담 가능한 내용:',
+      items: [
+        '📊 AI 생존 확률 해석',
+        '👥 인구 및 고객층 분석', 
+        '🏪 경쟁업체 현황',
+        '💰 수익성 전망',
+        '🚀 창업 전략 조언'
+      ]
+    },
+    en: {
+      title: 'Analysis Consultation AI',
+      status: 'Online',
+      greeting: 'Hello! 🎯 If you have any questions about the commercial area analysis results just completed, feel free to ask anytime.',
+      consultationTitle: 'Available Consultation Topics:',
+      items: [
+        '📊 AI Survival Probability Interpretation',
+        '👥 Population and Customer Analysis',
+        '🏪 Competitor Status',
+        '💰 Profitability Outlook',
+        '🚀 Startup Strategy Advice'
+      ]
+    },
+    es: {
+      title: 'IA de Consulta de Análisis',
+      status: 'En línea',
+      greeting: '¡Hola! 🎯 Si tiene alguna pregunta sobre los resultados del análisis de zona comercial recién completado, no dude en preguntar en cualquier momento.',
+      consultationTitle: 'Temas de Consulta Disponibles:',
+      items: [
+        '📊 Interpretación de Probabilidad de Supervivencia IA',
+        '👥 Análisis de Población y Clientes',
+        '🏪 Estado de Competidores',
+        '💰 Perspectiva de Rentabilidad',
+        '🚀 Consejos de Estrategia de Startup'
+      ]
+    }
+  };
+  
+  const msg = messages[currentLanguage] || messages.ko;
+  const itemsHTML = msg.items.map(item => `• ${item}`).join('<br>');
+  
   return `
     <div class="d-flex align-items-start mb-3">
       <div class="bg-gradient bg-primary rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; min-width: 36px;">
@@ -872,16 +926,12 @@ function createWelcomeMessageHTML() {
       <div class="flex-grow-1">
         <div class="bg-white rounded-3 p-3 shadow-sm border">
           <div class="d-flex align-items-center mb-2">
-            <strong class="text-primary me-2">분석결과 상담 AI</strong>
-            <span class="badge bg-success-subtle text-success">온라인</span>
+            <strong class="text-primary me-2">${msg.title}</strong>
+            <span class="badge bg-success-subtle text-success">${msg.status}</span>
           </div>
-          <p class="mb-0">안녕하세요! 🎯 방금 완료된 상권 분석 결과에 대해 궁금한 점이 있으시면 언제든 물어보세요.<br><br>
-          <strong>상담 가능한 내용:</strong><br>
-          • 📊 AI 생존 확률 해석<br>
-          • 👥 인구 및 고객층 분석<br>
-          • 🏪 경쟁업체 현황<br>
-          • 💰 수익성 전망<br>
-          • 🚀 창업 전략 조언</p>
+          <p class="mb-0">${msg.greeting}<br><br>
+          <strong>${msg.consultationTitle}</strong><br>
+          ${itemsHTML}</p>
         </div>
       </div>
     </div>
@@ -1004,12 +1054,19 @@ async function sendPIPMessage() {
   // 분석 데이터를 포함한 컨텍스트 생성
   const contextualMessage = createContextualMessage(message);
   
+  // 현재 언어 감지
+  const currentLanguage = getCurrentLanguage();
+  
+  // 언어별 컬렉션 이름 설정
+  const collectionName = getCollectionNameByLanguage(currentLanguage);
+  
   // WebSocket으로 메시지 전송
   chatSocket.send(JSON.stringify({
     user_id: USER_ID,
     session_id: currentSessionId,
     question: contextualMessage,
-    collection: 'analysis_result_consultation'
+    collection: collectionName,
+    language: currentLanguage
   }));
   
   // 봇 응답 준비 (PIP와 원본 모두)
@@ -1071,3 +1128,31 @@ function preparePIPBotMessage() {
   messagesContainer.appendChild(messageDiv);
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
 } 
+
+// ===========================================
+// 언어 및 다국어화 유틸리티
+// ===========================================
+
+// 현재 언어 감지
+function getCurrentLanguage() {
+  // analyze-i18n.js의 currentLanguage 변수 사용
+  if (typeof currentLanguage !== 'undefined') {
+    return currentLanguage;
+  }
+  
+  // 로컬스토리지에서 언어 설정 확인
+  const savedLanguage = localStorage.getItem('preferred_language') || 'ko';
+  return savedLanguage;
+}
+
+// 언어별 컬렉션 이름 반환
+function getCollectionNameByLanguage(language) {
+  switch(language) {
+    case 'en':
+      return 'analysis_result_consultation_en';
+    case 'es':
+      return 'analysis_result_consultation_es';
+    default:
+      return 'analysis_result_consultation';
+  }
+}

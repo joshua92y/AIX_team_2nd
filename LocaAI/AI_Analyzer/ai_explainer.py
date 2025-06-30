@@ -24,17 +24,39 @@ def get_xgboost_explanation(features_dict: Dict[str, Any], survival_percentage: 
         
         # 현재 언어 감지
         current_language = get_language()
+        print(f"🌍 감지된 언어: {current_language}")
+        
+        # 언어 코드 매핑 (Django의 언어 코드를 우리 시스템에 맞게 변환)
+        language_mapping = {
+            'ko': 'ko',
+            'ko-kr': 'ko', 
+            'en': 'en',
+            'en-us': 'en',
+            'es': 'es',
+            'es-es': 'es'
+        }
+        mapped_language = language_mapping.get(current_language.lower(), 'ko')
+        print(f"🔄 매핑된 언어: {current_language} -> {mapped_language}")
         
         # 피쳐 정보를 분석하기 쉽게 정리
-        feature_summary = format_features_for_analysis(features_dict, current_language)
+        feature_summary = format_features_for_analysis(features_dict, mapped_language)
         
         # 언어별 프롬프트 설정
-        prompt = get_analysis_prompt(current_language, survival_percentage, feature_summary)
+        prompt = get_analysis_prompt(mapped_language, survival_percentage, feature_summary)
+
+        # 언어별 시스템 메시지 설정
+        system_messages = {
+            'ko': "당신은 상권분석과 창업 컨설팅 전문가입니다.",
+            'en': "You are a commercial area analysis and startup consulting expert.",
+            'es': "Eres un experto en análisis de zonas comerciales y consultoría de startups."
+        }
+        
+        system_message = system_messages.get(mapped_language, system_messages['ko'])
 
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "당신은 상권분석과 창업 컨설팅 전문가입니다."},
+                {"role": "system", "content": system_message},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=1000,
@@ -45,7 +67,27 @@ def get_xgboost_explanation(features_dict: Dict[str, Any], survival_percentage: 
         
     except Exception as e:
         print(f"❌ ChatGPT API 호출 중 오류: {e}")
-        return f"생존 확률 {survival_percentage}%로 예측되었습니다.\n\n상세한 분석을 위해 잠시 후 다시 시도해주세요."
+        
+        # 언어별 오류 메시지
+        error_messages = {
+            'ko': f"생존 확률 {survival_percentage}%로 예측되었습니다.\n\n상세한 분석을 위해 잠시 후 다시 시도해주세요.",
+            'en': f"Survival probability predicted as {survival_percentage}%.\n\nPlease try again later for detailed analysis.",
+            'es': f"Probabilidad de supervivencia predicha como {survival_percentage}%.\n\nPor favor, inténtelo de nuevo más tarde para un análisis detallado."
+        }
+        
+        # 현재 언어 다시 감지 (오류 발생 시를 위해)
+        try:
+            current_language = get_language()
+            language_mapping = {
+                'ko': 'ko', 'ko-kr': 'ko', 
+                'en': 'en', 'en-us': 'en',
+                'es': 'es', 'es-es': 'es'
+            }
+            mapped_language = language_mapping.get(current_language.lower(), 'ko')
+        except:
+            mapped_language = 'ko'
+            
+        return error_messages.get(mapped_language, error_messages['ko'])
 
 
 def get_analysis_prompt(language: str, survival_percentage: float, feature_summary: str) -> str:

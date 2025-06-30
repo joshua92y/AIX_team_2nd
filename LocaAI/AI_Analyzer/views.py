@@ -488,6 +488,7 @@ def analyze_location(request):
         latitude = data["latitude"]
         x_coord = data["x_coord"]
         y_coord = data["y_coord"]
+        language = data.get("language", "ko")  # 언어 정보 추출 (기본값: 한국어)
 
         # 디버깅: 추출된 값들 출력
         print(f"🔍 [DEBUG] 추출된 값들:")
@@ -499,6 +500,12 @@ def analyze_location(request):
         print(f"   y_coord: {y_coord}")
         print(f"   longitude: {longitude}")
         print(f"   latitude: {latitude}")
+        print(f"   language: {language}")
+        
+        # 언어 활성화
+        from django.utils.translation import activate
+        activate(language)
+        print(f"🌍 언어 활성화: {language}")
 
         # 분석 요청 저장 - 원본 AI_Analyzer와 동일
         try:
@@ -525,7 +532,7 @@ def analyze_location(request):
             )
 
             # 공간 분석 수행
-            result = perform_spatial_analysis(analysis_request)
+            result = perform_spatial_analysis(analysis_request, language=language)
 
             return JsonResponse(
                 {"success": True, "request_id": analysis_request.id, "result": result, "is_guest": False}
@@ -548,7 +555,7 @@ def analyze_location(request):
             )
 
             # 공간 분석 수행 (저장하지 않는 버전)
-            result = perform_spatial_analysis_guest(temp_request)
+            result = perform_spatial_analysis_guest(temp_request, language=language)
 
             return JsonResponse(
                 {"success": True, "request_id": 0, "result": result, "is_guest": True}
@@ -572,7 +579,7 @@ def analyze_location(request):
         )
 
 
-def perform_spatial_analysis_guest(temp_request):
+def perform_spatial_analysis_guest(temp_request, language='ko'):
     """
     비회원용 공간 분석 (데이터베이스에 저장하지 않음)
     
@@ -1231,7 +1238,7 @@ def perform_spatial_analysis_guest(temp_request):
         raise e
 
 @transaction.atomic
-def perform_spatial_analysis(analysis_request):
+def perform_spatial_analysis(analysis_request, language='ko'):
     """
     실제 공간 분석 수행
 
@@ -2020,14 +2027,32 @@ def perform_spatial_analysis(analysis_request):
                 ai_summary = ""
                 if analysis_request.user.is_authenticated:
                     try:
+                        # 언어 활성화 (AI 설명 생성 전)
+                        from django.utils.translation import activate
+                        activate(language)
+                        print(f"🌍 AI 설명 생성을 위한 언어 활성화: {language}")
+                        
                         from .ai_explainer import get_xgboost_explanation, extract_summary_line
                         ai_explanation = get_xgboost_explanation(features_for_ai, survival_percentage)
                         ai_summary = extract_summary_line(ai_explanation)
                         print(f"   ✅ AI 설명 생성 완료: {ai_summary}")
                     except Exception as e:
                         print(f"   ❌ AI 설명 생성 오류: {e}")
-                        ai_explanation = f"생존 확률 {survival_percentage}%로 예측되었습니다.\n\n상세한 분석을 위해 잠시 후 다시 시도해주세요."
-                        ai_summary = f"생존 확률 {survival_percentage}%로 예측되었습니다."
+                        
+                        # 오류 메시지도 다국어화
+                        error_messages = {
+                            'ko': f"생존 확률 {survival_percentage}%로 예측되었습니다.\n\n상세한 분석을 위해 잠시 후 다시 시도해주세요.",
+                            'en': f"Survival probability predicted as {survival_percentage}%.\n\nPlease try again later for detailed analysis.",
+                            'es': f"Probabilidad de supervivencia predicha como {survival_percentage}%.\n\nPor favor, inténtelo de nuevo más tarde para un análisis detallado."
+                        }
+                        summary_messages = {
+                            'ko': f"생존 확률 {survival_percentage}%로 예측되었습니다.",
+                            'en': f"Survival probability predicted as {survival_percentage}%.",
+                            'es': f"Probabilidad de supervivencia predicha como {survival_percentage}%."
+                        }
+                        
+                        ai_explanation = error_messages.get(language, error_messages['ko'])
+                        ai_summary = summary_messages.get(language, summary_messages['ko'])
 
                 # AI 예측 결과를 results에 추가
                 results.update(

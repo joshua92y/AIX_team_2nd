@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-26 17:27+0900\n"
+"POT-Creation-Date: 2025-06-26 17:37+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -94,6 +94,152 @@ msgstr "Suscriptor del boletín"
 #: .\smtp\utils.py:53
 msgid "Loca Ai 뉴스레터 구독 감사합니다!"
 msgstr "¡Gracias por suscribirte al boletín de Loca Ai!"
+
+#: .\templates\AI_Analyzer\analyze.html:240
+msgid "주류 판매 여부"
+msgstr "Venta de Alcohol"
+
+#: .\templates\AI_Analyzer\analyze.html:241
+msgid "Alcohol Sales"
+msgstr "Venta de Alcohol"
+
+#: .\templates\AI_Analyzer\analyze.html:242
+msgid "Venta de Alcohol"
+msgstr "Venta de Alcohol"
+
+#: .\templates\AI_Analyzer\analyze.html:245
+msgid "선택"
+msgstr "Seleccionar"
+
+#: .\templates\AI_Analyzer\analyze.html:246
+msgid "Select"
+msgstr "Seleccionar"
+
+#: .\templates\AI_Analyzer\analyze.html:247
+msgid "Seleccionar"
+msgstr "Seleccionar"
+
+#: .\templates\AI_Analyzer\analyze.html:248
+msgid "판매함"
+msgstr "Sí"
+
+#: .\templates\AI_Analyzer\analyze.html:249
+msgid "Yes"
+msgstr "Sí"
+
+#: .\templates\AI_Analyzer\analyze.html:250
+msgid "Sí"
+msgstr "Sí"
+
+#: .\templates\AI_Analyzer\analyze.html:251
+msgid "판매 안함"
+msgstr "No"
+
+#: .\templates\AI_Analyzer\analyze.html:252
+#: .\templates\AI_Analyzer\analyze.html:253
+msgid "No"
+msgstr "No"
+
+#: .\templates\AI_Analyzer\analyze.html:261
+msgid "상권 분석을 시작하세요"
+msgstr "Iniciar Análisis Comercial"
+
+#: .\templates\AI_Analyzer\analyze.html:262
+msgid "Start Commercial Analysis"
+msgstr "Iniciar Análisis Comercial"
+
+#: .\templates\AI_Analyzer\analyze.html:263
+msgid "Iniciar Análisis Comercial"
+msgstr "Iniciar Análisis Comercial"
+
+#: .\templates\AI_Analyzer\analyze.html:819
+msgid "분석결과 상담"
+msgstr "Consulta de Análisis"
+
+#: .\templates\AI_Analyzer\analyze.html:820
+msgid "Analysis Consultation"
+msgstr "Consulta de Análisis"
+
+#: .\templates\AI_Analyzer\analyze.html:821
+msgid "Consulta de Análisis"
+msgstr "Consulta de Análisis"
+
+#: .\templates\AI_Analyzer\analyze.html:824
+msgid "대기중"
+msgstr "Esperando"
+
+#: .\templates\AI_Analyzer\analyze.html:825
+msgid "Waiting"
+msgstr "Esperando"
+
+#: .\templates\AI_Analyzer\analyze.html:826
+msgid "Esperando"
+msgstr "Esperando"
+
+#: .\templates\AI_Analyzer\analyze.html:837
+msgid "분석결과 상담 AI"
+msgstr "IA de Consulta de Análisis"
+
+#: .\templates\AI_Analyzer\analyze.html:838
+msgid "Analysis Consultation AI"
+msgstr "IA de Consulta de Análisis"
+
+#: .\templates\AI_Analyzer\analyze.html:839
+msgid "IA de Consulta de Análisis"
+msgstr "IA de Consulta de Análisis"
+
+#: .\templates\AI_Analyzer\analyze.html:843
+msgid "상권 분석 결과에 대해<br>AI와 상담하려면 로그인이 필요합니다."
+msgstr "Se requiere iniciar sesión para<br>consultar con IA sobre los resultados del análisis."
+
+#: .\templates\AI_Analyzer\analyze.html:844
+msgid "Login is required to<br>consult with AI about analysis results."
+msgstr "Se requiere iniciar sesión para<br>consultar con IA sobre los resultados del análisis."
+
+#: .\templates\AI_Analyzer\analyze.html:845
+msgid ""
+"Se requiere iniciar sesión para<br>consultar con IA sobre los resultados del "
+"análisis."
+msgstr "Se requiere iniciar sesión para<br>consultar con IA sobre los resultados del análisis."
+
+#: .\templates\AI_Analyzer\analyze.html:849
+msgid "로그인하기"
+msgstr "Iniciar Sesión"
+
+#: .\templates\AI_Analyzer\analyze.html:850
+msgid "Login"
+msgstr "Iniciar Sesión"
+
+#: .\templates\AI_Analyzer\analyze.html:851
+msgid "Iniciar Sesión"
+msgstr "Iniciar Sesión"
+
+#: .\templates\AI_Analyzer\analyze.html:855
+msgid "상권 분석을 완료하면<br>AI 상담 서비스를 이용할 수 있습니다."
+msgstr "Una vez completado el análisis comercial,<br>puede usar el servicio de consulta IA."
+
+#: .\templates\AI_Analyzer\analyze.html:856
+msgid ""
+"Once commercial analysis is complete,<br>you can use AI consultation service."
+msgstr "Una vez completado el análisis comercial,<br>puede usar el servicio de consulta IA."
+
+#: .\templates\AI_Analyzer\analyze.html:857
+msgid ""
+"Una vez completado el análisis comercial,<br>puede usar el servicio de "
+"consulta IA."
+msgstr "Una vez completado el análisis comercial,<br>puede usar el servicio de consulta IA."
+
+#: .\templates\AI_Analyzer\analyze.html:862
+msgid "분석 완료 후 자동 활성화"
+msgstr "Activación automática después del análisis"
+
+#: .\templates\AI_Analyzer\analyze.html:863
+msgid "Auto-activated after analysis"
+msgstr "Activación automática después del análisis"
+
+#: .\templates\AI_Analyzer\analyze.html:864
+msgid "Activación automática después del análisis"
+msgstr "Activación automática después del análisis"
 
 #: .\templates\newsletter\email_welcome.html:6
 msgid "Loca Ai 뉴스레터 구독 환영"

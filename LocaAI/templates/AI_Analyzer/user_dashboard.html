@@ -221,15 +221,15 @@
               </div>
               <div class="d-flex align-items-center">
                 <span class="me-3"><strong>생존율:</strong></span>
-                                    {% if analysis.survival_percentage >= 80 %}
+                {% if analysis.survival_percentage >= 80 %}
                     <span class="survival-badge survival-excellent">{{ analysis.survival_percentage|floatformat:1 }}% - 우수</span>
-                    {% elif analysis.survival_percentage >= 65 %}
+                {% elif analysis.survival_percentage >= 65 %}
                     <span class="survival-badge survival-good">{{ analysis.survival_percentage|floatformat:1 }}% - 양호</span>
-                    {% elif analysis.survival_percentage >= 50 %}
+                {% elif analysis.survival_percentage >= 50 %}
                     <span class="survival-badge survival-average">{{ analysis.survival_percentage|floatformat:1 }}% - 보통</span>
-                    {% else %}
+                {% else %}
                     <span class="survival-badge survival-poor">{{ analysis.survival_percentage|floatformat:1 }}% - 주의</span>
-                    {% endif %}
+                {% endif %}
               </div>
             </div>
             <div class="text-end">

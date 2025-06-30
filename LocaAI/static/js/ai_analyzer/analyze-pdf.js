@@ -717,17 +717,26 @@ function populatePreviewData(data, requestId) {
   
   // 생존 확률에 따른 색상 및 메시지
   const survivalComment = document.getElementById('previewSurvivalComment');
+  const currentLang = getCurrentLanguage();
+  const texts = getTranslation('survivalTexts') || {};
+  
   if (survivalRate >= 80) {
     progressBar.className = 'progress-bar bg-success';
-    survivalComment.textContent = '높은 생존 가능성 - 장기적 사업 지속에 매우 좋은 조건';
+    survivalComment.textContent = texts.high || (currentLang === 'en' ? 'High survival possibility - Very good conditions for long-term business sustainability' : 
+                                                 currentLang === 'es' ? 'Alta posibilidad de supervivencia - Muy buenas condiciones para la sostenibilidad empresarial a largo plazo' : 
+                                                 '높은 생존 가능성 - 장기적 사업 지속에 매우 좋은 조건');
     survivalComment.className = 'text-success mb-0';
   } else if (survivalRate >= 60) {
     progressBar.className = 'progress-bar bg-warning';
-    survivalComment.textContent = '보통 생존 가능성 - 적절한 조건이나 추가 전략 검토 필요';
+    survivalComment.textContent = texts.moderate || (currentLang === 'en' ? 'Moderate survival possibility - Appropriate conditions or additional strategy review needed' : 
+                                                     currentLang === 'es' ? 'Posibilidad de supervivencia moderada - Se necesita revisión de condiciones apropiadas o estrategia adicional' : 
+                                                     '보통 생존 가능성 - 적절한 조건이나 추가 전략 검토 필요');
     survivalComment.className = 'text-warning mb-0';
   } else {
     progressBar.className = 'progress-bar bg-danger';
-    survivalComment.textContent = '낮은 생존 가능성 - 장기 사업 지속에 어려움 예상';
+    survivalComment.textContent = texts.low || (currentLang === 'en' ? 'Low survival possibility - Difficulties expected in long-term business sustainability' : 
+                                                currentLang === 'es' ? 'Baja posibilidad de supervivencia - Se esperan dificultades en la sostenibilidad empresarial a largo plazo' : 
+                                                '낮은 생존 가능성 - 장기 사업 지속에 어려움 예상');
     survivalComment.className = 'text-danger mb-0';
   }
   
@@ -736,16 +745,20 @@ function populatePreviewData(data, requestId) {
   console.log('직장인구:', result.working_pop_300m);
   console.log('경쟁업체:', result.competitor_300m);
   
+  const peopleUnit = currentLang === 'en' ? ' people' : currentLang === 'es' ? ' personas' : '명';
+  const storeUnit = currentLang === 'en' ? ' stores' : currentLang === 'es' ? ' tiendas' : '개';
+  
   document.getElementById('previewLifePopulation').textContent = 
-    Math.round(result.life_pop_300m || 0).toLocaleString() + '명';
+    Math.round(result.life_pop_300m || 0).toLocaleString() + peopleUnit;
   document.getElementById('previewWorkingPopulation').textContent = 
-    Math.round(result.working_pop_300m || 0).toLocaleString() + '명';
+    Math.round(result.working_pop_300m || 0).toLocaleString() + peopleUnit;
   document.getElementById('previewCompetitors').textContent = 
-    (result.competitor_300m || 0) + '개';
+    (result.competitor_300m || 0) + storeUnit;
   
   // 공시지가
   const landValue = result.total_land_value || 0;
-  let landValueText = landValue > 0 ? Math.round(landValue).toLocaleString() + '원' : '0원';
+  const currencyUnit = currentLang === 'en' ? ' KRW' : currentLang === 'es' ? ' KRW' : '원';
+  let landValueText = landValue > 0 ? Math.round(landValue).toLocaleString() + currencyUnit : '0' + currencyUnit;
   document.getElementById('previewLandPrice').textContent = landValueText;
   
   // 경쟁강도 분석 (새로 추가된 필드들)
@@ -754,8 +767,8 @@ function populatePreviewData(data, requestId) {
   const adjacentBiz = result.adjacent_biz_300m || 0;
   
   // 경쟁강도 미리보기 데이터 업데이트
-  document.getElementById('previewCompetitorCount').textContent = (result.competitor_300m || 0) + '개';
-  document.getElementById('previewAdjacentBiz').textContent = adjacentBiz + '개';
+  document.getElementById('previewCompetitorCount').textContent = (result.competitor_300m || 0) + storeUnit;
+  document.getElementById('previewAdjacentBiz').textContent = adjacentBiz + storeUnit;
   
   // 경쟁강도 진행률 바 설정
   const previewCompetitionBar = document.getElementById('previewCompetitionBar');
@@ -767,15 +780,21 @@ function populatePreviewData(data, requestId) {
     if (competitorRatio <= 20) {
       previewCompetitionBar.className = 'progress-bar bg-success';
       previewCompetitionLevel.className = 'badge bg-success fs-6';
-      previewCompetitionLevel.textContent = `낮음 (${competitorRatio}%)`;
+      previewCompetitionLevel.textContent = currentLang === 'en' ? `Low (${competitorRatio}%)` : 
+                                           currentLang === 'es' ? `Bajo (${competitorRatio}%)` : 
+                                           `낮음 (${competitorRatio}%)`;
     } else if (competitorRatio <= 50) {
       previewCompetitionBar.className = 'progress-bar bg-warning';
       previewCompetitionLevel.className = 'badge bg-warning fs-6';
-      previewCompetitionLevel.textContent = `보통 (${competitorRatio}%)`;
+      previewCompetitionLevel.textContent = currentLang === 'en' ? `Medium (${competitorRatio}%)` : 
+                                           currentLang === 'es' ? `Medio (${competitorRatio}%)` : 
+                                           `보통 (${competitorRatio}%)`;
     } else {
       previewCompetitionBar.className = 'progress-bar bg-danger';
       previewCompetitionLevel.className = 'badge bg-danger fs-6';
-      previewCompetitionLevel.textContent = `높음 (${competitorRatio}%)`;
+      previewCompetitionLevel.textContent = currentLang === 'en' ? `High (${competitorRatio}%)` : 
+                                           currentLang === 'es' ? `Alto (${competitorRatio}%)` : 
+                                           `높음 (${competitorRatio}%)`;
     }
   }
   
@@ -785,8 +804,8 @@ function populatePreviewData(data, requestId) {
   const longCNRatio1000 = result['2A_Long_CN'] || result.long_foreign_cn_1000m || 0;
   
   // 외국인 분석 미리보기 데이터 업데이트
-  document.getElementById('previewTempForeign').textContent = tempTotal > 0 ? Math.round(tempTotal).toLocaleString() + '명' : '0명';
-  document.getElementById('previewLongForeign').textContent = longTotal300 > 0 ? Math.round(longTotal300).toLocaleString() + '명' : '0명';
+  document.getElementById('previewTempForeign').textContent = tempTotal > 0 ? Math.round(tempTotal).toLocaleString() + peopleUnit : '0' + peopleUnit;
+  document.getElementById('previewLongForeign').textContent = longTotal300 > 0 ? Math.round(longTotal300).toLocaleString() + peopleUnit : '0' + peopleUnit;
   document.getElementById('previewChinaRatio').textContent = longCNRatio1000 > 0 ? longCNRatio1000.toFixed(1) + '%' : '0.0%';
   
   // 연령대별 인구 분석 (새로 추가된 필드들)
