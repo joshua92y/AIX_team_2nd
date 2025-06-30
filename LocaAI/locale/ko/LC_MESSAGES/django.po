@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-30 14:28+0900\n"
+"POT-Creation-Date: 2025-06-30 14:27+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,177 +16,174 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
-
+"Plural-Forms: nplurals=1; plural=0;\n"
 #: custom_auth/views.py:282
 msgid "Password Reset Instructions"
-msgstr ""
+msgstr "비밀번호 재설정 안내"
 
 #: custom_auth/views.py:283
 msgid "To reset your password, click the following link:"
-msgstr ""
+msgstr "비밀번호를 재설정하려면 다음 링크를 클릭하세요:"
 
 #: smtp/models.py:25 smtp/models.py:116
 msgid "사용자"
-msgstr "User"
+msgstr ""
 
 #: smtp/models.py:29
 msgid "제목"
-msgstr "Subject"
+msgstr ""
 
 #: smtp/models.py:30
 msgid "메시지"
-msgstr "Message"
+msgstr ""
 
 #: smtp/models.py:31
 msgid "수신자"
-msgstr "Recipient"
+msgstr ""
 
 #: smtp/models.py:32
 msgid "발신자"
-msgstr "Sender"
+msgstr ""
 
 #: smtp/models.py:35
 msgid "상태"
-msgstr "Status"
+msgstr ""
 
 #: smtp/models.py:40
 msgid "전송일시"
-msgstr "Sent At"
+msgstr ""
 
 #: smtp/models.py:41
 msgid "실패일시"
-msgstr "Failed At"
+msgstr ""
 
 #: smtp/models.py:42
 msgid "실패 이유"
-msgstr "Failure Reason"
+msgstr ""
 
 #: smtp/models.py:44
 msgid "생성일"
-msgstr "Created At"
+msgstr ""
 
 #: smtp/models.py:45
 msgid "수정일"
-msgstr "Updated At"
+msgstr ""
 
 #: smtp/models.py:48 smtp/models.py:49 smtp/models.py:119
 msgid "이메일"
-msgstr "Email"
+msgstr ""
 
 #: smtp/models.py:120
 msgid "수신 동의"
-msgstr "Consent to Receive"
+msgstr ""
 
 #: smtp/models.py:121
 msgid "구독 시작일"
-msgstr "Subscription Start Date"
+msgstr ""
 
 #: smtp/models.py:122
 msgid "구독 해지일"
-msgstr "Unsubscription Date"
+msgstr ""
 
 #: smtp/models.py:125
 msgid "이름"
-msgstr "Name"
+msgstr ""
 
 #: smtp/models.py:128 smtp/models.py:129
 msgid "뉴스레터 구독자"
-msgstr "Newsletter Subscriber"
+msgstr ""
 
 #: smtp/utils.py:53
 msgid "Loca Ai 뉴스레터 구독 감사합니다!"
-msgstr "Thank you for subscribing to the Loca Ai newsletter!"
+msgstr ""
 
 #: templates/custom_auth/login.html:54
 msgid "Password Recovery"
-msgstr ""
+msgstr "비밀번호 찾기"
 
 #: templates/custom_auth/login.html:55
 msgid ""
 "Enter either the email address or username on the account and click Submit."
-msgstr ""
+msgstr "계정의 이메일 주소 또는 사용자 이름을 입력하고 제출을 클릭하세요."
 
 #: templates/custom_auth/login.html:56
 msgid "We'll email instructions on how to reset your password."
-msgstr ""
+msgstr "비밀번호 재설정 방법을 이메일로 보내드릴게요."
 
 #: templates/custom_auth/login.html:60
 msgid "Enter Email or Username Here"
-msgstr ""
+msgstr "이메일 또는 사용자 이름을 입력하세요"
 
 #: templates/custom_auth/login.html:61
 msgid "Submit"
-msgstr ""
+msgstr "제출"
 
 #: templates/custom_auth/login.html:66
 msgid "An email has been sent to you with further instructions."
-msgstr ""
+msgstr "비밀번호 재설정 방법이 포함된 이메일이 전송되었습니다."
 
 #: templates/custom_auth/password_reset_complete.html:3
 msgid "Password Change Complete"
-msgstr ""
+msgstr "비밀번호 변경 완료"
 
 #: templates/custom_auth/password_reset_complete.html:7
 msgid "Your password has been successfully changed!"
-msgstr ""
+msgstr "비밀번호가 성공적으로 변경되었습니다!"
 
 #: templates/custom_auth/password_reset_complete.html:8
 msgid "You can now log in with your new password."
-msgstr ""
+msgstr "이제 새 비밀번호로 로그인하실 수 있습니다."
 
 #: templates/custom_auth/password_reset_complete.html:9
 msgid "Go to Login"
-msgstr ""
+msgstr "로그인하러 가기"
 
 #: templates/custom_auth/password_reset_confirm.html:3
 msgid "Reset Password"
-msgstr ""
+msgstr "비밀번호 재설정"
 
 #: templates/custom_auth/password_reset_confirm.html:7
 msgid "Enter New Password"
-msgstr ""
+msgstr "새 비밀번호 입력"
 
 #: templates/custom_auth/password_reset_confirm.html:8
 msgid "Please enter and confirm your new password."
-msgstr ""
+msgstr "새 비밀번호를 입력하고 확인해 주세요."
 
 #: templates/custom_auth/password_reset_confirm.html:19
 msgid "Change Password"
-msgstr ""
+msgstr "비밀번호 변경"
 
 #: templates/newsletter/email_welcome.html:6
 msgid "Loca Ai 뉴스레터 구독 환영"
-msgstr "Welcome to the Loca Ai Newsletter"
+msgstr ""
 
 #: templates/newsletter/email_welcome.html:11
 #, python-format
 msgid "%(name)s님, 환영합니다! 🎉"
-msgstr "Welcome, %(name)s! 🎉"
+msgstr ""
 
 #: templates/newsletter/email_welcome.html:13
 msgid "뉴스레터 구독을 환영합니다."
-msgstr "Thank you for subscribing to our newsletter."
+msgstr ""
 
 #: templates/newsletter/email_welcome.html:14
 msgid "앞으로 상권 분석 인사이트와 유용한 정보를 정기적으로 보내드릴게요."
-msgstr "We'll send you regular insights and useful market analysis tips."
+msgstr ""
 
 #: templates/newsletter/email_welcome.html:18
 msgid ""
 "혹시 원치 않으시면 아래 버튼을 눌러 언제든지 구독을 해지하실 수 있습니다."
 msgstr ""
-"If you prefer not to receive emails, you can unsubscribe at any time using "
-"the button below."
 
 #: templates/newsletter/email_welcome.html:24
 msgid "구독 해지하기"
-msgstr "Unsubscribe"
+msgstr ""
 
 #: templates/newsletter/email_welcome.html:29
 msgid "이 이메일은 Loca Ai에서 자동 발송되었습니다."
-msgstr "This email was sent automatically by Loca Ai."
+msgstr ""
 
 #: templates/newsletter/email_welcome.html:30
 msgid "문의: aix25best@gmail.com"
-msgstr "Contact: aix25best@gmail.com"
+msgstr ""

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-20 16:04+0900\n"
+"POT-Creation-Date: 2025-06-30 14:28+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,6 +18,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? "
 "1 : 2;\n"
+
+#: custom_auth/views.py:282
+msgid "Password Reset Instructions"
+msgstr "Instrucciones para restablecer la contraseña"
+
+#: custom_auth/views.py:283
+msgid "To reset your password, click the following link:"
+msgstr "Para restablecer tu contraseña, haz clic en el siguiente enlace:"
+
 #: smtp/models.py:25 smtp/models.py:116
 msgid "사용자"
 msgstr "Usuario"
@@ -86,11 +95,68 @@ msgstr "Nombre"
 msgid "뉴스레터 구독자"
 msgstr "Suscriptor del boletín"
 
-#: smtp/utils.py:44
+#: smtp/utils.py:53
 msgid "Loca Ai 뉴스레터 구독 감사합니다!"
 msgstr "¡Gracias por suscribirte al boletín de Loca Ai!"
 
-#: templates/newsletter/email_welcome.html:5
+#: templates/custom_auth/login.html:54
+msgid "Password Recovery"
+msgstr "Recuperación de contraseña"
+
+#: templates/custom_auth/login.html:55
+msgid ""
+"Enter either the email address or username on the account and click Submit."
+msgstr "Introduce la dirección de correo electrónico o el nombre de usuario de la cuenta y haz clic en Enviar."
+
+#: templates/custom_auth/login.html:56
+msgid "We'll email instructions on how to reset your password."
+msgstr "Te enviaremos un correo electrónico con instrucciones para restablecer tu contraseña."
+
+#: templates/custom_auth/login.html:60
+msgid "Enter Email or Username Here"
+msgstr "Introduce tu correo electrónico o nombre de usuario aquí"
+
+#: templates/custom_auth/login.html:61
+msgid "Submit"
+msgstr "Enviar"
+
+#: templates/custom_auth/login.html:66
+msgid "An email has been sent to you with further instructions."
+msgstr "Se ha enviado un correo electrónico con más instrucciones."
+
+#: templates/custom_auth/password_reset_complete.html:3
+msgid "Password Change Complete"
+msgstr "Cambio de contraseña completo"
+
+#: templates/custom_auth/password_reset_complete.html:7
+msgid "Your password has been successfully changed!"
+msgstr "¡Tu contraseña ha sido cambiada exitosamente!"
+
+#: templates/custom_auth/password_reset_complete.html:8
+msgid "You can now log in with your new password."
+msgstr "Ahora puedes iniciar sesión con tu nueva contraseña."
+
+#: templates/custom_auth/password_reset_complete.html:9
+msgid "Go to Login"
+msgstr "Ir al inicio de sesión"
+
+#: templates/custom_auth/password_reset_confirm.html:3
+msgid "Reset Password"
+msgstr "Restablecer la contraseña"
+
+#: templates/custom_auth/password_reset_confirm.html:7
+msgid "Enter New Password"
+msgstr "Introduce una nueva contraseña"
+
+#: templates/custom_auth/password_reset_confirm.html:8
+msgid "Please enter and confirm your new password."
+msgstr "Por favor, introduce y confirma tu nueva contraseña."
+
+#: templates/custom_auth/password_reset_confirm.html:19
+msgid "Change Password"
+msgstr "Cambiar la contraseña"
+
+#: templates/newsletter/email_welcome.html:6
 msgid "Loca Ai 뉴스레터 구독 환영"
 msgstr "Bienvenido al boletín de Loca Ai"
 
@@ -110,7 +176,9 @@ msgstr "Te enviaremos análisis de mercado e información útil periódicamente.
 #: templates/newsletter/email_welcome.html:18
 msgid ""
 "혹시 원치 않으시면 아래 버튼을 눌러 언제든지 구독을 해지하실 수 있습니다."
-msgstr "Si no deseas recibir más correos, puedes darte de baja en cualquier momento usando el botón de abajo."
+msgstr ""
+"Si no deseas recibir más correos, puedes darte de baja en cualquier momento "
+"usando el botón de abajo."
 
 #: templates/newsletter/email_welcome.html:24
 msgid "구독 해지하기"

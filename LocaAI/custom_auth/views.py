@@ -11,6 +11,8 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.core.mail import send_mail
+from django.utils.translation import activate, gettext as _
+from main.views import getSessionLang
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.urls import reverse
@@ -271,10 +273,14 @@ class PasswordResetRequestView(APIView):
             reverse('custom_auth:password_reset_confirm', kwargs={'uidb64': uid, 'token': token})
         )
 
+        # 언어 활성화
+        lang = getSessionLang(request)
+        activate(lang)
+
         # 이메일 전송
         send_mail(
-            subject="비밀번호 초기화 안내",
-            message=f"비밀번호를 초기화하려면 아래 링크를 클릭하세요:\n{reset_url}",
+            subject=_("Password Reset Instructions"),
+            message=_("To reset your password, click the following link:") + f"\n{reset_url}",
             from_email=None,  # 기본 이메일 설정 사용
             recipient_list=[user.email],
         )
