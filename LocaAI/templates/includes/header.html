@@ -9,11 +9,11 @@
 
     <nav id="navmenu" class="navmenu">
       <ul>
-        <li><a href="{% url 'index' %}" class="active">Home</a></li>
-        <li><a href="{% url 'about_us' %}">About us</a></li>
-        <li><a href="{% url 'AI_Analyzer:analyze_page' %}">Services</a></li>
-        <li><a href="{% url 'shopdash:dashboard' %}">Data</a></li>
-        <li><a href="{% url 'border:portfolio_list' %}">Portfolio</a></li>
+        <li><a href="{% url 'index' %}" class="{% if request.path == '/' %}active{% endif %}">Home</a></li>
+        <li><a href="{% url 'about_us' %}" class="{% if request.path == '/about-us/' %}active{% endif %}">About us</a></li>
+        <li><a href="{% url 'AI_Analyzer:analyze_page' %}" class="{% if request.path == '/ai_analyzer/analyze/' %}active{% endif %}">Services</a></li>
+        <li><a href="{% url 'shopdash:dashboard' %}" class="{% if request.path == '/shopdash/' %}active{% endif %}">Data</a></li>
+        <li><a href="{% url 'border:portfolio_list' %}" class="{% if request.path == '/border/portfolio/' %}active{% endif %}">Portfolio</a></li>
         <li><a href="/#contact">Contact Us</a></li>
 
         <!-- Support 드롭다운 -->
@@ -158,14 +158,24 @@
     </style>
 
   <script>
-    // 전역 변수로 설정하여 중복 선언 방지
-    if (typeof window.sessionLang === 'undefined') {
-      window.sessionLang = "{{ request.session.language|default:'KOR' }}";
+    // Django 세션에서 전달된 언어 설정 (없으면 세션의 기본값 'KOR')
+    window.sessionLang = "{{ request.session.django_language|default:'KOR' }}";
+    if (!['KOR', 'ENG', 'ESP'].includes(window.sessionLang)) {
+      const browserLang = navigator.language || navigator.userLanguage;
+      console.log("[header.js] 감지된 브라우저 언어:", browserLang);
+      if (browserLang.startsWith('en')) {
+        window.sessionLang = 'ENG';
+      } else if (browserLang.startsWith('es')) {
+        window.sessionLang = 'ESP';
+      } else {
+        window.sessionLang = 'KOR';
+      }
+      console.log("[header.js] 설정된 기본 언어:", window.sessionLang);
+      setSelectedLangValue(window.sessionLang); // 세션이 없을 때만 설정
+    } else {
+      console.log("[header.js] 세션 언어 유지:", window.sessionLang);
+      funcChangeLang(window.sessionLang); // 세션 값 우선 적용
     }
-
-		$(window).ready(function() {
-		  funcChangeLang(window.sessionLang);
-		})
     
     // 선택한 언어를 세션에 저장하는 function
     function setSelectedLangValue(lang) {
@@ -179,9 +189,19 @@
           'X-CSRFToken': getCSRFToken()   // 토큰추가
         },
         success: function(res) {
-          window.sessionLang = lang;    // 전역 변수 업데이트
-          funcChangeLang(lang);         // UI 전환
-          console.log(res.code, res.message, 'session lang changed to', lang)
+          window.sessionLang = lang;
+          funcChangeLang(lang);
+          console.log(res.code, res.message, 'session lang changed to', lang);
+
+          // ✅ 모바일 메뉴 닫기 로직 추가
+          if (document.querySelector('.mobile-nav-active')) {
+            document.body.classList.remove('mobile-nav-active');
+            const toggleBtn = document.querySelector('.mobile-nav-toggle');
+            if (toggleBtn) {
+              toggleBtn.classList.add('bi-list');
+              toggleBtn.classList.remove('bi-x');
+            }
+          }
         },
         error: function(xhr, status, error) {
           console.log('session lang change error', lang)

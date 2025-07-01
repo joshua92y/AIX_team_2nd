@@ -318,6 +318,12 @@ h6 {
   }
 }
 
+/* Ensure entire dropdown menu link turns blue when active */
+.navmenu .dropdown.active > a,
+.navmenu .dropdown.active > a i {
+  color: var(--nav-hover-color);
+}
+
 /* Navmenu - Mobile */
 @media (max-width: 1199px) {
   .mobile-nav-toggle {

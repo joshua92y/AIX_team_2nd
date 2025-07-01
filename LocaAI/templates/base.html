@@ -45,6 +45,7 @@
   <main class="main mt-5 pt-5">
     {% block content %}{% endblock %}
   </main>
+  <div style="height: 2px; background: #e0e0e0; width: 100%; margin-top: 2rem; margin-bottom: 1rem;"></div>
 
   <!-- ✅ Footer -->
   {% include 'includes/footer.html' %}
@@ -68,11 +69,24 @@
   <script src="{% static 'assets/js/main.js' %}"></script>
 
   <script>
-    const sessionLang = "{{ request.session.language|default:'KOR' }}";
+    window.sessionLang = "{{ request.session.django_language|default:'KOR' }}";
 
-		$(window).ready(function() {
-		  funcChangeLang(sessionLang);
-		})
+    if (!window.sessionLang || window.sessionLang === '') {
+      const browserLang = navigator.language || navigator.userLanguage;
+      console.log("[base.js] 감지된 브라우저 언어:", browserLang);
+      if (browserLang.startsWith('en')) {
+        window.sessionLang = 'ENG';
+      } else if (browserLang.startsWith('es')) {
+        window.sessionLang = 'ESP';
+      } else {
+        window.sessionLang = 'KOR';
+      }
+      console.log("[base.js] 설정된 기본 언어:", window.sessionLang);
+      setSelectedLangValue(window.sessionLang);
+    } else {
+      console.log("[base.js] 세션 언어 유지:", window.sessionLang);
+      funcChangeLang(window.sessionLang);
+    }
     
     // 선택한 언어를 세션에 저장하는 function
     function setSelectedLangValue(lang) {
