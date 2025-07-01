@@ -10,17 +10,29 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0">비밀번호 확인</h5>
+                    <h5 class="mb-0">
+                      <span data-lang="KOR">비밀번호 확인</span>
+                      <span data-lang="ENG" style="display:none">Password Confirmation</span>
+                      <span data-lang="ESP" style="display:none">Confirmar contraseña</span>
+                    </h5>
                 </div>
                 <div class="card-body">
                     <form method="post">
                         {% csrf_token %}
                         <div class="mb-3">
-                            <label for="password" class="form-label">비밀번호</label>
+                            <label for="password" class="form-label">
+                              <span data-lang="KOR">비밀번호</span>
+                              <span data-lang="ENG" style="display:none">Password</span>
+                              <span data-lang="ESP" style="display:none">Contraseña</span>
+                            </label>
                             <input type="password" class="form-control" id="password" name="password" required>
                         </div>
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">확인</button>
+                            <button type="submit" class="btn btn-primary">
+                              <span data-lang="KOR">확인</span>
+                              <span data-lang="ENG" style="display:none">Confirm</span>
+                              <span data-lang="ESP" style="display:none">Confirmar</span>
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -33,12 +45,32 @@
             <h5 class="mb-0">{{ post.title }}</h5>
             <div>
                 {% if post.author %}
-                    <span class="text-muted">작성자: {{ post.author.username }}</span>
+                    <span class="text-muted">
+                      <span data-lang="KOR">작성자</span>
+                      <span data-lang="ENG" style="display:none">Author</span>
+                      <span data-lang="ESP" style="display:none">Autor</span>
+                      : {{ post.author.username }}
+                    </span>
                 {% else %}
-                    <span class="text-muted">작성자: {{ post.guest_name }}</span>
+                    <span class="text-muted">
+                      <span data-lang="KOR">작성자</span>
+                      <span data-lang="ENG" style="display:none">Author</span>
+                      <span data-lang="ESP" style="display:none">Autor</span>
+                      : {{ post.guest_name }}
+                    </span>
                 {% endif %}
-                <span class="text-muted ms-3">작성일: {{ post.created_at|date:"Y-m-d H:i" }}</span>
-                <span class="text-muted ms-3">조회수: {{ post.views }}</span>
+                <span class="text-muted ms-3">
+                  <span data-lang="KOR">작성일</span>
+                  <span data-lang="ENG" style="display:none">Created</span>
+                  <span data-lang="ESP" style="display:none">Creado</span>
+                  : {{ post.created_at|date:"Y-m-d H:i" }}
+                </span>
+                <span class="text-muted ms-3">
+                  <span data-lang="KOR">조회수</span>
+                  <span data-lang="ENG" style="display:none">Views</span>
+                  <span data-lang="ESP" style="display:none">Vistas</span>
+                  : {{ post.views }}
+                </span>
             </div>
         </div>
         <div class="card-body">
@@ -52,19 +84,35 @@
             
             {% if post.file %}
             <div class="mt-3">
-                <a href="{{ post.file.url }}" class="btn btn-secondary" download>첨부파일 다운로드</a>
+                <a href="{{ post.file.url }}" class="btn btn-secondary" download>
+                  <span data-lang="KOR">첨부파일 다운로드</span>
+                  <span data-lang="ENG" style="display:none">Download Attachment</span>
+                  <span data-lang="ESP" style="display:none">Descargar archivo</span>
+                </a>
             </div>
             {% endif %}
         </div>
         <div class="card-footer">
             <div class="d-flex justify-content-between">
                 <div>
-                    <a href="{% url 'border:post_list' post.board_type %}" class="btn btn-secondary">목록</a>
+                    <a href="{% url 'border:post_list' post.board_type %}" class="btn btn-secondary">
+                      <span data-lang="KOR">목록</span>
+                      <span data-lang="ENG" style="display:none">Back to List</span>
+                      <span data-lang="ESP" style="display:none">Volver</span>
+                    </a>
                 </div>
                 <div>
                     {% if post.author == request.user or request.user.role == 'admin' or not post.author %}
-                        <a href="{% url 'border:post_update' pk=post.pk %}" class="btn btn-primary">수정</a>
-                        <a href="{% url 'border:post_delete' pk=post.pk %}" class="btn btn-danger">삭제</a>
+                        <a href="{% url 'border:post_update' pk=post.pk %}" class="btn btn-primary">
+                          <span data-lang="KOR">수정</span>
+                          <span data-lang="ENG" style="display:none">Edit</span>
+                          <span data-lang="ESP" style="display:none">Editar</span>
+                        </a>
+                        <a href="{% url 'border:post_delete' pk=post.pk %}" class="btn btn-danger">
+                          <span data-lang="KOR">삭제</span>
+                          <span data-lang="ENG" style="display:none">Delete</span>
+                          <span data-lang="ESP" style="display:none">Eliminar</span>
+                        </a>
                     {% endif %}
                 </div>
             </div>
@@ -74,7 +122,12 @@
     <!-- 댓글 목록 -->
     <div class="card mb-4">
         <div class="card-header">
-            <h5 class="mb-0">댓글 ({{ comments|length }})</h5>
+            <h5 class="mb-0">
+              <span data-lang="KOR">댓글</span>
+              <span data-lang="ENG" style="display:none">Comments</span>
+              <span data-lang="ESP" style="display:none">Comentarios</span>
+              ({{ comments|length }})
+            </h5>
         </div>
         <div class="card-body">
             {% for comment in comments %}
@@ -90,14 +143,22 @@
                     </div>
                     <div>
                         {% if comment.author == request.user or request.user.role == 'admin' or not comment.author %}
-                            <a href="{% url 'border:comment_delete' pk=comment.pk %}" class="btn btn-sm btn-danger">삭제</a>
+                            <a href="{% url 'border:comment_delete' pk=comment.pk %}" class="btn btn-sm btn-danger">
+                              <span data-lang="KOR">삭제</span>
+                              <span data-lang="ENG" style="display:none">Delete</span>
+                              <span data-lang="ESP" style="display:none">Eliminar</span>
+                            </a>
                         {% endif %}
                     </div>
                 </div>
                 <p class="mt-2 mb-0">{{ comment.content|linebreaks }}</p>
             </div>
             {% empty %}
-            <p class="text-muted">댓글이 없습니다.</p>
+            <p class="text-muted">
+              <span data-lang="KOR">댓글이 없습니다.</span>
+              <span data-lang="ENG" style="display:none">No comments.</span>
+              <span data-lang="ESP" style="display:none">Sin comentarios.</span>
+            </p>
             {% endfor %}
         </div>
     </div>
@@ -105,7 +166,11 @@
     <!-- 댓글 작성 폼 -->
     <div class="card">
         <div class="card-header">
-            <h5 class="mb-0">댓글 작성</h5>
+            <h5 class="mb-0">
+              <span data-lang="KOR">댓글 작성</span>
+              <span data-lang="ENG" style="display:none">Write a Comment</span>
+              <span data-lang="ESP" style="display:none">Escribir un comentario</span>
+            </h5>
         </div>
         <div class="card-body">
             <form method="post">
@@ -145,7 +210,11 @@
                     </div>
                     {% endif %}
                 </div>
-                <button type="submit" class="btn btn-primary">댓글 작성</button>
+                <button type="submit" class="btn btn-primary">
+                  <span data-lang="KOR">댓글 작성</span>
+                  <span data-lang="ENG" style="display:none">Submit</span>
+                  <span data-lang="ESP" style="display:none">Enviar</span>
+                </button>
             </form>
         </div>
     </div>
