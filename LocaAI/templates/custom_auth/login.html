@@ -140,8 +140,9 @@ document.addEventListener("DOMContentLoaded", function () {
   console.log("[login.js] 🔥 DOMContentLoaded 진입됨");
 
   // 언어 설정 감지 및 적용
-  const sessionLang = "{{ request.session.django_language|default:'KOR' }}";
-  if (!['KOR', 'ENG', 'ESP'].includes(sessionLang)) {
+  const sessionLang = "{{ request.session.django_language|default:'' }}";
+  console.log("[login.js] 세션 언어:", sessionLang);
+  if (!sessionLang || !['KOR', 'ENG', 'ESP'].includes(sessionLang)) {
     const browserLang = navigator.language || navigator.userLanguage;
     let lang = 'KOR';
     if (browserLang.startsWith('en')) {

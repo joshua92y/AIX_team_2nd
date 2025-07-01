@@ -4,8 +4,6 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from border.models import Post  # 추가
 
-# Create your views here.
-
 # 언어 설정을 세션에 저장하는 함수
 def set_language(request):
     selected_lang = request.POST.get('lang')
@@ -13,57 +11,37 @@ def set_language(request):
     print(f"[set_language] 요청된 언어: {selected_lang}")  # 디버깅용
 
     if selected_lang:
-        # 이미 같은 언어면 굳이 덮지 않음
+        # 이미 같은 언어면 구지 덕지 않음
         if request.session.get('django_language') == selected_lang:
-            print("[set_language] 기존 언어와 동일하여 스킵")  # 디버깅용
+            print("[set_language] 기존 언어와 동일해서 스킵")  # 디버깅용
             return JsonResponse({"code": "0001", "message": "이미 설정된 언어"})
 
         request.session['django_language'] = selected_lang
         print(f"[set_language] 세션에 저장된 언어: {request.session.get('django_language')}")  # 디버깅용
-        return JsonResponse({"code": "0000", "message": "언어변환성공"})
+        return JsonResponse({"code": "0000", "message": "언어변화성공"})
 
     print("[set_language] 언어 선택 실패")  # 디버깅용
-    return JsonResponse({"code": "9999", "message": "언어변환실패"})
+    return JsonResponse({"code": "9999", "message": "언어변화실패"})
 
 def index(request):
+    lang_param = request.GET.get('lang')
+    if lang_param:
+        request.session['django_language'] = lang_param
     lang = request.session.get('django_language', 'KOR')
     topic_posts = Post.objects.filter(board_type='topic').order_by('-created_at')[:3]
     return render(request, 'index.html', {'lang': lang, 'topic_posts': topic_posts})
 
-def blog(request):
-    lang = request.session.get('django_language', 'KOR')
-    # AI_Analyzer 앱의 분석 페이지로 리다이렉트
-    return redirect('AI_Analyzer:analyze_page', {'lang': lang})
-
-def blog_detail(request):
-    lang = request.session.get('django_language', 'KOR')
-    return render(request, 'blog-details.html', {'lang': lang})
-
-def blog_api(request):
-    # check request parameters
-    if request.method == 'POST':
-        print("POST data:", request.POST)  # 딕셔너리 형태로 출력
-        
-        # 필요한 값들 뽑기
-        industry = request.POST.get('industry')
-        address = request.POST.get('address')
-        area = request.POST.get('area')
-        service = request.POST.get('service')
-        tm_x = request.POST.get('tm_x')  # 추가
-        tm_y = request.POST.get('tm_y')  # 추가
-        
-        print(f"industry: {industry}, address: {address}, area: {area}, service: {service}, tm_x: {tm_x}, tm_y: {tm_y}")
-        
-        # 정상 응답 예시
-        return JsonResponse({'message': '데이터 잘 받았습니다!'})
-    
-    # POST 아니면 그냥 blog.html 렌더링
-    return render(request, 'blog.html')
-
 def guidebook(request):
+    lang_param = request.GET.get('lang')
+    if lang_param:
+        request.session['django_language'] = lang_param
     lang = request.session.get('django_language', 'KOR')
     print(lang)
     return render(request, 'guidebook.html', {'lang': lang})
 
 def about_us(request):
-    return render(request, 'about_us.html')
+    lang_param = request.GET.get('lang')
+    if lang_param:
+        request.session['django_language'] = lang_param
+    lang = request.session.get('django_language', 'KOR')
+    return render(request, 'about_us.html', {'lang': lang})
