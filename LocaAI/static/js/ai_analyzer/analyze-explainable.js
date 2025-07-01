@@ -347,12 +347,28 @@ function updateAIAnalysisSection(result) {
   const isMember = result.is_member_analysis || false;
   
   if (isMember && result.ai_summary) {
+    // 현재 언어에 따른 텍스트 가져오기
+    const currentLang = getCurrentLanguage();
+    let detailButtonText = '자세히 보기';
+    let aiResultText = 'AI 분석 결과:';
+    
+    if (currentLang === 'en') {
+      detailButtonText = 'View Details';
+      aiResultText = 'AI Analysis Result:';
+    } else if (currentLang === 'es') {
+      detailButtonText = 'Ver Detalles';
+      aiResultText = 'Resultado del Análisis de IA:';
+    }
+    
     // 회원: ChatGPT 기반 AI 설명 (실제 생존확률 사용)
     const cleanSummary = extractCleanSummary(result.ai_summary, result.survival_percentage);
     const detailButtonHtml = `
       <div class="mt-3">
         <button class="btn btn-outline-primary btn-sm" onclick="showDetailedAnalysis()">
-          <i class="fas fa-chart-bar me-2"></i>자세히 보기
+          <i class="fas fa-chart-bar me-2"></i>
+          <span data-lang="KOR">자세히 보기</span>
+          <span data-lang="ENG" style="display: none;">View Details</span>
+          <span data-lang="ESP" style="display: none;">Ver Detalles</span>
         </button>
       </div>
     `;
@@ -370,6 +386,21 @@ function updateAIAnalysisSection(result) {
         </div>
         ${detailButtonHtml}
       `);
+      
+    // 🔧 HTML 생성 후 즉시 다국어화 적용
+    const aiResultSpans = analysisSection.find('[data-lang]');
+    aiResultSpans.each(function() {
+      const element = $(this);
+      const lang = element.attr('data-lang');
+      
+      if (currentLang === 'ko' && lang === 'KOR') {
+        element.show().siblings('[data-lang]').hide();
+      } else if (currentLang === 'en' && lang === 'ENG') {
+        element.show().siblings('[data-lang]').hide();
+      } else if (currentLang === 'es' && lang === 'ESP') {
+        element.show().siblings('[data-lang]').hide();
+      }
+    });
       
     // AI 긍정/위험 요인을 하단에 표시
     updateAIFactorsSection(result);

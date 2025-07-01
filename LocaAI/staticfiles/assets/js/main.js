@@ -196,10 +196,17 @@ function mobileNavToogle() {
    * Correct scrolling position upon page load for URLs containing hash links.
    */
   window.addEventListener('load', function(e) {
-    if (window.location.hash) {
-      if (document.querySelector(window.location.hash)) {
+    if (window.location.hash && window.location.hash.trim() !== '') {
+      let section;
+      try {
+        section = document.querySelector(window.location.hash);
+      } catch (e) {
+        console.warn('Invalid hash selector on page load:', window.location.hash);
+        return;
+      }
+      
+      if (section) {
         setTimeout(() => {
-          let section = document.querySelector(window.location.hash);
           let scrollMarginTop = getComputedStyle(section).scrollMarginTop;
           window.scrollTo({
             top: section.offsetTop - parseInt(scrollMarginTop),
@@ -217,8 +224,17 @@ function mobileNavToogle() {
 
   function navmenuScrollspy() {
     navmenulinks.forEach(navmenulink => {
-      if (!navmenulink.hash) return;
-      let section = document.querySelector(navmenulink.hash);
+      // hash가 없거나 빈 문자열인 경우 스킵
+      if (!navmenulink.hash || navmenulink.hash.trim() === '') return;
+      
+      let section;
+      try {
+        section = document.querySelector(navmenulink.hash);
+      } catch (e) {
+        console.warn('Invalid selector for navmenu scrollspy:', navmenulink.hash);
+        return;
+      }
+      
       if (!section) return;
       let position = window.scrollY + 200;
       if (position >= section.offsetTop && position <= (section.offsetTop + section.offsetHeight)) {
@@ -238,7 +254,12 @@ function mobileNavToogle() {
    */
   document.querySelectorAll('.navmenu a[href^="#"]').forEach(link => {
     link.addEventListener('click', function(e) {
-      const target = this.hash && document.querySelector(this.hash);
+      // this.hash가 빈 문자열이거나 유효하지 않은 경우 처리
+      if (!this.hash || this.hash.trim() === '') {
+        return;
+      }
+      
+      const target = document.querySelector(this.hash);
       if (target) {
         e.preventDefault();
         const scrollMarginTop = getComputedStyle(target).scrollMarginTop;
