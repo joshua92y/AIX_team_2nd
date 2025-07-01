@@ -1,3 +1,9 @@
+function mobileNavToogle() {
+  document.querySelector('body').classList.toggle('mobile-nav-active');
+  document.querySelector('.mobile-nav-toggle')?.classList.toggle('bi-list');
+  document.querySelector('.mobile-nav-toggle')?.classList.toggle('bi-x');
+}
+
 (function() {
   "use strict";
 
@@ -21,7 +27,8 @@
     window.scrollY > 100 ? selectBody.classList.add('scrolled') : selectBody.classList.remove('scrolled');
   }
 
-  document.addEventListener('scroll', throttle(toggleScrolled, 30));
+  // [패치] 스크롤 이벤트가 캐시나 렌더링 타이밍에 씹히는 현상 완화 위해 throttle 시간 증가
+  document.addEventListener('scroll', throttle(toggleScrolled, 100));
   window.addEventListener('load', toggleScrolled);
 
   /**
@@ -29,11 +36,6 @@
    */
   const mobileNavToggleBtn = document.querySelector('.mobile-nav-toggle');
 
-  function mobileNavToogle() {
-    document.querySelector('body').classList.toggle('mobile-nav-active');
-    mobileNavToggleBtn.classList.toggle('bi-list');
-    mobileNavToggleBtn.classList.toggle('bi-x');
-  }
   if (mobileNavToggleBtn) {
     mobileNavToggleBtn.addEventListener('click', mobileNavToogle);
   }
@@ -53,13 +55,31 @@
     });
 
   /**
-   * Toggle mobile nav dropdowns
+   * Toggle mobile nav dropdowns (텍스트+화살표 전체 클릭 가능, 중복 방지)
    */
-  document.querySelectorAll('.navmenu .toggle-dropdown').forEach(navmenu => {
-    navmenu.addEventListener('click', function(e) {
+  document.querySelectorAll('.navmenu .dropdown > a').forEach(toggle => {
+    toggle.addEventListener('click', function(e) {
       e.preventDefault();
-      this.parentNode.classList.toggle('active');
-      this.parentNode.nextElementSibling.classList.toggle('dropdown-active');
+
+      const parent = this.parentNode;
+      const submenu = parent.querySelector('ul');
+      if (!submenu) return;
+
+      // 모바일에서만 토글
+      if (window.innerWidth <= 1199) {
+        // 🔥 다른 드롭다운은 모두 닫기
+        document.querySelectorAll('.navmenu .dropdown').forEach(item => {
+          if (item !== parent) {
+            item.classList.remove('active');
+            const sub = item.querySelector('ul');
+            if (sub) sub.classList.remove('dropdown-active');
+          }
+        });
+
+        parent.classList.toggle('active');
+        submenu.classList.toggle('dropdown-active');
+      }
+
       e.stopImmediatePropagation();
     });
   });
@@ -83,7 +103,8 @@
   });
 
   window.addEventListener('load', toggleScrollTop);
-  document.addEventListener('scroll', throttle(toggleScrollTop, 30));
+  // [패치] 스크롤 이벤트가 캐시나 렌더링 타이밍에 씹히는 현상 완화 위해 throttle 시간 증가
+  document.addEventListener('scroll', throttle(toggleScrollTop, 100));
 
   /**
    * Animation on scroll function and init
@@ -209,7 +230,8 @@
     })
   }
   window.addEventListener('load', navmenuScrollspy);
-  document.addEventListener('scroll', throttle(navmenuScrollspy, 30));
+  // [패치] 스크롤 이벤트가 캐시나 렌더링 타이밍에 씹히는 현상 완화 위해 throttle 시간 증가
+  document.addEventListener('scroll', throttle(navmenuScrollspy, 100));
 
   /**
    * Smooth scroll to section with scroll-marginTop consideration on navmenu click
@@ -225,11 +247,28 @@
           behavior: 'smooth'
         });
 
+        // [패치] AOS.refresh() 중복 호출 방지 및 스크롤 간섭 줄이기
         setTimeout(() => {
-          if (typeof AOS !== 'undefined' && AOS.refresh) {
+          if (
+            typeof AOS !== 'undefined' &&
+            AOS.refresh &&
+            !window._aosRefreshed
+          ) {
             AOS.refresh();
+            window._aosRefreshed = true; // [패치] AOS.refresh() 중복 호출 방지 플래그
           }
         }, 700); // allow scroll to complete before refreshing AOS
+      }
+    });
+  });
+
+  /**
+   * 모바일에서 언어 선택 시 메뉴 닫기
+   */
+  document.querySelectorAll('.language-link').forEach(link => {
+    link.addEventListener('click', function(e) {
+      if (document.querySelector('.mobile-nav-active')) {
+        mobileNavToogle();
       }
     });
   });

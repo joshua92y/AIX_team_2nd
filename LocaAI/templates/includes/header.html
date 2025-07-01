@@ -9,11 +9,11 @@
 
     <nav id="navmenu" class="navmenu">
       <ul>
-        <li><a href="{% url 'index' %}" class="active">Home</a></li>
-        <li><a href="{% url 'about_us' %}">About us</a></li>
-        <li><a href="{% url 'AI_Analyzer:analyze_page' %}">Services</a></li>
-        <li><a href="{% url 'shopdash:dashboard' %}">Data</a></li>
-        <li><a href="{% url 'border:portfolio_list' %}">Portfolio</a></li>
+        <li><a href="{% url 'index' %}" class="{% if request.path == '/' %}active{% endif %}">Home</a></li>
+        <li><a href="{% url 'about_us' %}" class="{% if request.path == '/about-us/' %}active{% endif %}">About us</a></li>
+        <li><a href="{% url 'AI_Analyzer:analyze_page' %}" class="{% if request.path == '/ai_analyzer/analyze/' %}active{% endif %}">Services</a></li>
+        <li><a href="{% url 'shopdash:dashboard' %}" class="{% if request.path == '/shopdash/' %}active{% endif %}">Data</a></li>
+        <li><a href="{% url 'border:portfolio_list' %}" class="{% if request.path == '/border/portfolio/' %}active{% endif %}">Portfolio</a></li>
         <li><a href="/#contact">Contact Us</a></li>
 
         <!-- Support 드롭다운 -->
