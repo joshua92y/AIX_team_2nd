@@ -749,15 +749,6 @@
           <div class="card border-0 shadow-sm mx-auto" style="max-width: 1000px;">
             <div class="card-body text-center">
 
-              <!-- 📷 이미지 -->
-              <div class="d-flex justify-content-center my-4">
-                <div class="border rounded shadow-sm p-3" style="max-width: 420px;">
-                  <img src="/static/assets/img/guide06.png"
-                      alt="챗봇 기능 안내 예시"
-                      class="img-fluid rounded"
-                      style="width: 100%; height: auto;">
-                </div>
-              </div>
               <!-- 🔹 제목 -->
               <h4 class="card-title mb-3">
                 <i class="bi bi-chat-dots-fill text-primary me-2"></i>
@@ -772,9 +763,42 @@
                 <span data-lang="ESP" style="display: none;">Una vez generado el informe de análisis, el <strong>chatbot se activa automáticamente en la esquina inferior derecha</strong> para consultas con IA.</span>
               </p>
 
+              <!-- 두 이미지 나란히 배치 -->
+              <div class="row justify-content-center mb-3">
+                <!-- 첫 번째 이미지 -->
+                <div class="col-md-6 mb-3">
+                  <div class="border rounded shadow-sm p-3 h-100 d-flex flex-column justify-content-between">
+                    <img src="/static/assets/img/guide06.png"
+                        alt="챗봇 비활성화 상태 안내"
+                        class="img-fluid rounded mb-2"
+                        style="width: 100%; height: auto;">
+                    <p class="text-primary small mt-auto text-center">
+                      <span data-lang="KOR">상권 분석 전: 챗봇은 비활성화 상태입니다.</span>
+                      <span data-lang="ENG" style="display: none;">Before analysis: chatbot is inactive.</span>
+                      <span data-lang="ESP" style="display: none;">Antes del análisis: el chatbot está inactivo.</span>
+                    </p>
+                  </div>
+                </div>
+
+                <!-- 두 번째 이미지 -->
+                <div class="col-md-6 mb-3">
+                  <div class="border rounded shadow-sm p-3 h-100 d-flex flex-column justify-content-between">
+                    <img src="/static/assets/img/guide07.png"
+                        alt="챗봇 활성화 상태 안내"
+                        class="img-fluid rounded mb-2"
+                        style="width: 100%; height: auto;">
+                    <p class="text-primary small mt-auto text-center">
+                      <span data-lang="KOR">상권 분석 후: 챗봇이 활성화되어 상담을 시작할 수 있습니다.</span>
+                      <span data-lang="ENG" style="display: none;">After analysis: chatbot is active and ready for consultation.</span>
+                      <span data-lang="ESP" style="display: none;">Después del análisis: el chatbot está activo y listo para consultas.</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <hr class="my-4">
 
-              <!-- 설명 -->
+              <!-- 설명 리스트 -->
               <div class="text-start mx-auto" style="max-width: 1000px;">
                 <ul class="mb-4" style="line-height: 1.8;">
                   <li>
