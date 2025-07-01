@@ -1066,9 +1066,64 @@ function initializeMap() {
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
             window.seoulMap = new SeoulCommercialMap('map');
+            setupMapControlButtons();
         });
     } else {
         window.seoulMap = new SeoulCommercialMap('map');
+        setupMapControlButtons();
+    }
+}
+
+// 지도 컨트롤 버튼 이벤트 설정
+function setupMapControlButtons() {
+    // 뒤로 버튼 이벤트 리스너
+    const backButton = document.getElementById('map-back-btn');
+    if (backButton) {
+        backButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('🔙 뒤로 버튼 클릭');
+            
+            if (!window.seoulMap) {
+                console.warn('SeoulCommercialMap 인스턴스가 없습니다');
+                return;
+            }
+            
+            // 현재 뷰에 따라 적절한 뒤로 동작 수행
+            if (window.seoulMap.currentView === 'stores') {
+                // 점포 뷰 → 행정동 뷰
+                window.seoulMap.returnToDongView();
+            } else if (window.seoulMap.currentView === 'dong') {
+                // 행정동 뷰 → 구별 뷰
+                window.seoulMap.returnToDistrictView();
+            } else {
+                // 이미 최상위 뷰인 경우 알림
+                console.log('이미 최상위 뷰입니다');
+            }
+        });
+        console.log('✅ 뒤로 버튼 이벤트 리스너 설정 완료');
+    } else {
+        console.warn('⚠️ 뒤로 버튼을 찾을 수 없습니다 (#map-back-btn)');
+    }
+    
+    // 초기화 버튼 이벤트 리스너
+    const resetButton = document.getElementById('map-reset-btn');
+    if (resetButton) {
+        resetButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('🔄 초기화 버튼 클릭');
+            
+            if (!window.seoulMap) {
+                console.warn('SeoulCommercialMap 인스턴스가 없습니다');
+                return;
+            }
+            
+            // 지도 완전 초기화
+            window.seoulMap.reset();
+            console.log('✅ 지도 초기화 완료');
+        });
+        console.log('✅ 초기화 버튼 이벤트 리스너 설정 완료');
+    } else {
+        console.warn('⚠️ 초기화 버튼을 찾을 수 없습니다 (#map-reset-btn)');
     }
 }
 
