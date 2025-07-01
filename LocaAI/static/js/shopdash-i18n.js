@@ -57,7 +57,40 @@ const SHOPDASH_LANGUAGE_TEXTS = {
     // 차트 관련
     percent: '%',
     loading: '로딩 중...',
-    detailedInfo: '상세 정보'
+    detailedInfo: '상세 정보',
+    
+    // 업종별 다국어 매핑
+    businessTypes: {
+      '편의점': '편의점',
+      '카페': '카페',
+      '치킨': '치킨',
+      '피자': '피자',
+      '한식': '한식',
+      '중식': '중식',
+      '일식': '일식',
+      '양식': '양식',
+      '분식': '분식',
+      '베이커리': '베이커리',
+      '미용실': '미용실',
+      '네일아트': '네일아트',
+      '노래방': '노래방',
+      '음식점': '음식점',
+      '커피전문점': '커피전문점',
+      '술집': '술집',
+      '호프집': '호프집',
+      '패스트푸드': '패스트푸드',
+      '의류': '의류',
+      '신발': '신발',
+      '약국': '약국',
+      '세탁소': '세탁소',
+      '문구점': '문구점',
+      '서점': '서점',
+      '핸드폰': '핸드폰',
+      'PC방': 'PC방',
+      '찜질방': '찜질방',
+      '헬스장': '헬스장',
+      '학원': '학원'
+    }
   },
   en: {
     languageName: 'English',
@@ -111,7 +144,113 @@ const SHOPDASH_LANGUAGE_TEXTS = {
     // 차트 관련
     percent: '%',
     loading: 'Loading...',
-    detailedInfo: 'Detailed Information'
+    detailedInfo: 'Detailed Information',
+    
+    // 업종별 다국어 매핑
+    businessTypes: {
+      // 기본 업종
+      '편의점': 'Convenience Store',
+      '카페': 'Cafe',
+      '치킨': 'Chicken',
+      '피자': 'Pizza',
+      '한식': 'Korean Food',
+      '중식': 'Chinese Food',
+      '일식': 'Japanese Food',
+      '양식': 'Western Food',
+      '분식': 'Snack Bar',
+      '베이커리': 'Bakery',
+      '미용실': 'Hair Salon',
+      '네일아트': 'Nail Art',
+      '노래방': 'Karaoke',
+      '음식점': 'Restaurant',
+      '커피전문점': 'Coffee Shop',
+      '술집': 'Bar',
+      '호프집': 'Beer House',
+      '패스트푸드': 'Fast Food',
+      '의류': 'Clothing',
+      '신발': 'Shoes',
+      '약국': 'Pharmacy',
+      '세탁소': 'Laundry',
+      '문구점': 'Stationery',
+      '서점': 'Bookstore',
+      '핸드폰': 'Mobile Phone',
+      'PC방': 'PC Bang',
+      '찜질방': 'Sauna',
+      '헬스장': 'Gym',
+      '학원': 'Academy',
+      
+      // 추가 일반적인 업종들
+      '까페': 'Cafe',
+      '통닭(치킨)': 'Chicken',
+      '한국음식점': 'Korean Restaurant',
+      '중국음식점': 'Chinese Restaurant',
+      '일본음식점': 'Japanese Restaurant',
+      '양식음식점': 'Western Restaurant',
+      '외국음식전문점(인도, 태국 등)': 'Foreign Cuisine',
+      '패밀리레스토랑': 'Family Restaurant',
+      '뷔페식': 'Buffet',
+      '정종/대포집/소주방': 'Korean Bar',
+      '감성주점': 'Pub',
+      '호프/통닭': 'Beer & Chicken',
+      '아이스크림': 'Ice Cream',
+      '떡카페': 'Rice Cake Cafe',
+      '키즈카페': 'Kids Cafe',
+      '전통찻집': 'Traditional Tea House',
+      '다방': 'Tea Room',
+      '라이브카페': 'Live Cafe',
+      '컴퓨터게임제공업': 'PC Room',
+      '인터넷컴퓨터게임시설제공업': 'Internet Cafe',
+      '노래연습장업': 'Karaoke',
+      '당구장업': 'Billiards',
+      '볼링장업': 'Bowling',
+      '피부미용업': 'Skin Care',
+      '이용업': 'Barber Shop',
+      '미용업': 'Beauty Salon',
+      '네일미용업': 'Nail Salon',
+      '안경업': 'Eyewear',
+      '의료기기판매업': 'Medical Equipment',
+      '동물병원': 'Veterinary Clinic',
+      '동물약국': 'Pet Pharmacy',
+      '꽃집': 'Flower Shop',
+      '화훼장식업': 'Floral Design',
+      '사진관': 'Photo Studio',
+      '세탁업': 'Laundry Service',
+      '핸드폰대리점': 'Mobile Phone Store',
+      '휴대폰판매수리업': 'Mobile Phone Repair',
+      '액세서리점': 'Accessory Store',
+      '가방점': 'Bag Store',
+      '신발점': 'Shoe Store',
+      '의류점': 'Clothing Store',
+      '아동복점': 'Children Clothing',
+      '유아용품점': 'Baby Goods',
+      '교복점': 'School Uniform',
+      '란제리점': 'Lingerie Store',
+      '혼수용품점': 'Wedding Goods',
+      '잡화점': 'General Goods',
+      '화장품점': 'Cosmetics Store',
+      '전자제품점': 'Electronics Store',
+      '컴퓨터판매점': 'Computer Store',
+      '문구점': 'Stationery Store',
+      '서점': 'Bookstore',
+      '음반점': 'Music Store',
+      '게임방': 'Game Room',
+      '만화방': 'Comic Book Cafe',
+      '독서실': 'Study Room',
+      '오락실': 'Arcade',
+      '체육관': 'Gym',
+      '수영장': 'Swimming Pool',
+      '골프연습장': 'Golf Practice Range',
+      '태권도장': 'Taekwondo Gym',
+      '요가스튜디오': 'Yoga Studio',
+      '필라테스': 'Pilates',
+      '댄스학원': 'Dance Academy',
+      '음악학원': 'Music Academy',
+      '입시학원': 'Cram School',
+      '외국어학원': 'Language School',
+      '컴퓨터학원': 'Computer School',
+      '미술학원': 'Art Academy',
+      '방과후교실': 'After School Program'
+    }
   },
   es: {
     languageName: 'Español',
@@ -165,7 +304,113 @@ const SHOPDASH_LANGUAGE_TEXTS = {
     // 차트 관련
     percent: '%',
     loading: 'Cargando...',
-    detailedInfo: 'Información Detallada'
+    detailedInfo: 'Información Detallada',
+    
+    // 업종별 다국어 매핑
+    businessTypes: {
+      // 기본 업종
+      '편의점': 'Tienda de Conveniencia',
+      '카페': 'Café',
+      '치킨': 'Pollo',
+      '피자': 'Pizza',
+      '한식': 'Comida Coreana',
+      '중식': 'Comida China',
+      '일식': 'Comida Japonesa',
+      '양식': 'Comida Occidental',
+      '분식': 'Bar de Snacks',
+      '베이커리': 'Panadería',
+      '미용실': 'Peluquería',
+      '네일아트': 'Arte de Uñas',
+      '노래방': 'Karaoke',
+      '음식점': 'Restaurante',
+      '커피전문점': 'Cafetería',
+      '술집': 'Bar',
+      '호프집': 'Casa de Cerveza',
+      '패스트푸드': 'Comida Rápida',
+      '의류': 'Ropa',
+      '신발': 'Zapatos',
+      '약국': 'Farmacia',
+      '세탁소': 'Lavandería',
+      '문구점': 'Papelería',
+      '서점': 'Librería',
+      '핸드폰': 'Teléfono Móvil',
+      'PC방': 'PC Bang',
+      '찜질방': 'Sauna',
+      '헬스장': 'Gimnasio',
+      '학원': 'Academia',
+      
+      // 추가 일반적인 업종들
+      '까페': 'Café',
+      '통닭(치킨)': 'Pollo',
+      '한국음식점': 'Restaurante Coreano',
+      '중국음식점': 'Restaurante Chino',
+      '일본음식점': 'Restaurante Japonés',
+      '양식음식점': 'Restaurante Occidental',
+      '외국음식전문점(인도, 태국 등)': 'Cocina Extranjera',
+      '패밀리레스토랑': 'Restaurante Familiar',
+      '뷔페식': 'Buffet',
+      '정종/대포집/소주방': 'Bar Coreano',
+      '감성주점': 'Pub',
+      '호프/통닭': 'Cerveza y Pollo',
+      '아이스크림': 'Helado',
+      '떡카페': 'Café de Pasteles de Arroz',
+      '키즈카페': 'Café para Niños',
+      '전통찻집': 'Casa de Té Tradicional',
+      '다방': 'Salón de Té',
+      '라이브카페': 'Café en Vivo',
+      '컴퓨터게임제공업': 'PC Bang',
+      '인터넷컴퓨터게임시설제공업': 'Café de Internet',
+      '노래연습장업': 'Karaoke',
+      '당구장업': 'Billar',
+      '볼링장업': 'Bolos',
+      '피부미용업': 'Cuidado de la Piel',
+      '이용업': 'Barbería',
+      '미용업': 'Salón de Belleza',
+      '네일미용업': 'Salón de Uñas',
+      '안경업': 'Óptica',
+      '의료기기판매업': 'Equipos Médicos',
+      '동물병원': 'Clínica Veterinaria',
+      '동물약국': 'Farmacia de Mascotas',
+      '꽃집': 'Floristería',
+      '화훼장식업': 'Diseño Floral',
+      '사진관': 'Estudio Fotográfico',
+      '세탁업': 'Servicio de Lavandería',
+      '핸드폰대리점': 'Tienda de Móviles',
+      '휴대폰판매수리업': 'Reparación de Móviles',
+      '액세서리점': 'Tienda de Accesorios',
+      '가방점': 'Tienda de Bolsos',
+      '신발점': 'Zapatería',
+      '의류점': 'Tienda de Ropa',
+      '아동복점': 'Ropa Infantil',
+      '유아용품점': 'Artículos para Bebés',
+      '교복점': 'Uniformes Escolares',
+      '란제리점': 'Lencería',
+      '혼수용품점': 'Artículos de Boda',
+      '잡화점': 'Artículos Generales',
+      '화장품점': 'Tienda de Cosméticos',
+      '전자제품점': 'Tienda de Electrónicos',
+      '컴퓨터판매점': 'Tienda de Computadoras',
+      '문구점': 'Papelería',
+      '서점': 'Librería',
+      '음반점': 'Tienda de Música',
+      '게임방': 'Sala de Juegos',
+      '만화방': 'Café de Cómics',
+      '독서실': 'Sala de Estudio',
+      '오락실': 'Arcade',
+      '체육관': 'Gimnasio',
+      '수영장': 'Piscina',
+      '골프연습장': 'Campo de Práctica de Golf',
+      '태권도장': 'Gimnasio de Taekwondo',
+      '요가스튜디오': 'Estudio de Yoga',
+      '필라테스': 'Pilates',
+      '댄스학원': 'Academia de Danza',
+      '음악학원': 'Academia de Música',
+      '입시학원': 'Academia Preparatoria',
+      '외국어학원': 'Escuela de Idiomas',
+      '컴퓨터학원': 'Escuela de Computación',
+      '미술학원': 'Academia de Arte',
+      '방과후교실': 'Programa Extraescolar'
+    }
   }
 };
 
@@ -193,6 +438,18 @@ function getShopDashText(key) {
   const language = getCurrentShopDashLanguage();
   const texts = SHOPDASH_LANGUAGE_TEXTS[language] || SHOPDASH_LANGUAGE_TEXTS['ko'];
   return texts[key] || key;
+}
+
+// 업종명 번역 함수
+function translateBusinessType(koreanBusinessType) {
+  const language = getCurrentShopDashLanguage();
+  const texts = SHOPDASH_LANGUAGE_TEXTS[language] || SHOPDASH_LANGUAGE_TEXTS['ko'];
+  
+  if (texts.businessTypes && texts.businessTypes[koreanBusinessType]) {
+    return texts.businessTypes[koreanBusinessType];
+  }
+  
+  return koreanBusinessType; // 번역이 없으면 원본 반환
 }
 
 // 템플릿 문자열 처리 ({count} 등)
@@ -281,6 +538,8 @@ document.addEventListener('DOMContentLoaded', function() {
 // 전역 함수로 등록
 window.getShopDashText = getShopDashText;
 window.formatShopDashText = formatShopDashText;
+window.translateBusinessType = translateBusinessType;
+window.getCurrentShopDashLanguage = getCurrentShopDashLanguage;
 window.getLocalizedTooltipText = getLocalizedTooltipText;
 window.getLocalizedPopupTexts = getLocalizedPopupTexts;
 window.changeShopDashLanguage = changeShopDashLanguage; 

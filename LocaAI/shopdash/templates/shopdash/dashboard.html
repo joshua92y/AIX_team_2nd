@@ -702,11 +702,22 @@ Chart.defaults.color = '#444444';
 
 // 전역 변수
 let charts = {};
+let isLoadingCharts = false;
+let lastLanguageChange = 0;
 
 // 페이지 로드 시 실행
 document.addEventListener('DOMContentLoaded', function() {
     loadDashboardStats();
-    loadAllCharts();
+    
+    // 초기 차트 로드 (1회만)
+    if (!isLoadingCharts) {
+        isLoadingCharts = true;
+        loadAllCharts();
+        
+        setTimeout(() => {
+            isLoadingCharts = false;
+        }, 3000);
+    }
 });
 
 // 대시보드 통계 로드
@@ -769,6 +780,11 @@ function loadChart(chartId, apiUrl, chartType, primaryColor) {
                 charts[chartId].destroy();
             }
             
+            // 업종별 분포 차트의 경우 업종명 번역
+            if (chartId === 'businessTypeChart' && data.labels) {
+                data.labels = data.labels.map(label => translateBusinessType(label));
+            }
+            
             // 색상 설정
             if (chartType === 'doughnut') {
                 // 도넛 차트용 다양한 색상
@@ -816,6 +832,11 @@ function loadTopBusinessSurvivalChart() {
             // 기존 차트가 있으면 제거
             if (charts['topBusinessSurvivalChart']) {
                 charts['topBusinessSurvivalChart'].destroy();
+            }
+            
+            // 업종명 번역
+            if (data.labels) {
+                data.labels = data.labels.map(label => translateBusinessType(label));
             }
             
             // 차트 생성
@@ -908,11 +929,15 @@ function updateTopBusinessDetails(data) {
         const avgArea = (data.avg_area && data.avg_area[index]) || 0;
         const storeCount = (data.store_counts && data.store_counts[index]) || 0;
         
+        // 원본 레이블에서 번역된 업종명 가져오기
+        const originalLabel = data.original_labels ? data.original_labels[index] : label;
+        const translatedLabel = translateBusinessType(originalLabel);
+        
         detailsHtml += `
             <div class="business-detail-item">
                 <div class="d-flex align-items-center">
                     <span class="business-rank rank-${rank}">${rank}</span>
-                    <div class="business-name">${label}</div>
+                    <div class="business-name">${translatedLabel}</div>
                 </div>
                 <div class="text-end">
                     <div class="business-rate">${rate}%</div>
@@ -995,6 +1020,40 @@ function getChartOptions(chartType, chartId) {
     }
 
     return baseOptions;
+}
+
+// 언어 변경 감지 및 차트 업데이트
+function handleLanguageChange() {
+    const now = Date.now();
+    
+    // 이전 언어 변경으로부터 최소 2초 이상 경과해야 함
+    if (now - lastLanguageChange < 2000 || isLoadingCharts) {
+        return;
+    }
+    
+    lastLanguageChange = now;
+    isLoadingCharts = true;
+    
+    console.log('ShopDash 언어 변경 감지됨 - 차트 업데이트 시작');
+    
+    // 차트 다시 로드하여 업종명 번역 적용
+    setTimeout(() => {
+        loadAllCharts();
+        
+        // 로딩 완료 후 플래그 해제
+        setTimeout(() => {
+            isLoadingCharts = false;
+        }, 3000);
+    }, 500);
+}
+
+// 언어 변경 이벤트 리스너 등록 (기존 전역 언어 변경 함수에서 호출)
+if (typeof window.funcChangeLang === 'function') {
+    const originalFuncChangeLang = window.funcChangeLang;
+    window.funcChangeLang = function(lang) {
+        originalFuncChangeLang(lang);
+        handleLanguageChange();
+    };
 }
 
 // 에러 처리

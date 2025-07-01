@@ -455,6 +455,7 @@ def top_business_survival_rate(request):
         
         data = {
             'labels': [row[0] for row in results],
+            'original_labels': [row[0] for row in results],  # 다국어 번역을 위한 원본 업종명
             'datasets': [{
                 'label': '평균 생존률 (%) - 0값 포함',
                 'data': [round(float(row[1]), 1) for row in results],
@@ -485,6 +486,7 @@ def top_business_survival_rate(request):
         # 에러 발생 시 기본 데이터 반환
         return JsonResponse({
             'labels': ['카페', '음식점', '편의점'],
+            'original_labels': ['카페', '음식점', '편의점'],  # 다국어 번역을 위한 원본 업종명
             'datasets': [{
                 'label': '평균 생존률 (%)',
                 'data': [75.5, 68.2, 62.1],
