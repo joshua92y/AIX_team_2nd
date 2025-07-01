@@ -1,4 +1,5 @@
 {% load static %}
+{% load i18n %}
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -51,19 +52,19 @@
 
         <!-- RECOVERY -->
         <div class="recovery">
-          <h2>Password Recovery</h2>
-          <p>Enter either the <strong>email address</strong> or <strong>username</strong> on the account and <strong>click Submit</strong></p>
-          <p>We'll email instructions on how to reset your password.</p>
+          <h2>{% trans "Password Recovery" %}</h2>
+          <p>{% trans "Enter either the email address or username on the account and click Submit." %}</p>
+          <p>{% trans "We'll email instructions on how to reset your password." %}</p>
           <!-- form 태그 -->
           <form class="recovery-form" method="post" data-reset-url="{% url 'custom_auth:custom_password_reset' %}">
           {% csrf_token %}
-            <input type="text" class="input" name="identifier" placeholder="Enter Email or Username Here">
-            <input type="submit" class="button" value="Submit">
+            <input type="text" class="input" name="identifier" placeholder="{% trans 'Enter Email or Username Here' %}">
+            <input type="submit" class="button" value="{% trans 'Submit' %}">
           </form>
           {% if form.errors %}
             <p class="error">{{ form.errors }}</p>
           {% endif %}
-          <p class="mssg">An email has been sent to you with further instructions.</p>
+          <p class="mssg">{% trans "An email has been sent to you with further instructions." %}</p>
         </div>
 
         <!-- FORM -->
@@ -83,6 +84,9 @@
           
           <!-- LOGIN TAB -->
           <div id="login-tab-content" {% if not is_signup %}class="active"{% endif %}>
+            {% if login_error %}
+              <p class="error">{% trans "Invalid username or password." %}</p>
+            {% endif %}
             <form class="login-form" method="post" action="{% url 'custom_auth:login' %}">
               {% csrf_token %}
               {% if next %}
@@ -132,71 +136,104 @@
   </div>
 
   <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const recoveryForm = document.querySelector(".recovery-form");
+document.addEventListener("DOMContentLoaded", function () {
+  console.log("[login.js] 🔥 DOMContentLoaded 진입됨");
 
-    if (recoveryForm) {
-      const submitBtn = recoveryForm.querySelector('input[type="submit"]');
-      const msgEl = document.querySelector(".mssg");
-
-      recoveryForm.addEventListener("submit", function (e) {
-        e.preventDefault();
-        const identifier = recoveryForm.querySelector("input[name='identifier']").value;
-        const csrfToken = recoveryForm.querySelector("[name='csrfmiddlewaretoken']").value;
-        const resetUrl = recoveryForm.dataset.resetUrl;
-
-        // 초기 설정
-        submitBtn.disabled = true;
-        submitBtn.value = "🔄 전송 중...";
-        submitBtn.classList.remove("success", "error");
-        msgEl.style.display = "none";
-
-        fetch(resetUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": csrfToken,
-          },
-          body: JSON.stringify({ identifier }),
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            console.log("📬 서버 응답:", data);
-            msgEl.textContent = data.detail || "메일이 전송되었습니다.";
-            msgEl.classList.add("animate-success");
-            msgEl.style.display = "block";
-
-            submitBtn.value = "✅ 전송 완료";
-            submitBtn.classList.add("success");
-
-            setTimeout(() => {
-              submitBtn.disabled = false;
-              submitBtn.value = "Submit";
-              submitBtn.classList.remove("success");
-              msgEl.classList.remove("animate-success");
-            }, 2500);
-          })
-          .catch((error) => {
-            console.error("❌ 에러 발생:", error);
-            msgEl.textContent = "요청에 실패했습니다.";
-            msgEl.classList.add("animate-error");
-            msgEl.style.display = "block";
-
-            submitBtn.value = "❌ 실패";
-            submitBtn.classList.add("error");
-
-            setTimeout(() => {
-              submitBtn.disabled = false;
-              submitBtn.value = "Submit";
-              submitBtn.classList.remove("error");
-              msgEl.classList.remove("animate-error");
-            }, 2500);
-          });
-      });
+  // 언어 설정 감지 및 적용
+  const sessionLang = "{{ request.session.django_language|default:'' }}";
+  console.log("[login.js] 세션 언어:", sessionLang);
+  if (!sessionLang || !['KOR', 'ENG', 'ESP'].includes(sessionLang)) {
+    const browserLang = navigator.language || navigator.userLanguage;
+    let lang = 'KOR';
+    if (browserLang.startsWith('en')) {
+      lang = 'ENG';
+    } else if (browserLang.startsWith('es')) {
+      lang = 'ESP';
     }
-  });
-  </script>
+    console.log("[login.js] 감지된 브라우저 언어:", browserLang);
+    console.log("[login.js] 서버에 설정 요청 언어:", lang);
 
+    fetch("{% url 'set_language' %}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": "{{ csrf_token }}",
+      },
+      body: JSON.stringify({ lang }),
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log("[login.js] 언어 설정 결과:", data);
+    })
+    .catch(err => {
+      console.error("[login.js] 언어 설정 실패:", err);
+    });
+  }
+
+  // 비밀번호 복구 로직
+  const recoveryForm = document.querySelector(".recovery-form");
+
+  if (recoveryForm) {
+    const submitBtn = recoveryForm.querySelector('input[type="submit"]');
+    const msgEl = document.querySelector(".mssg");
+
+    recoveryForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const identifier = recoveryForm.querySelector("input[name='identifier']").value;
+      const csrfToken = recoveryForm.querySelector("[name='csrfmiddlewaretoken']").value;
+      const resetUrl = recoveryForm.dataset.resetUrl;
+
+      // 초기 설정
+      submitBtn.disabled = true;
+      submitBtn.value = "🔄 전송 중...";
+      submitBtn.classList.remove("success", "error");
+      msgEl.style.display = "none";
+
+      fetch(resetUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken,
+        },
+        body: JSON.stringify({ identifier }),
+      })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("📬 서버 응답:", data);
+        msgEl.textContent = data.detail || "메일이 전송되었습니다.";
+        msgEl.classList.add("animate-success");
+        msgEl.style.display = "block";
+
+        submitBtn.value = "✅ 전송 완료";
+        submitBtn.classList.add("success");
+
+        setTimeout(() => {
+          submitBtn.disabled = false;
+          submitBtn.value = "Submit";
+          submitBtn.classList.remove("success");
+          msgEl.classList.remove("animate-success");
+        }, 2500);
+      })
+      .catch((error) => {
+        console.error("❌ 에러 발생:", error);
+        msgEl.textContent = "요청에 실패했습니다.";
+        msgEl.classList.add("animate-error");
+        msgEl.style.display = "block";
+
+        submitBtn.value = "❌ 실패";
+        submitBtn.classList.add("error");
+
+        setTimeout(() => {
+          submitBtn.disabled = false;
+          submitBtn.value = "Submit";
+          submitBtn.classList.remove("error");
+          msgEl.classList.remove("animate-error");
+        }, 2500);
+      });
+    });
+  }
+});
+  </script>
 
 
 

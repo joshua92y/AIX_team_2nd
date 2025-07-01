@@ -163,6 +163,36 @@
       window.sessionLang = "{{ request.session.language|default:'KOR' }}";
     }
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const langParam = urlParams.get('lang');
+
+    const langMap = {
+      'ko': 'KOR',
+      'en': 'ENG',
+      'es': 'ESP'
+    };
+
+    const mappedFromParam = langParam ? langMap[langParam.toLowerCase()] : null;
+    const sessionLangRaw = "{{ request.session.language|default:'' }}";
+
+    if (mappedFromParam) {
+      // lang 파라미터 우선 적용
+      console.log("[header.js] URL lang param 감지됨:", langParam, "→", mappedFromParam);
+      setSelectedLangValue(mappedFromParam);
+      window.sessionLang = mappedFromParam;
+    } else if (!['KOR', 'ENG', 'ESP'].includes(sessionLangRaw)) {
+      // 세션 언어가 없으면 브라우저 언어 감지
+      const browserLang = (navigator.language || navigator.userLanguage || 'ko').substring(0, 2).toLowerCase();
+      const mappedFromBrowser = langMap[browserLang] || 'KOR';
+      console.log("[header.js] 브라우저 언어 감지됨:", browserLang, "→", mappedFromBrowser);
+      setSelectedLangValue(mappedFromBrowser);
+      window.sessionLang = mappedFromBrowser;
+    } else {
+      // 세션 언어 그대로 사용
+      console.log("[header.js] 세션 언어 감지됨:", sessionLangRaw);
+      window.sessionLang = sessionLangRaw;
+    }
+
 		$(window).ready(function() {
 		  funcChangeLang(window.sessionLang);
 		})
