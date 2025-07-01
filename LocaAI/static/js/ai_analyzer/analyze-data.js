@@ -4,12 +4,12 @@
 
 // 업종 데이터 (38개 업종)
 const businessTypes = [
-  {id: 0, kor: "감성주점", eng: "Atmospheric Bar", esp: "Bar Atmosférico"},
+  {id: 0, kor: "감성주점", eng: "Sentimental pub", esp: "Pub sentimental"},
   {id: 1, kor: "경양식", eng: "Western restaurant", esp: "Restaurante occidental"},
   {id: 2, kor: "관광호텔", eng: "Tourist hotel", esp: "Hotel turístico"},
   {id: 3, kor: "극장", eng: "Theatre", esp: "Teatro"},
   {id: 4, kor: "기타", eng: "Others", esp: "Otros"},
-  {id: 5, kor: "기타 휴게음식점", eng: "Other Snack Restaurant", esp: "Otro Restaurante de Aperitivos"},
+  {id: 5, kor: "기타 휴게음식점", eng: "Other refreshment food", esp: "Otra comida de refrigerio"},
   {id: 6, kor: "김밥(도시락)", eng: "Kimbap(lunchbox)", esp: "Kimbap(fiambrera)"},
   {id: 7, kor: "까페", eng: "Cafe", esp: "Café"},
   {id: 8, kor: "냉면집", eng: "Cold noodle restaurant", esp: "Restaurante de fideos fríos"},
@@ -77,6 +77,17 @@ function translateBusinessType(koreanName, lang = 'kor') {
   // 언어가 한국어이거나 지정되지 않은 경우 원본 반환
   if (!lang || lang === 'ko' || lang === 'kor') {
     console.log('✅ 한국어 조건 만족 - 원본 반환:', koreanName);
+    return koreanName;
+  }
+  
+  // 🔧 이미 번역된 텍스트인지 확인 (중복 번역 방지)
+  const targetLang = lang === 'en' || lang === 'eng' ? 'eng' : 'esp';
+  const isAlreadyTranslated = businessTypes.some(type => 
+    type[targetLang] === koreanName || type[targetLang] === koreanName.trim()
+  );
+  
+  if (isAlreadyTranslated) {
+    console.log('✅ 이미 번역된 텍스트 감지 - 원본 반환:', koreanName);
     return koreanName;
   }
   

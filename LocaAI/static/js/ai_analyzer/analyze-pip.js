@@ -46,6 +46,62 @@ function getPIPPrecautionsQuestion() {
   return questions[lang] || questions.ko;
 }
 
+// PIP 모달에서 현재 선택된 모드 가져오기
+function getCurrentPIPMode() {
+  const llmMode = document.getElementById('pipLlmMode');
+  const ragMode = document.getElementById('pipRagMode');
+  
+  if (llmMode && llmMode.checked) {
+    return 'llm';
+  } else if (ragMode && ragMode.checked) {
+    return 'rag';
+  }
+  
+  return 'llm'; // 기본값
+}
+
+// PIP 모드 변경 시 설명 업데이트
+function updatePIPModeDescription() {
+  const mode = getCurrentPIPMode();
+  const lang = window.getCurrentAILanguage ? window.getCurrentAILanguage() : 'ko';
+  const modeDescElement = document.getElementById('pipModeDescription');
+  
+  if (!modeDescElement) return;
+  
+  // 기존 텍스트 초기화
+  modeDescElement.innerHTML = '';
+  
+  let descriptions;
+  if (mode === 'llm') {
+    descriptions = {
+      ko: 'LLM 모드: 직접 AI 모델 연결',
+      en: 'LLM Mode: Direct AI model connection',
+      es: 'Modo LLM: Conexión directa al modelo de IA'
+    };
+  } else {
+    descriptions = {
+      ko: 'RAG 모드: 벡터DB 기반 지식 검색',
+      en: 'RAG Mode: Vector DB-based knowledge search',
+      es: 'Modo RAG: Búsqueda de conocimiento basada en BD vectorial'
+    };
+  }
+  
+  // 모든 언어 span 생성
+  Object.keys(descriptions).forEach((langCode, index) => {
+    const span = document.createElement('span');
+    span.setAttribute('data-lang', langCode.toUpperCase());
+    span.textContent = descriptions[langCode];
+    
+    if (langCode !== lang) {
+      span.style.display = 'none';
+    }
+    
+    modeDescElement.appendChild(span);
+  });
+  
+  console.log(`📱 PIP 모드 설명 업데이트: ${mode} (${lang})`);
+}
+
 // PIP 모달의 다국어 요소 업데이트
 function updatePIPModalLanguage() {
   const lang = window.getCurrentAILanguage ? window.getCurrentAILanguage() : 'ko';
@@ -60,6 +116,9 @@ function updatePIPModalLanguage() {
     };
     pipChatInput.placeholder = placeholders[lang] || placeholders.ko;
   }
+  
+  // 모드 설명 업데이트
+  updatePIPModeDescription();
   
   console.log(`📱 PIP 모달 언어 업데이트 완료: ${lang}`);
 }
@@ -166,6 +225,39 @@ function createPIPModalHTML() {
 
           <!-- PIP 입력 영역 -->
           <div class="bg-white border-top p-4">
+            <!-- PIP 모드 토글 -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div class="d-flex align-items-center">
+                <span class="me-3">
+                  <i class="bi bi-gear me-1"></i>
+                  <small class="text-muted">
+                    <span data-lang="KOR">모드 선택</span>
+                    <span data-lang="ENG" style="display: none;">Mode Selection</span>
+                    <span data-lang="ESP" style="display: none;">Selección de Modo</span>
+                  </small>
+                </span>
+                <div class="pip-mode-toggle-container">
+                  <div class="pip-mode-toggle">
+                    <input type="radio" id="pipLlmMode" name="pipChatMode" value="llm" checked>
+                    <label for="pipLlmMode" class="pip-mode-label">
+                      <i class="bi bi-cpu me-1"></i>
+                      <span data-lang="KOR">LLM</span>
+                      <span data-lang="ENG" style="display: none;">LLM</span>
+                      <span data-lang="ESP" style="display: none;">LLM</span>
+                    </label>
+                    
+                    <input type="radio" id="pipRagMode" name="pipChatMode" value="rag">
+                    <label for="pipRagMode" class="pip-mode-label">
+                      <i class="bi bi-database me-1"></i>
+                      <span data-lang="KOR">RAG</span>
+                      <span data-lang="ENG" style="display: none;">RAG</span>
+                      <span data-lang="ESP" style="display: none;">RAG</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div class="input-group">
               <input type="text" id="pipChatInput" class="form-control" 
                 data-placeholder-kor="분석 결과에 대해 궁금한 점을 물어보세요..."
@@ -183,9 +275,11 @@ function createPIPModalHTML() {
             <div class="d-flex justify-content-between align-items-center mt-2">
               <small class="text-muted">
                 <i class="bi bi-shield-check me-1"></i>
-                <span data-lang="KOR">현재 분석 세션 결과를 기반으로 답변</span>
-                <span data-lang="ENG" style="display: none;">Answers based on current analysis session results</span>
-                <span data-lang="ESP" style="display: none;">Respuestas basadas en los resultados de la sesión de análisis actual</span>
+                <span id="pipModeDescription">
+                  <span data-lang="KOR">LLM 모드: 직접 AI 모델 연결</span>
+                  <span data-lang="ENG" style="display: none;">LLM Mode: Direct AI model connection</span>
+                  <span data-lang="ESP" style="display: none;">Modo LLM: Conexión directa al modelo de IA</span>
+                </span>
               </small>
               <div id="pipChatConnectionStatus" style="display: none;">
                 <small class="text-primary">
@@ -299,7 +393,10 @@ function synchronizePIPInputs() {
 function setupPIPEventListeners() {
   const pipChatInput = document.getElementById('pipChatInput');
   const pipChatSendBtn = document.getElementById('pipChatSendBtn');
+  const pipLlmMode = document.getElementById('pipLlmMode');
+  const pipRagMode = document.getElementById('pipRagMode');
   
+  // 채팅 입력 이벤트
   if (pipChatInput) {
     pipChatInput.addEventListener('keypress', function(e) {
       if (e.key === 'Enter') {
@@ -308,8 +405,28 @@ function setupPIPEventListeners() {
     });
   }
   
+  // 채팅 전송 버튼 이벤트
   if (pipChatSendBtn) {
     pipChatSendBtn.addEventListener('click', sendPIPMessage);
+  }
+  
+  // PIP 모드 변경 이벤트
+  if (pipLlmMode) {
+    pipLlmMode.addEventListener('change', function() {
+      if (this.checked) {
+        updatePIPModeDescription();
+        console.log('📱 PIP 모드 변경: LLM');
+      }
+    });
+  }
+  
+  if (pipRagMode) {
+    pipRagMode.addEventListener('change', function() {
+      if (this.checked) {
+        updatePIPModeDescription();
+        console.log('📱 PIP 모드 변경: RAG');
+      }
+    });
   }
 }
 
@@ -327,34 +444,120 @@ function minimizeChatbotPIP() {
 }
 
 // PIP 채팅 메시지 전송
-// PIP 메시지 전송 - analyze-chatbot.js의 sendChatMessage 함수 사용
 async function sendPIPMessage() {
   const input = document.getElementById('pipChatInput');
   const message = input.value.trim();
   
   if (!message) return;
   
-  // PIP 입력 필드를 메인 입력 필드와 동기화
-  const chatInput = document.getElementById('chatInput');
-  if (chatInput) {
-    chatInput.value = message;
-  }
+  const sendBtn = document.getElementById('pipChatSendBtn');
+  const statusDiv = document.getElementById('pipChatConnectionStatus');
   
-  // analyze-chatbot.js의 sendChatMessage 함수 호출
-  if (typeof window.sendChatMessage === 'function') {
-    await window.sendChatMessage();
+  try {
+    // 버튼 비활성화 및 로딩 표시
+    sendBtn.disabled = true;
+    statusDiv.style.display = 'block';
+    input.disabled = true;
+    
+    // 현재 모드 가져오기
+    const mode = getCurrentPIPMode();
+    
+    // 사용자 메시지 표시
+    const pipChatMessages = document.getElementById('pipChatMessages');
+    const userMessageHTML = `
+      <div class="d-flex mb-3">
+        <div class="ms-auto">
+          <div class="bg-primary text-white rounded-3 p-3 shadow-sm" style="max-width: 400px;">
+            <p class="mb-0">${message}</p>
+          </div>
+          <small class="text-muted d-block mt-1 text-end">
+            ${new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+          </small>
+        </div>
+      </div>
+    `;
+    pipChatMessages.insertAdjacentHTML('beforeend', userMessageHTML);
+    pipChatMessages.scrollTop = pipChatMessages.scrollHeight;
+    
+    // AI 응답 메시지 컨테이너 생성
+    const botMessageHTML = `
+      <div class="d-flex mb-3">
+        <div class="me-auto">
+          <div class="d-flex align-items-start">
+            <div class="bg-gradient bg-primary rounded-circle me-2 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px;">
+              <i class="bi bi-robot text-white" style="font-size: 14px;"></i>
+            </div>
+            <div class="bg-white rounded-3 p-3 shadow-sm" style="max-width: 500px;" id="pipCurrentBotMessage">
+              <div class="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          </div>
+          <small class="text-muted d-block mt-1 ms-5">
+            ${new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+          </small>
+        </div>
+      </div>
+    `;
+    pipChatMessages.insertAdjacentHTML('beforeend', botMessageHTML);
+    pipChatMessages.scrollTop = pipChatMessages.scrollHeight;
+    
+    pipCurrentBotMessageText = '';
+    
+    // WebSocket으로 메시지 전송
+    if (window.chatSocket && window.chatSocket.readyState === WebSocket.OPEN) {
+      const language = window.getCurrentAILanguage ? window.getCurrentAILanguage() : 'ko';
+      
+      window.chatSocket.send(JSON.stringify({
+        'message': message,
+        'mode': mode,
+        'language': language
+      }));
+    } else {
+      throw new Error('WebSocket 연결이 끊어졌습니다');
+    }
+    
+    // 입력 필드 초기화
+    input.value = '';
+    
+  } catch (error) {
+    console.error('PIP 메시지 전송 오류:', error);
+    
+    // 오류 메시지 표시
+    const errorMessageHTML = `
+      <div class="d-flex mb-3">
+        <div class="me-auto">
+          <div class="d-flex align-items-start">
+            <div class="bg-danger rounded-circle me-2 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px;">
+              <i class="bi bi-exclamation-triangle text-white" style="font-size: 14px;"></i>
+            </div>
+            <div class="bg-light rounded-3 p-3 border border-danger" style="max-width: 500px;">
+              <p class="mb-0 text-danger">
+                <i class="bi bi-wifi-off me-1"></i>
+                연결 오류가 발생했습니다. 잠시 후 다시 시도해주세요.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    pipChatMessages.insertAdjacentHTML('beforeend', errorMessageHTML);
+    pipChatMessages.scrollTop = pipChatMessages.scrollHeight;
+    
+  } finally {
+    // 버튼 및 입력 필드 활성화
+    sendBtn.disabled = false;
+    statusDiv.style.display = 'none';
+    input.disabled = false;
+    input.focus();
+    
+    // 히스토리 업데이트
+    setTimeout(() => {
+      updatePIPChatHistory();
+    }, 100);
   }
-  
-  // 입력 필드 초기화
-  input.value = '';
-  if (chatInput) {
-    chatInput.value = '';
-  }
-  
-  // 히스토리 업데이트
-  setTimeout(() => {
-    updatePIPChatHistory();
-  }, 100);
 }
 
 // PIP 관련 함수들은 analyze-chatbot.js에서 처리됩니다.
@@ -782,50 +985,48 @@ function scrollToPIPMessage(sessionNumber) {
   }
 }
 
-// 스트리밍 메시지 업데이트 (PIP 포함)
+// PIP 전용 스트리밍 메시지 업데이트
 function appendToPIPBotMessage(chunk) {
   pipCurrentBotMessageText += chunk;
   
-  // 메인 채팅 메시지 업데이트
-  const currentMessage = document.getElementById('currentBotMessage');
-  if (currentMessage) {
-    const contentElement = currentMessage.querySelector('#botMessageContent');
-    if (contentElement) {
-      if (contentElement.innerHTML.includes('spinner-border')) {
-        contentElement.innerHTML = marked.parse(chunk);
-      } else {
-        contentElement.innerHTML = marked.parse(pipCurrentBotMessageText);
-      }
-    }
-    document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
-  }
-
-  // PIP도 동시에 업데이트
-  const currentPIPMessage = document.getElementById('currentPIPBotMessage');
+  // PIP 메시지 업데이트
+  const currentPIPMessage = document.getElementById('pipCurrentBotMessage');
   if (currentPIPMessage) {
-    const pipContentElement = currentPIPMessage.querySelector('#pipBotMessageContent');
-    if (pipContentElement) {
-      if (pipContentElement.innerHTML.includes('spinner-border')) {
-        pipContentElement.innerHTML = marked.parse(chunk);
-      } else {
-        pipContentElement.innerHTML = marked.parse(pipCurrentBotMessageText);
-      }
-      document.getElementById('pipChatMessages').scrollTop = document.getElementById('pipChatMessages').scrollHeight;
+    // 타이핑 인디케이터 제거하고 텍스트 표시
+    const typingIndicator = currentPIPMessage.querySelector('.typing-indicator');
+    if (typingIndicator) {
+      typingIndicator.remove();
+    }
+    
+    // 마크다운 파싱 후 표시
+    if (typeof marked !== 'undefined') {
+      currentPIPMessage.innerHTML = marked.parse(pipCurrentBotMessageText);
+    } else {
+      currentPIPMessage.innerHTML = `<p class="mb-0">${pipCurrentBotMessageText.replace(/\n/g, '<br>')}</p>`;
+    }
+    
+    // 스크롤 업데이트
+    const pipChatMessages = document.getElementById('pipChatMessages');
+    if (pipChatMessages) {
+      pipChatMessages.scrollTop = pipChatMessages.scrollHeight;
     }
   }
 }
 
-// 봇 메시지 완료 처리 (PIP 포함)
+// PIP 전용 봇 메시지 완료 처리
 function finalizePIPBotMessage() {
-  const currentMessage = document.getElementById('currentBotMessage');
-  const currentPIPMessage = document.getElementById('currentPIPBotMessage');
+  const currentPIPMessage = document.getElementById('pipCurrentBotMessage');
   
-  if (currentMessage) {
-    currentMessage.removeAttribute('id');
-  }
   if (currentPIPMessage) {
+    // ID 제거하여 더 이상 업데이트되지 않도록 처리
     currentPIPMessage.removeAttribute('id');
+    
+    // 최종 마크다운 파싱
+    if (pipCurrentBotMessageText && typeof marked !== 'undefined') {
+      currentPIPMessage.innerHTML = marked.parse(pipCurrentBotMessageText);
+    }
   }
+  
   // 메시지 텍스트 초기화
   pipCurrentBotMessageText = '';
   
@@ -833,6 +1034,8 @@ function finalizePIPBotMessage() {
   setTimeout(() => {
     updatePIPChatHistory();
   }, 100);
+  
+  console.log('📱 PIP 봇 메시지 완료 처리');
 }
 
 // 현재 언어 감지 함수
@@ -861,3 +1064,8 @@ function getCurrentLanguage() {
 // ===========================================
 window.updatePIPModalLanguage = updatePIPModalLanguage;
 window.updatePIPChatHistory = updatePIPChatHistory;
+window.appendToPIPBotMessage = appendToPIPBotMessage;
+window.finalizePIPBotMessage = finalizePIPBotMessage;
+window.getCurrentPIPMode = getCurrentPIPMode;
+window.openChatbotPIP = openChatbotPIP;
+window.closeChatbotPIP = closeChatbotPIP;

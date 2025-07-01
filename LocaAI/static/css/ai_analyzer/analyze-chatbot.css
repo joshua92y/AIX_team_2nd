@@ -55,4 +55,47 @@
   margin: 0.5rem 0;
   font-style: italic;
   color: #475569;
+}
+
+/* ===== AI Analyzer 모드 토글 스타일 ===== */
+.btn-group .btn-check:checked + .btn-outline-primary {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+  color: white;
+}
+
+.btn-group .btn-check:checked + .btn-outline-success {
+  background-color: #198754;
+  border-color: #198754;
+  color: white;
+}
+
+.btn-group .btn {
+  transition: all 0.2s ease;
+  font-weight: 500;
+  min-width: 70px;
+}
+
+.btn-group .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15);
+}
+
+/* 토글 버튼 애니메이션 */
+.btn-check:checked + .btn {
+  animation: modeToggleSelected 0.3s ease;
+}
+
+@keyframes modeToggleSelected {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* 모바일 반응형 */
+@media (max-width: 576px) {
+  .btn-group .btn {
+    min-width: 60px;
+    font-size: 0.875rem;
+  }
 } 

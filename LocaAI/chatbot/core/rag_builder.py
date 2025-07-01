@@ -100,13 +100,7 @@ async def build_multi_collection_chain(
         for name in collection_names
     })
 
-# 3️⃣ 응답 조합 체인
-combine_answers_chain = (
-    RunnableLambda(lambda answers_dict: "\n\n".join(f"[{k}]\n{v}" for k, v in answers_dict.items()))
-    | PromptTemplate.from_template("다음은 여러 출처의 답변입니다:\n\n{answers}\n\n최종 요약된 답변을 작성해 주세요.")
-    | streaming_llm
-    | StrOutputParser()
-)
+# 3️⃣ 응답 조합 체인 (이제 build_combine_answers_chain 함수로 대체됨)
 
 # 4️⃣ 요약 체인
 summarize_chain = (
@@ -161,8 +155,8 @@ async def save_to_db_chain(user_id, session_id, question, answer, summary, colle
     logger.debug("✅ ChatLog 저장 완료")
 
 # ✅ 전체 파이프라인
-async def run_rag_pipeline(user_id: int, session_id: str, question: str, collection: str = None, language: str = None):
-    logger.debug(f"🚀 run_rag_pipeline 시작 | user_id={user_id}, session_id={session_id}, collection={collection}, language={language}, question={question[:30]}...")
+async def run_rag_pipeline(user_id: int, session_id: str, question: str, language: str = "ko"):
+    logger.debug(f"🚀 run_rag_pipeline 시작 | user_id={user_id}, session_id={session_id}, language={language}, question={question[:30]}...")
     
     history = await DjangoChatHistory(user_id, session_id).load()
     memory = ConversationBufferWindowMemory(chat_memory=history, return_messages=True)
@@ -180,17 +174,10 @@ async def run_rag_pipeline(user_id: int, session_id: str, question: str, collect
     })
     logger.debug(f"🔍 요약이 포함된 질문: {question_with_summary['question'][:100]}...")
 
-    # 2️⃣ 컬렉션별 응답 - 클라이언트가 지정한 컬렉션 사용
+    # 2️⃣ 컬렉션별 응답
     allowed = set(settings.RAG_SETTINGS["COLLECTIONS"])
-    all_collections = [name for name in list_all_collections() if name in allowed]
-    
-    # 클라이언트가 특정 컬렉션을 요청한 경우 해당 컬렉션만 사용
-    if collection and collection in all_collections:
-        collection_names = [collection]
-        logger.debug(f"📚 클라이언트 지정 컬렉션 사용: {collection_names}")
-    else:
-        collection_names = all_collections
-        logger.debug(f"📚 기본 모든 컬렉션 사용: {collection_names}")
+    collection_names = [name for name in list_all_collections() if name in allowed]
+    logger.debug(f"📚 대상 컬렉션: {collection_names}")
 
     # ✅ PromptTemplate는 dict input 필요
     collection_input_dict = {
@@ -207,6 +194,7 @@ async def run_rag_pipeline(user_id: int, session_id: str, question: str, collect
 
     # 3️⃣ 응답 조합
     final_answer_chunks = []
+    combine_answers_chain = await build_combine_answers_chain(language)
     async for chunk in combine_answers_chain.astream(collection_answers):
         final_answer_chunks.append(chunk)
         yield chunk
@@ -238,3 +226,156 @@ async def run_rag_pipeline(user_id: int, session_id: str, question: str, collect
     )
 
     logger.debug("🎯 run_rag_pipeline 완료")
+
+
+# ✅ 응답 조합 체인 (언어별)
+async def build_combine_answers_chain(language: str = "ko"):
+    from typing import Literal
+    
+    prompt_name = {
+        "ko": "rag_combine_answers_ko",
+        "en": "rag_combine_answers_en",
+        "es": "rag_combine_answers_es"
+    }.get(language, "rag_combine_answers_ko")
+
+    try:
+        prompt_obj = await sync_to_async(Prompt.objects.get)(name=prompt_name)
+        prompt = PromptTemplate.from_template(prompt_obj.content)
+        logger.info(f"✅ Loaded prompt '{prompt_name}' from DB.")
+    except Prompt.DoesNotExist:
+        logger.error(f"❌ Prompt '{prompt_name}' not found. Using fallback.")
+        fallback_templates = {
+            "ko": "다음은 여러 출처의 답변입니다:\n\n{answers}\n\n최종 요약된 답변을 작성해 주세요.",
+            "en": "Based on the following multiple sources:\n\n{answers}\n\nPlease provide a final, summarized answer.",
+            "es": "Basado en las siguientes fuentes:\n\n{answers}\n\nPor favor, proporciona una respuesta final resumida."
+        }
+        prompt = PromptTemplate.from_template(fallback_templates.get(language, fallback_templates["ko"]))
+
+    def format_for_prompt(answers_dict: dict) -> dict:
+        return {
+            "answers": "\n\n".join(
+                f"[{k}]\n{v.get('llm_response', 'No response.')}" for k, v in answers_dict.items()
+            )
+        }
+
+    return (
+        RunnableLambda(format_for_prompt)
+        | prompt
+        | streaming_llm
+        | StrOutputParser()
+    )
+
+
+# ✅ LLM 전용 파이프라인
+async def run_llm_pipeline(user_id: int, session_id: str, question: str, language: str = "ko"):
+    logger.debug(f"🚀 run_llm_pipeline 시작 | user_id={user_id}, session_id={session_id}, lang={language}, question={question[:30]}...")
+
+    # ✅ LLM 프롬프트 동적 로드 (언어에 따라 분기) - LLM 전용 프롬프트 사용
+    if language == "ko":
+        prompt_name = "llm_consultation"
+    elif language == "en":
+        prompt_name = "llm_consultation_en"
+    elif language == "es":
+        prompt_name = "llm_consultation_es"
+    else:
+        prompt_name = "llm_consultation" # 기본값
+
+    try:
+        prompt_obj = await sync_to_async(Prompt.objects.get)(name=prompt_name)
+        llm_prompt = PromptTemplate.from_template(prompt_obj.content)
+        logger.info(f"✅ Loaded prompt '{prompt_name}' from DB for language '{language}'.")
+    except Prompt.DoesNotExist:
+        logger.error(f"❌ CRITICAL: Prompt '{prompt_name}' not found in the database. This prompt is required for the LLM pipeline.")
+        # 기본 프롬프트로 fallback - 상담 AI 역할
+        fallback_templates = {
+            "ko": """당신은 상권 분석 및 창업 상담 전문 AI입니다. 사용자가 제공한 정보와 질문을 바탕으로 전문적인 상담을 제공해주세요.
+
+질문: {question}
+
+대화 히스토리:
+{chat_history}
+
+위 내용을 바탕으로 상권 분석, 창업, 사업 운영에 대한 전문적이고 실용적인 조언을 제공해 주세요. 구체적인 데이터나 수치가 없더라도 일반적인 업계 지식과 경험을 바탕으로 도움이 되는 답변을 해주세요.""",
+            "en": """You are a professional AI consultant specializing in commercial area analysis and business consulting. Please provide expert consultation based on the information and questions provided by the user.
+
+Question: {question}
+
+Chat History:
+{chat_history}
+
+Based on the above content, please provide professional and practical advice on commercial area analysis, business startup, and business operations. Even without specific data or figures, please give helpful answers based on general industry knowledge and experience.""",
+            "es": """Eres un consultor de IA profesional especializado en análisis de áreas comerciales y consultoría empresarial. Proporciona consultoría experta basada en la información y preguntas proporcionadas por el usuario.
+
+Pregunta: {question}
+
+Historial de chat:
+{chat_history}
+
+Basado en el contenido anterior, proporciona consejos profesionales y prácticos sobre análisis de áreas comerciales, creación de empresas y operaciones comerciales. Incluso sin datos o cifras específicas, da respuestas útiles basadas en conocimiento general de la industria y experiencia."""
+        }
+        llm_prompt = PromptTemplate.from_template(fallback_templates.get(language, fallback_templates["ko"]))
+
+    # ✅ LLM 체인 구성
+    llm_chain = (
+        RunnableMap({
+            "question": lambda x: x["question"],
+            "chat_history": lambda x: x["chat_history"]
+        })
+        | llm_prompt
+        | streaming_llm
+        | StrOutputParser()
+    )
+
+    # ✅ 1. 대화 히스토리 및 최근 요약 로드
+    history = await DjangoChatHistory(user_id, session_id).load()
+    
+    recent_summary = await sync_to_async(lambda: ChatMemory.objects.filter(
+        session__session_id=session_id, memory_type='summary'
+    ).order_by('-created_at').first())()
+    summary_text = recent_summary.content["text"] if recent_summary else ""
+    logger.debug(f"📌 [LLM] 불러온 요약: {summary_text[:100]}...")
+
+    # ✅ 2. 요약을 질문에 포함 (유사도에 따라)
+    question_with_summary = load_summary_chain.invoke({
+        "summary": summary_text,
+        "question": question
+    })['question']
+    logger.debug(f"🔍 [LLM] 요약 포함된 질문: {question_with_summary[:100]}...")
+
+    # ✅ 3. LLM 체인 실행
+    final_answer_chunks = []
+    
+    memory = ConversationBufferWindowMemory(chat_memory=history, return_messages=False, k=5)
+    history_str = memory.load_memory_variables({}).get("history", "")
+
+    async for chunk in llm_chain.astream({
+        "question": question_with_summary,
+        "chat_history": history_str
+    }):
+        final_answer_chunks.append(chunk)
+        yield chunk
+
+    final_answer = "".join(final_answer_chunks)
+    logger.debug(f"✅ [LLM] 최종 응답 생성 완료: {final_answer[:200]}...")
+    await sync_to_async(history.add_user_message)(question)
+    await sync_to_async(history.add_ai_message)(final_answer)
+
+    # ✅ 4. 대화 요약 생성
+    summary = await summarize_chain.ainvoke({
+        "question": question,
+        "answer": final_answer,
+        "collection_summary": ""  # RAG가 아니므로 출처 요약은 없음
+    })
+    logger.debug(f"📝 [LLM] 요약 생성 완료: {summary[:200]}...")
+
+    # ✅ 5. DB 저장
+    await save_to_db_chain(
+        user_id=user_id,
+        session_id=session_id,
+        question=question,
+        answer=final_answer,
+        summary=summary,
+        collection_results={}  # RAG가 아니므로 컬렉션 결과는 없음
+    )
+
+    logger.debug("🎯 run_llm_pipeline 완료")

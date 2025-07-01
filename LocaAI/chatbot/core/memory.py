@@ -52,5 +52,10 @@ class DjangoChatHistory(BaseChatMessageHistory):
     def get_messages(self) -> list[BaseMessage]:
         return self._messages
     
+    @property
+    def messages(self) -> list[BaseMessage]:
+        """LangChain 호환성을 위한 messages 프로퍼티"""
+        return self._messages
+    
     def clear(self):  # ✅ 추상 메서드 구현 필수
         self._messages.clear()

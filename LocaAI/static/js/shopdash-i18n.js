@@ -59,7 +59,7 @@ const SHOPDASH_LANGUAGE_TEXTS = {
     loading: '로딩 중...',
     detailedInfo: '상세 정보',
     
-    // 업종별 다국어 매핑
+    // 업종별 다국어 매핑 (API에서 반환되는 업종명 포함)
     businessTypes: {
       '편의점': '편의점',
       '카페': '카페',
@@ -67,9 +67,13 @@ const SHOPDASH_LANGUAGE_TEXTS = {
       '피자': '피자',
       '한식': '한식',
       '중식': '중식',
+      '중국식': '중국식',  // API에서 반환되는 업종명
       '일식': '일식',
       '양식': '양식',
       '분식': '분식',
+      '기타': '기타',  // API에서 반환되는 업종명
+      '일반조리판매': '일반조리판매',  // API에서 반환되는 업종명
+      '커피숍': '커피숍',  // API에서 반환되는 업종명
       '베이커리': '베이커리',
       '미용실': '미용실',
       '네일아트': '네일아트',
@@ -148,16 +152,20 @@ const SHOPDASH_LANGUAGE_TEXTS = {
     
     // 업종별 다국어 매핑
     businessTypes: {
-      // 기본 업종
+      // 기본 업종 (API에서 반환되는 업종명 포함)
       '편의점': 'Convenience Store',
       '카페': 'Cafe',
       '치킨': 'Chicken',
       '피자': 'Pizza',
       '한식': 'Korean Food',
       '중식': 'Chinese Food',
+      '중국식': 'Chinese Food',  // API에서 반환되는 업종명
       '일식': 'Japanese Food',
       '양식': 'Western Food',
       '분식': 'Snack Bar',
+      '기타': 'Others',  // API에서 반환되는 업종명
+      '일반조리판매': 'General Cooking Sales',  // API에서 반환되는 업종명
+      '커피숍': 'Coffee Shop',  // API에서 반환되는 업종명
       '베이커리': 'Bakery',
       '미용실': 'Hair Salon',
       '네일아트': 'Nail Art',
@@ -308,16 +316,20 @@ const SHOPDASH_LANGUAGE_TEXTS = {
     
     // 업종별 다국어 매핑
     businessTypes: {
-      // 기본 업종
+      // 기본 업종 (API에서 반환되는 업종명 포함)
       '편의점': 'Tienda de Conveniencia',
       '카페': 'Café',
       '치킨': 'Pollo',
       '피자': 'Pizza',
       '한식': 'Comida Coreana',
       '중식': 'Comida China',
+      '중국식': 'Comida China',  // API에서 반환되는 업종명
       '일식': 'Comida Japonesa',
       '양식': 'Comida Occidental',
       '분식': 'Bar de Snacks',
+      '기타': 'Otros',  // API에서 반환되는 업종명
+      '일반조리판매': 'Ventas de Cocina General',  // API에서 반환되는 업종명
+      '커피숍': 'Cafetería',  // API에서 반환되는 업종명
       '베이커리': 'Panadería',
       '미용실': 'Peluquería',
       '네일아트': 'Arte de Uñas',
@@ -417,19 +429,34 @@ const SHOPDASH_LANGUAGE_TEXTS = {
 // 현재 언어 상태
 let currentShopDashLanguage = 'ko';
 
-// 현재 언어 가져오기
+// 현재 언어 가져오기 - 개선된 버전
 function getCurrentShopDashLanguage() {
-  // 네비게이션의 언어 설정 확인
+  // 1. 네비게이션의 언어 설정 확인 (최우선)
   if (typeof window.getCurrentLanguage === 'function') {
-    return window.getCurrentLanguage();
+    const navLang = window.getCurrentLanguage();
+    if (navLang && SHOPDASH_LANGUAGE_TEXTS[navLang]) {
+      return navLang;
+    }
   }
   
-  // localStorage에서 확인
+  // 2. 표시되는 data-lang 요소 확인
+  const visibleLangElement = document.querySelector('[data-lang]:not([style*="display: none"])');
+  if (visibleLangElement) {
+    const langCode = visibleLangElement.getAttribute('data-lang');
+    const langMap = { 'KOR': 'ko', 'ENG': 'en', 'ESP': 'es' };
+    const mappedLang = langMap[langCode];
+    if (mappedLang && SHOPDASH_LANGUAGE_TEXTS[mappedLang]) {
+      return mappedLang;
+    }
+  }
+  
+  // 3. localStorage에서 확인
   const saved = localStorage.getItem('preferred_language');
   if (saved && SHOPDASH_LANGUAGE_TEXTS[saved]) {
     return saved;
   }
   
+  // 4. 기본값 반환
   return currentShopDashLanguage;
 }
 
@@ -440,15 +467,18 @@ function getShopDashText(key) {
   return texts[key] || key;
 }
 
-// 업종명 번역 함수
+// 업종명 번역 함수 (디버깅 강화)
 function translateBusinessType(koreanBusinessType) {
   const language = getCurrentShopDashLanguage();
   const texts = SHOPDASH_LANGUAGE_TEXTS[language] || SHOPDASH_LANGUAGE_TEXTS['ko'];
   
   if (texts.businessTypes && texts.businessTypes[koreanBusinessType]) {
-    return texts.businessTypes[koreanBusinessType];
+    const translated = texts.businessTypes[koreanBusinessType];
+    console.log(`🔄 업종명 번역: "${koreanBusinessType}" → "${translated}" (${language})`);
+    return translated;
   }
   
+  console.warn(`⚠️ 번역 누락: "${koreanBusinessType}" (${language})`);
   return koreanBusinessType; // 번역이 없으면 원본 반환
 }
 
@@ -483,57 +513,103 @@ function changeShopDashLanguage(language) {
     return;
   }
   
+  const previousLanguage = currentShopDashLanguage;
   currentShopDashLanguage = language;
   
-  // 차트들 다시 로드 (다국어 적용)
-  if (typeof loadAllCharts === 'function') {
-    loadAllCharts();
-  }
+  console.log(`🌍 ShopDash 언어가 변경되었습니다: ${previousLanguage} → ${language}`);
   
-  console.log('ShopDash 언어가 변경되었습니다:', language);
+  // 차트들 다시 로드 (다국어 적용) - 약간의 지연을 두어 안정성 확보
+  setTimeout(() => {
+    if (typeof window.loadAllCharts === 'function') {
+      console.log('🔄 언어 변경으로 인한 차트 재로드 시작...');
+      window.loadAllCharts();
+    } else {
+      console.warn('⚠️ loadAllCharts 함수를 찾을 수 없습니다');
+    }
+  }, 300);
 }
 
-// 네비게이션 언어 변경 감지
+// 네비게이션 언어 변경 감지 - 전역 함수 후킹 방식
 function observeShopDashLanguageChanges() {
-  // MutationObserver로 data-lang 변경 감지
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-        const element = mutation.target;
-        if (element.hasAttribute('data-lang')) {
-          const langCode = element.getAttribute('data-lang');
-          if (element.style.display !== 'none') {
-            // 표시되는 언어 요소 확인
-            const langMap = { 'KOR': 'ko', 'ENG': 'en', 'ESP': 'es' };
-            const newLang = langMap[langCode];
-            if (newLang && newLang !== currentShopDashLanguage) {
-              changeShopDashLanguage(newLang);
-            }
-          }
-        }
-      }
-    });
-  });
+  console.log('🔍 ShopDash 언어 변경 감지 시스템 초기화...');
   
-  // 모든 data-lang 요소 관찰
-  document.querySelectorAll('[data-lang]').forEach(element => {
-    observer.observe(element, { 
-      attributes: true, 
-      attributeFilter: ['style'] 
-    });
-  });
+  // 1. 전역 funcChangeLang 함수 후킹
+  if (typeof window.funcChangeLang === 'function') {
+    const originalFuncChangeLang = window.funcChangeLang;
+    window.funcChangeLang = function(lang) {
+      console.log('🌐 전역 언어 변경 감지:', lang);
+      originalFuncChangeLang(lang);
+      
+      // 언어 코드 매핑
+      const langMap = { 'KOR': 'ko', 'ENG': 'en', 'ESP': 'es' };
+      const mappedLang = langMap[lang] || lang;
+      
+      if (mappedLang !== currentShopDashLanguage) {
+        changeShopDashLanguage(mappedLang);
+      }
+    };
+    console.log('✅ funcChangeLang 함수 후킹 완료');
+  }
+  
+  // 2. 정기적으로 현재 언어 상태 확인 (백업 방식)
+  let lastCheckedLanguage = currentShopDashLanguage;
+  setInterval(() => {
+    const currentLang = getCurrentShopDashLanguage();
+    if (currentLang !== lastCheckedLanguage) {
+      console.log('🔄 정기 검사에서 언어 변경 감지:', lastCheckedLanguage, '→', currentLang);
+      lastCheckedLanguage = currentLang;
+      if (currentLang !== currentShopDashLanguage) {
+        changeShopDashLanguage(currentLang);
+      }
+    }
+  }, 2000); // 2초마다 확인
 }
 
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
+  console.log('📚 ShopDash 다국어화 시스템 초기화 시작...');
+  
   // 초기 언어 설정
   currentShopDashLanguage = getCurrentShopDashLanguage();
+  console.log('🌐 초기 언어 설정:', currentShopDashLanguage);
   
-  // 언어 변경 감지 시작
-  observeShopDashLanguageChanges();
+  // 약간의 지연 후 언어 변경 감지 시작 (DOM이 완전히 로드된 후)
+  setTimeout(() => {
+    observeShopDashLanguageChanges();
+  }, 1000);
   
-  console.log('ShopDash 다국어화 초기화 완료:', currentShopDashLanguage);
+  console.log('✅ ShopDash 다국어화 초기화 완료:', currentShopDashLanguage);
+  
+  // 🚀 초기화 완료 이벤트 발생
+  window.dispatchEvent(new CustomEvent('shopDashI18nReady', { 
+    detail: { language: currentShopDashLanguage } 
+  }));
 });
+
+// 🛠️ 개발자 테스트 함수 - 콘솔에서 차트 강제 재로드
+function testChartTranslation() {
+  console.log('🧪 차트 번역 테스트 시작...');
+  console.log('현재 언어:', getCurrentShopDashLanguage());
+  
+  if (typeof window.loadAllCharts === 'function') {
+    window.loadAllCharts();
+    console.log('✅ 차트 재로드 완료');
+  } else {
+    console.error('❌ loadAllCharts 함수를 찾을 수 없습니다');
+  }
+}
+
+// 업종명 번역 테스트 함수
+function testBusinessTypeTranslations() {
+  const testBusinessTypes = ['한식', '기타', '커피숍', '기타 휴게음식점', '호프/통닭', '경양식', '일식', '일반조리판매', '분식', '중국식'];
+  const currentLang = getCurrentShopDashLanguage();
+  
+  console.log(`🧪 업종명 번역 테스트 (${currentLang}):`);
+  testBusinessTypes.forEach(businessType => {
+    const translated = translateBusinessType(businessType);
+    console.log(`  "${businessType}" → "${translated}"`);
+  });
+}
 
 // 전역 함수로 등록
 window.getShopDashText = getShopDashText;
@@ -542,4 +618,6 @@ window.translateBusinessType = translateBusinessType;
 window.getCurrentShopDashLanguage = getCurrentShopDashLanguage;
 window.getLocalizedTooltipText = getLocalizedTooltipText;
 window.getLocalizedPopupTexts = getLocalizedPopupTexts;
-window.changeShopDashLanguage = changeShopDashLanguage; 
+window.changeShopDashLanguage = changeShopDashLanguage;
+window.testChartTranslation = testChartTranslation;  // 🧪 테스트 함수
+window.testBusinessTypeTranslations = testBusinessTypeTranslations;  // 🧪 테스트 함수 

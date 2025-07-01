@@ -708,6 +708,13 @@ let lastLanguageChange = 0;
 // 페이지 로드 시 실행
 document.addEventListener('DOMContentLoaded', function() {
     loadDashboardStats();
+});
+
+// 🚀 ShopDash 다국어화 시스템 준비 완료 시 차트 로드
+window.addEventListener('shopDashI18nReady', function(event) {
+    console.log('🎯 ShopDash 다국어화 준비 완료 감지:', event.detail);
+    console.log('translateBusinessType 존재 여부:', typeof translateBusinessType);
+    console.log('getCurrentShopDashLanguage 존재 여부:', typeof getCurrentShopDashLanguage);
     
     // 초기 차트 로드 (1회만)
     if (!isLoadingCharts) {
@@ -719,6 +726,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
 });
+
+// 🔄 백업: 이벤트가 발생하지 않을 경우를 대비한 타이머 기반 로딩
+setTimeout(() => {
+    if (!isLoadingCharts) {
+        console.log('⏰ 백업 타이머로 차트 로드 시도...');
+        console.log('translateBusinessType 존재 여부:', typeof translateBusinessType);
+        console.log('getCurrentShopDashLanguage 존재 여부:', typeof getCurrentShopDashLanguage);
+        
+        isLoadingCharts = true;
+        loadAllCharts();
+        
+        setTimeout(() => {
+            isLoadingCharts = false;
+        }, 3000);
+    }
+}, 2000); // 2초 후 백업 로딩
 
 // 대시보드 통계 로드
 function loadDashboardStats() {
@@ -747,6 +770,7 @@ function loadDashboardStats() {
 
 // 모든 차트 로드
 function loadAllCharts() {
+    console.log('🔄 ShopDash 차트 전체 로드 시작...');
     const chartConfigs = [
         { id: 'populationChart', url: '/shopdash/api/population/', type: 'bar', color: '#4154f1' },
         { id: 'businessActivityChart', url: '/shopdash/api/business-activity/', type: 'bar', color: '#059652' },
@@ -761,6 +785,9 @@ function loadAllCharts() {
         loadChart(config.id, config.url, config.type, config.color);
     });
 }
+
+// 🌍 전역 함수로 등록하여 shopdash-i18n.js에서 호출 가능하도록 함
+window.loadAllCharts = loadAllCharts;
 
 // 개별 차트 로드
 function loadChart(chartId, apiUrl, chartType, primaryColor) {
@@ -782,7 +809,26 @@ function loadChart(chartId, apiUrl, chartType, primaryColor) {
             
             // 업종별 분포 차트의 경우 업종명 번역
             if (chartId === 'businessTypeChart' && data.labels) {
-                data.labels = data.labels.map(label => translateBusinessType(label));
+                console.log('📊 업종별 분포 차트 - 번역 전 업종명들:', data.labels);
+                console.log('🔍 translateBusinessType 함수 존재 여부:', typeof translateBusinessType);
+                console.log('🌐 현재 언어:', typeof getCurrentShopDashLanguage === 'function' ? getCurrentShopDashLanguage() : 'getCurrentShopDashLanguage 함수 없음');
+                
+                if (typeof translateBusinessType === 'function') {
+                    data.labels = data.labels.map((label, index) => {
+                        console.log(`🔄 번역 시도 [${index}]: "${label}"`);
+                        try {
+                            const translated = translateBusinessType(label);
+                            console.log(`✅ 번역 결과 [${index}]: "${label}" → "${translated}"`);
+                            return translated;
+                        } catch (error) {
+                            console.error(`❌ 번역 에러 [${index}]: "${label}"`, error);
+                            return label;
+                        }
+                    });
+                } else {
+                    console.error('❌ translateBusinessType 함수를 찾을 수 없습니다!');
+                }
+                console.log('✅ 업종별 분포 차트 - 번역 후 업종명들:', data.labels);
             }
             
             // 색상 설정
@@ -836,7 +882,25 @@ function loadTopBusinessSurvivalChart() {
             
             // 업종명 번역
             if (data.labels) {
-                data.labels = data.labels.map(label => translateBusinessType(label));
+                console.log('📊 상위 업종 생존률 차트 - 번역 전 업종명들:', data.labels);
+                console.log('🔍 translateBusinessType 함수 존재 여부:', typeof translateBusinessType);
+                
+                if (typeof translateBusinessType === 'function') {
+                    data.labels = data.labels.map((label, index) => {
+                        console.log(`🔄 상위 업종 번역 시도 [${index}]: "${label}"`);
+                        try {
+                            const translated = translateBusinessType(label);
+                            console.log(`✅ 상위 업종 번역 결과 [${index}]: "${label}" → "${translated}"`);
+                            return translated;
+                        } catch (error) {
+                            console.error(`❌ 상위 업종 번역 에러 [${index}]: "${label}"`, error);
+                            return label;
+                        }
+                    });
+                } else {
+                    console.error('❌ 상위 업종 차트: translateBusinessType 함수를 찾을 수 없습니다!');
+                }
+                console.log('✅ 상위 업종 생존률 차트 - 번역 후 업종명들:', data.labels);
             }
             
             // 차트 생성

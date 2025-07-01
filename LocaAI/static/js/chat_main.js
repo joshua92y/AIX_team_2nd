@@ -40,8 +40,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let websocket = null;
   let currentStreamingMessageElement = null;
+  let streamingTextContent = ""; // 실시간 스트리밍을 위한 텍스트 누적 변수
   let connectionAttempts = 0;
   const MAX_CONNECTION_ATTEMPTS = 5;
+  let isWebSocketInitialized = false; // WebSocket 초기화 상태 추적
 
   function generateUUID() {
     return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
@@ -64,6 +66,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function hideTyping() {
     typingIndicator.style.display = 'none';
+  }
+
+  // 현재 선택된 모드 가져오기 
+  function getCurrentMode() {
+    const llmMode = document.getElementById("llmMode");
+    const ragMode = document.getElementById("ragMode");
+    return llmMode && llmMode.checked ? "llm" : (ragMode && ragMode.checked ? "rag" : "llm");
   }
 
   function createMessageElement(content, type) {
@@ -101,33 +110,66 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function appendToStreamingMessage(chunk) {
+    console.log("🔄 appendToStreamingMessage 호출됨 - 현재 element 존재:", !!currentStreamingMessageElement);
+    
     if (!currentStreamingMessageElement) {
+      console.log("✨ 새로운 스트리밍 메시지 엘리먼트 생성");
+      
       // 첫 스트리밍 메시지 시 웰컴 메시지 숨기기
       const welcomeMessage = chatMessagesArea.querySelector('.chat-welcome-message');
       if (welcomeMessage) {
         welcomeMessage.style.display = 'none';
       }
       
-      currentStreamingMessageElement = displayMessage("", "assistant");
+      // 새 스트리밍 메시지 엘리먼트 생성
+      currentStreamingMessageElement = document.createElement("div");
+      currentStreamingMessageElement.className = "message-entry assistant-message";
+      currentStreamingMessageElement.setAttribute("data-message-id", generateUUID()); // 디버깅용 ID 추가
+      
+      const bubble = document.createElement("div");
+      bubble.className = "message-bubble";
+      
+      const timestamp = document.createElement("div");
+      timestamp.className = "message-timestamp";
+      timestamp.textContent = getCurrentTimestamp();
+      
+      currentStreamingMessageElement.appendChild(bubble);
+      currentStreamingMessageElement.appendChild(timestamp);
+      chatMessagesArea.appendChild(currentStreamingMessageElement);
+      
+      streamingTextContent = ""; // 텍스트 누적 초기화
+      console.log("✅ 새 스트리밍 메시지 생성 완료 - ID:", currentStreamingMessageElement.getAttribute("data-message-id"));
+    } else {
+      console.log("🔄 기존 스트리밍 메시지에 추가 - ID:", currentStreamingMessageElement.getAttribute("data-message-id"));
     }
+    
     const bubble = currentStreamingMessageElement.querySelector(".message-bubble");
     if (bubble) {
-      // ✅ 누적 Markdown -> HTML 재렌더링
-      const currentText = bubble.textContent + chunk;
-      bubble.innerHTML = marked.parse(currentText);
+      // 텍스트 누적하고 마크다운 렌더링
+      streamingTextContent += chunk;
+      bubble.innerHTML = marked.parse(streamingTextContent);
       scrollToBottom();
+      console.log("📝 텍스트 누적 완료 - 총 길이:", streamingTextContent.length);
     }
   }
   
   function finalizeStreamingMessage() {
+    console.log("🏁 finalizeStreamingMessage 호출됨 - 현재 element:", !!currentStreamingMessageElement);
+    
     // 최종 스트리밍 메시지를 채팅 리스트에 반영
     if (currentStreamingMessageElement) {
+      const messageId = currentStreamingMessageElement.getAttribute("data-message-id");
+      console.log("🔚 스트리밍 메시지 완료 - ID:", messageId);
+      
       const bubble = currentStreamingMessageElement.querySelector(".message-bubble");
       if (bubble && window.addChatMessage) {
-        window.addChatMessage(bubble.textContent, "assistant", currentSessionId);
+        window.addChatMessage(streamingTextContent, "assistant", currentSessionId);
       }
     }
+    
+    console.log("🧹 스트리밍 상태 초기화");
     currentStreamingMessageElement = null;
+    streamingTextContent = "";
     hideTyping();
   }
 
@@ -146,20 +188,37 @@ document.addEventListener("DOMContentLoaded", function () {
     websocket = new WebSocket(wsUrl);
 
     websocket.onopen = () => {
+      console.log("🔗 WebSocket 연결됨");
       displayNotification("챗봇에 연결되었습니다.", "info");
       connectionAttempts = 0;
+      
+      // 초기 연결 시 user_id, session_id 전송
+      if (!isWebSocketInitialized) {
+        const initPayload = { 
+          user_id: userId, 
+          session_id: currentSessionId || "",
+          language: "ko"
+        };
+        console.log("🚀 초기 WebSocket 연결 데이터 전송:", initPayload);
+        websocket.send(JSON.stringify(initPayload));
+        isWebSocketInitialized = true;
+      }
     };
 
     websocket.onmessage = (event) => {
-      hideTyping();
       try {
         const data = JSON.parse(event.data);
+        console.log("📨 WebSocket 메시지 수신:", data);
+        
         if (data.error) {
+          hideTyping();
           displayNotification(`오류: ${data.error}`, "error");
           finalizeStreamingMessage();
         } else if (data.chunk) {
+          // 실시간 스트리밍 처리 - 타이핑은 계속 표시
           appendToStreamingMessage(data.chunk);
         } else if (data.done) {
+          hideTyping();
           finalizeStreamingMessage();
           // 새 세션 ID가 생성되었을 때 채팅 리스트 매니저 업데이트
           if (data.session_id && currentSessionId !== data.session_id) {
@@ -175,6 +234,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }, 500);
           }
         } else if (data.answer) {
+          hideTyping();
           displayMessage(data.answer, "assistant");
           // 일반 응답 후에도 채팅 리스트 새로고침
           if (window.chatListManager && window.chatListManager.refreshChatList) {
@@ -184,21 +244,26 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         }
       } catch (e) {
+        console.error("❌ WebSocket 메시지 처리 오류:", e);
+        hideTyping();
         displayNotification("서버 응답 처리 중 오류", "error");
         finalizeStreamingMessage();
       }
     };
 
-    websocket.onclose = () => {
+    websocket.onclose = (event) => {
+      console.log("❌ WebSocket 연결 종료:", event.code, event.reason);
       finalizeStreamingMessage();
       websocket = null;
+      isWebSocketInitialized = false;
       displayNotification("연결 끊김. 재연결 중...", "error");
       if (++connectionAttempts < MAX_CONNECTION_ATTEMPTS) {
         setTimeout(setupWebSocket, 2000 * connectionAttempts);
       }
     };
 
-    websocket.onerror = () => {
+    websocket.onerror = (error) => {
+      console.error("❌ WebSocket 오류:", error);
       hideTyping();
       finalizeStreamingMessage();
     };
@@ -214,12 +279,35 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
+    // 새 메시지 전송 전 스트리밍 상태 초기화
+    console.log("🚀 새 메시지 전송 시작 - 기존 스트리밍 element:", !!currentStreamingMessageElement);
+    if (currentStreamingMessageElement) {
+      const oldMessageId = currentStreamingMessageElement.getAttribute("data-message-id");
+      console.log("🔄 기존 스트리밍 메시지 완료 처리 - ID:", oldMessageId);
+      finalizeStreamingMessage();
+    }
+    currentStreamingMessageElement = null;
+    streamingTextContent = "";
+    console.log("🧹 메시지 전송 전 상태 초기화 완료");
+
     // 현재 선택된 채팅 ID 가져오기
     if (window.getCurrentChatId) {
       currentSessionId = window.getCurrentChatId();
     }
 
-    const payload = { user_id: userId, session_id: currentSessionId || "", question: msg };
+    // 현재 선택된 모드 가져오기
+    const selectedMode = getCurrentMode();
+    console.log("🎯 선택된 모드:", selectedMode);
+
+    const payload = { 
+      user_id: userId, 
+      session_id: currentSessionId || "", 
+      question: msg,
+      mode: selectedMode,
+      language: "ko"
+    };
+    
+    console.log("📤 메시지 전송:", payload);
     websocket.send(JSON.stringify(payload));
     displayMessage(msg, "user");
     messageInput.value = "";
@@ -232,6 +320,38 @@ document.addEventListener("DOMContentLoaded", function () {
         window.chatListManager.refreshChatList();
       }, 500);
     }
+  }
+
+  // 모드 변경 시 알림 표시
+  function setupModeChangeHandler() {
+    const llmMode = document.getElementById("llmMode");
+    const ragMode = document.getElementById("ragMode");
+    
+    if (llmMode) {
+      llmMode.addEventListener("change", function() {
+        if (this.checked) {
+          console.log("🧠 LLM 모드로 변경");
+          displayNotification("LLM 모드로 변경되었습니다.", "info");
+        }
+      });
+    }
+    
+    if (ragMode) {
+      ragMode.addEventListener("change", function() {
+        if (this.checked) {
+          console.log("🗄️ RAG 모드로 변경");
+          displayNotification("RAG 모드로 변경되었습니다.", "info");
+        }
+      });
+    }
+  }
+
+  // 툴팁 초기화
+  function initializeTooltips() {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
   }
 
   sendButton.addEventListener("click", handleSendMessage);
@@ -248,6 +368,8 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   setupWebSocket();
+  setupModeChangeHandler();
+  initializeTooltips();
   messageInput.focus();
 
   // ChatListManager 초기화를 여기서 수행하고 currentUserInfo 전달

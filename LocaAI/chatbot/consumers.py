@@ -7,7 +7,7 @@ from asgiref.sync import sync_to_async
 from django.utils.timezone import now
 
 from .models import ChatSession
-from .core.rag_builder import run_rag_pipeline
+from .core.rag_builder import run_rag_pipeline, run_llm_pipeline
 from django.contrib.auth import get_user_model
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -30,10 +30,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
             user_id = data.get("user_id")
             session_id = data.get("session_id")
             question = data.get("question")
-            collection = data.get("collection")  # 클라이언트에서 전달받은 컬렉션 이름
-            language = data.get("language")      # 클라이언트에서 전달받은 언어 코드
-
-            logger.info(f"📨 수신된 데이터: user_id={user_id}, session_id={session_id}, collection={collection}, language={language}")
+            mode = data.get("mode", "llm")  # 기본값을 llm으로 설정
+            
+            # 프론트엔드에서 직접 전송된 언어 설정 사용, 기본값은 'ko'
+            language = data.get("language", "ko")
+            
+            logger.info(f"📨 수신된 데이터: user_id={user_id}, session_id={session_id}, mode={mode}, language={language}")
 
             # 최초 연결 시 user_id, session_id 설정
             if self.user_id is None and self.session_id is None:
@@ -44,11 +46,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 self.user_id = user_id
                 self.session_id = session_id
                 logger.info(f"✅ 최초 연결: user_id={user_id}, session_id={session_id}")
-                # 최초 연결시에도 question이 있으면 처리 계속
+                # 최초 연결시 question 없어도 됨
                 if not question:
+                    logger.info("✅ 초기 연결 완료 - question 대기 중")
                     return
 
-            # question이 없으면 오류
+            # 이후 메시지에서는 question 필수
             if not question:
                 await self.send(text_data=json.dumps({"error": "question은 필수입니다."}))
                 return
@@ -82,11 +85,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 self.session_id = session.session_id
                 logger.info(f"🆕 새 세션 생성: {self.session_id}")
 
-            logger.info(f"💬 질문 수신 | user_id={self.user_id}, session_id={self.session_id}, collection={collection}, language={language}")
+            logger.info(f"💬 질문 수신 | user_id={self.user_id}, session_id={self.session_id}, mode={mode}")
 
-            # RAG 체인 실행 및 스트리밍 전송 (collection과 language 파라미터 전달)
-            async for chunk in run_rag_pipeline(self.user_id, self.session_id, question, collection, language):
-                await self.send(text_data=json.dumps({"chunk": chunk}))
+            # mode에 따라 분기
+            if mode == "rag":
+                logger.info("🗄️ RAG 모드로 처리 시작")
+                # RAG 체인 실행 및 스트리밍 전송
+                async for chunk in run_rag_pipeline(self.user_id, self.session_id, question, language):
+                    await self.send(text_data=json.dumps({"chunk": chunk}))
+            else:  # llm
+                logger.info("🧠 LLM 모드로 처리 시작")
+                # LLM 체인 실행 및 스트리밍 전송
+                async for chunk in run_llm_pipeline(self.user_id, self.session_id, question, language):
+                    await self.send(text_data=json.dumps({"chunk": chunk}))
 
             # 응답 완료 전송 (세션 정보 포함)
             await self.send(text_data=json.dumps({
