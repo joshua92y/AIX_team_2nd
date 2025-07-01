@@ -27,6 +27,9 @@ function initializeChatSocket() {
     chatSocket = new WebSocket(wsUrl);
     
     chatSocket.onopen = function(e) {
+      console.log('🔗 WebSocket 연결 성공:', e);
+      console.log('🔌 WebSocket URL:', wsUrl);
+      
       // WebSocket 연결 완료
       if (statusElement) {
         statusElement.style.display = 'none';
@@ -71,6 +74,13 @@ function initializeChatSocket() {
     };
     
     chatSocket.onclose = function(e) {
+      console.warn('🔌 WebSocket 연결 종료:', {
+        code: e.code,
+        reason: e.reason,
+        wasClean: e.wasClean,
+        timestamp: new Date().toISOString()
+      });
+      
       // WebSocket 연결 종료
       const chatbotStatus = document.getElementById('chatbotStatus');
       if (chatbotStatus) {
@@ -80,7 +90,13 @@ function initializeChatSocket() {
     };
     
     chatSocket.onerror = function(e) {
-      console.error('챗봇 WebSocket 오류:', e);
+      console.error('❌ WebSocket 오류 발생:', {
+        error: e,
+        readyState: chatSocket?.readyState,
+        url: chatSocket?.url,
+        timestamp: new Date().toISOString()
+      });
+      
       const chatbotStatus = document.getElementById('chatbotStatus');
       if (chatbotStatus) {
         chatbotStatus.textContent = '오류';
@@ -232,9 +248,28 @@ async function sendChatMessage() {
   };
   
   console.log('📤 WebSocket 메시지 전송:', messageData);
+  console.log('🔌 WebSocket 연결 상태 확인:', {
+    readyState: chatSocket.readyState,
+    url: chatSocket.url,
+    protocol: chatSocket.protocol
+  });
+  
   try {
-    chatSocket.send(JSON.stringify(messageData));
-    console.log('✅ 메시지 전송 완료');
+    if (chatSocket.readyState === WebSocket.OPEN) {
+      const messageString = JSON.stringify(messageData);
+      console.log('📝 전송할 메시지 문자열:', messageString);
+      chatSocket.send(messageString);
+      console.log('✅ 메시지 전송 완료');
+      
+      // 전송 확인을 위한 추가 로그
+      setTimeout(() => {
+        console.log('🔍 전송 후 WebSocket 상태:', chatSocket.readyState);
+      }, 100);
+    } else {
+      console.error('❌ WebSocket이 열려있지 않음. 상태:', chatSocket.readyState);
+      addBotMessage('연결이 끊어졌습니다. 페이지를 새로고침 해주세요.');
+      return;
+    }
   } catch (error) {
     console.error('❌ 메시지 전송 실패:', error);
     addBotMessage('메시지 전송에 실패했습니다. 다시 시도해주세요.');
@@ -296,48 +331,110 @@ function createContextualMessage(userMessage) {
 // 사용자 메시지 추가
 function addUserMessage(message) {
   const messagesContainer = document.getElementById('chatMessages');
-  if (!messagesContainer) return;
-  
-  const messageDiv = document.createElement('div');
-  messageDiv.className = 'd-flex align-items-start mb-3 justify-content-end';
-  messageDiv.innerHTML = `
-    <div class="flex-grow-1 text-end me-2">
-      <div class="bg-primary text-white rounded p-2 shadow-sm d-inline-block" style="max-width: 80%;">
-        <p class="mb-0 small">${escapeHtml(message)}</p>
+  if (messagesContainer) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'd-flex align-items-start mb-3 justify-content-end';
+    messageDiv.innerHTML = `
+      <div class="flex-grow-1 text-end me-2">
+        <div class="bg-primary text-white rounded p-2 shadow-sm d-inline-block" style="max-width: 80%;">
+          <p class="mb-0 small">${escapeHtml(message)}</p>
+        </div>
       </div>
-    </div>
-    <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; min-width: 32px;">
-      <i class="bi bi-person text-white" style="font-size: 14px;"></i>
-    </div>
-  `;
-  messagesContainer.appendChild(messageDiv);
-  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; min-width: 32px;">
+        <i class="bi bi-person text-white" style="font-size: 14px;"></i>
+      </div>
+    `;
+    messagesContainer.appendChild(messageDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }
+  
+  // PIP 메시지도 동시에 추가
+  const pipMessagesContainer = document.getElementById('pipChatMessages');
+  if (pipMessagesContainer) {
+    const pipMessageDiv = document.createElement('div');
+    pipMessageDiv.className = 'd-flex align-items-start mb-3 justify-content-end';
+    pipMessageDiv.innerHTML = `
+      <div class="flex-grow-1 text-end me-2">
+        <div class="bg-primary text-white rounded-3 p-3 shadow-sm d-inline-block" style="max-width: 80%;">
+          <p class="mb-0">${escapeHtml(message)}</p>
+        </div>
+      </div>
+      <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; min-width: 40px;">
+        <i class="bi bi-person text-white" style="font-size: 18px;"></i>
+      </div>
+    `;
+    pipMessagesContainer.appendChild(pipMessageDiv);
+    pipMessagesContainer.scrollTop = pipMessagesContainer.scrollHeight;
+  }
 }
 
 // 봇 응답 준비
 function prepareBotMessage() {
   const messagesContainer = document.getElementById('chatMessages');
-  if (!messagesContainer) return;
-  
-  const messageDiv = document.createElement('div');
-  messageDiv.className = 'd-flex align-items-start mb-3';
-  messageDiv.id = 'currentBotMessage';
-  messageDiv.innerHTML = `
-    <div class="bg-primary rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; min-width: 32px;">
-      <i class="bi bi-robot text-white" style="font-size: 14px;"></i>
-    </div>
-    <div class="flex-grow-1">
-      <div class="bg-white rounded p-2 shadow-sm">
-        <small class="text-muted d-block mb-1">분석결과 상담 AI</small>
-        <p class="mb-0 small" id="botMessageContent">
-          <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-          답변을 생성하고 있습니다...
-        </p>
+  if (messagesContainer) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'd-flex align-items-start mb-3';
+    messageDiv.id = 'currentBotMessage';
+    messageDiv.innerHTML = `
+      <div class="bg-primary rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; min-width: 32px;">
+        <i class="bi bi-robot text-white" style="font-size: 14px;"></i>
       </div>
-    </div>
-  `;
-  messagesContainer.appendChild(messageDiv);
-  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      <div class="flex-grow-1">
+        <div class="bg-white rounded p-2 shadow-sm">
+          <small class="text-muted d-block mb-1">
+            <span data-lang="KOR">분석결과 상담 AI</span>
+            <span data-lang="ENG" style="display: none;">Analysis Consultation AI</span>
+            <span data-lang="ESP" style="display: none;">IA de Consulta de Análisis</span>
+          </small>
+          <p class="mb-0 small" id="botMessageContent">
+            <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+            <span data-lang="KOR">답변을 생성하고 있습니다...</span>
+            <span data-lang="ENG" style="display: none;">Generating response...</span>
+            <span data-lang="ESP" style="display: none;">Generando respuesta...</span>
+          </p>
+        </div>
+      </div>
+    `;
+    messagesContainer.appendChild(messageDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }
+
+  // PIP 봇 메시지도 동시에 준비
+  const pipMessagesContainer = document.getElementById('pipChatMessages');
+  if (pipMessagesContainer) {
+    const pipMessageDiv = document.createElement('div');
+    pipMessageDiv.className = 'd-flex align-items-start mb-4';
+    pipMessageDiv.id = 'currentPIPBotMessage';
+    pipMessageDiv.innerHTML = `
+      <div class="bg-gradient bg-primary rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; min-width: 40px;">
+        <i class="bi bi-robot text-white" style="font-size: 18px;"></i>
+      </div>
+      <div class="flex-grow-1">
+        <div class="bg-white rounded-3 p-4 shadow-sm border">
+          <div class="d-flex align-items-center mb-2">
+            <strong class="text-primary me-2">
+              <span data-lang="KOR">분석결과 상담 AI</span>
+              <span data-lang="ENG" style="display: none;">Analysis Consultation AI</span>
+              <span data-lang="ESP" style="display: none;">IA de Consulta de Análisis</span>
+            </strong>
+            <span class="badge bg-success-subtle text-success">
+              <span data-lang="KOR">온라인</span>
+              <span data-lang="ENG" style="display: none;">Online</span>
+              <span data-lang="ESP" style="display: none;">En línea</span>
+            </span>
+          </div>
+          <div id="pipBotMessageContent">
+            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+            <span data-lang="KOR">답변을 생성하고 있습니다...</span>
+            <span data-lang="ENG" style="display: none;">Generating response...</span>
+            <span data-lang="ESP" style="display: none;">Generando respuesta...</span>
+          </div>
+        </div>
+      </div>
+    `;
+    pipMessagesContainer.appendChild(pipMessageDiv);
+    pipMessagesContainer.scrollTop = pipMessagesContainer.scrollHeight;
+  }
 }
 
 // 봇 메시지에 스트리밍 텍스트 추가
@@ -391,7 +488,9 @@ function finalizeBotMessage() {
   
   // PIP 히스토리 업데이트
   setTimeout(() => {
-    updatePIPChatHistory();
+    if (typeof window.updatePIPChatHistory === 'function') {
+      window.updatePIPChatHistory();
+    }
   }, 100);
 }
 
@@ -408,7 +507,11 @@ function addBotMessage(message) {
     </div>
     <div class="flex-grow-1">
       <div class="bg-white rounded p-2 shadow-sm">
-        <small class="text-muted d-block mb-1">분석결과 상담 AI</small>
+        <small class="text-muted d-block mb-1">
+          <span data-lang="KOR">분석결과 상담 AI</span>
+          <span data-lang="ENG" style="display: none;">Analysis Consultation AI</span>
+          <span data-lang="ESP" style="display: none;">IA de Consulta de Análisis</span>
+        </small>
         <div class="mb-0 small">${marked.parse(message)}</div>
       </div>
     </div>
@@ -662,7 +765,11 @@ async function updatePIPChatHistory() {
       historyDiv.innerHTML = `
         <div class="text-center text-muted py-4">
           <i class="bi bi-person-x" style="font-size: 2rem;"></i>
-          <p class="small mt-2 mb-0">로그인이 필요합니다</p>
+          <p class="small mt-2 mb-0">
+            <span data-lang="KOR">로그인이 필요합니다</span>
+            <span data-lang="ENG" style="display: none;">Login required</span>
+            <span data-lang="ESP" style="display: none;">Se requiere iniciar sesión</span>
+          </p>
         </div>
       `;
       return;
@@ -672,7 +779,11 @@ async function updatePIPChatHistory() {
     historyDiv.innerHTML = `
       <div class="text-center text-muted py-4">
         <div class="spinner-border spinner-border-sm mb-2" role="status"></div>
-        <p class="small mb-0">채팅 기록을 불러오는 중...</p>
+        <p class="small mb-0">
+          <span data-lang="KOR">채팅 기록을 불러오는 중...</span>
+          <span data-lang="ENG" style="display: none;">Loading chat history...</span>
+          <span data-lang="ESP" style="display: none;">Cargando historial de chat...</span>
+        </p>
       </div>
     `;
 
@@ -687,7 +798,11 @@ async function updatePIPChatHistory() {
       historyDiv.innerHTML = `
         <div class="text-center text-muted py-4">
           <i class="bi bi-chat-square-dots" style="font-size: 2rem;"></i>
-          <p class="small mt-2 mb-0">아직 대화 기록이 없습니다.<br>AI와 대화를 시작해보세요!</p>
+          <p class="small mt-2 mb-0">
+            <span data-lang="KOR">아직 대화 기록이 없습니다.<br>AI와 대화를 시작해보세요!</span>
+            <span data-lang="ENG" style="display: none;">No conversation history yet.<br>Start chatting with AI!</span>
+            <span data-lang="ESP" style="display: none;">Aún no hay historial de conversación.<br>¡Comience a chatear con la IA!</span>
+          </p>
         </div>
       `;
       return;
@@ -761,7 +876,11 @@ async function loadChatSession(sessionId) {
       pipChatMessages.innerHTML = `
         <div class="text-center py-4">
           <div class="spinner-border text-primary mb-3" role="status"></div>
-          <p class="text-muted">대화 기록을 불러오는 중...</p>
+          <p class="text-muted">
+            <span data-lang="KOR">대화 기록을 불러오는 중...</span>
+            <span data-lang="ENG" style="display: none;">Loading conversation history...</span>
+            <span data-lang="ESP" style="display: none;">Cargando historial de conversación...</span>
+          </p>
         </div>
       `;
     }
@@ -825,8 +944,16 @@ async function loadChatSession(sessionId) {
       pipChatMessages.innerHTML = `
         <div class="text-center py-4">
           <i class="bi bi-exclamation-triangle text-warning mb-3" style="font-size: 3rem;"></i>
-          <h6>대화 기록을 불러올 수 없습니다</h6>
-          <p class="text-muted">잠시 후 다시 시도해주세요.</p>
+          <h6>
+            <span data-lang="KOR">대화 기록을 불러올 수 없습니다</span>
+            <span data-lang="ENG" style="display: none;">Unable to load conversation history</span>
+            <span data-lang="ESP" style="display: none;">No se puede cargar el historial de conversación</span>
+          </h6>
+          <p class="text-muted">
+            <span data-lang="KOR">잠시 후 다시 시도해주세요.</span>
+            <span data-lang="ENG" style="display: none;">Please try again later.</span>
+            <span data-lang="ESP" style="display: none;">Por favor, inténtelo de nuevo más tarde.</span>
+          </p>
         </div>
       `;
     }
@@ -851,6 +978,16 @@ function createUserMessageHTML(content) {
 
 // 봇 메시지 HTML 생성
 function createBotMessageHTML(content) {
+  const currentLanguage = getCurrentLanguage();
+  
+  const labels = {
+    ko: { title: '분석결과 상담 AI', status: '온라인' },
+    en: { title: 'Analysis Consultation AI', status: 'Online' },
+    es: { title: 'IA de Consulta de Análisis', status: 'En línea' }
+  };
+  
+  const label = labels[currentLanguage] || labels.ko;
+  
   return `
     <div class="d-flex align-items-start mb-3">
       <div class="bg-gradient bg-primary rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; min-width: 36px;">
@@ -859,8 +996,8 @@ function createBotMessageHTML(content) {
       <div class="flex-grow-1">
         <div class="bg-white rounded-3 p-3 shadow-sm border" style="max-width: 85%;">
           <div class="d-flex align-items-center mb-2">
-            <strong class="text-primary me-2">분석결과 상담 AI</strong>
-            <span class="badge bg-success-subtle text-success">온라인</span>
+            <strong class="text-primary me-2">${label.title}</strong>
+            <span class="badge bg-success-subtle text-success">${label.status}</span>
           </div>
           <div class="message-content">${content}</div>
         </div>
@@ -954,15 +1091,35 @@ function updatePIPAnalysisSummary() {
 
   summaryDiv.innerHTML = `
     <div class="mb-3">
-      <h6 class="text-primary mb-2">📍 기본 정보</h6>
+      <h6 class="text-primary mb-2">
+        📍 <span data-lang="KOR">기본 정보</span>
+        <span data-lang="ENG" style="display: none;">Basic Information</span>
+        <span data-lang="ESP" style="display: none;">Información Básica</span>
+      </h6>
       <div class="small">
-        <div class="mb-1"><strong>주소:</strong> ${address}</div>
-        <div class="mb-1"><strong>업종:</strong> ${businessType}</div>
+        <div class="mb-1">
+          <strong>
+            <span data-lang="KOR">주소:</span>
+            <span data-lang="ENG" style="display: none;">Address:</span>
+            <span data-lang="ESP" style="display: none;">Dirección:</span>
+          </strong> ${address}
+        </div>
+        <div class="mb-1">
+          <strong>
+            <span data-lang="KOR">업종:</span>
+            <span data-lang="ENG" style="display: none;">Business Type:</span>
+            <span data-lang="ESP" style="display: none;">Tipo de Negocio:</span>
+          </strong> ${businessType}
+        </div>
       </div>
     </div>
 
     <div class="mb-3">
-      <h6 class="text-success mb-2">🎯 AI 생존 확률</h6>
+      <h6 class="text-success mb-2">
+        🎯 <span data-lang="KOR">AI 생존 확률</span>
+        <span data-lang="ENG" style="display: none;">AI Survival Rate</span>
+        <span data-lang="ESP" style="display: none;">Tasa de Supervivencia IA</span>
+      </h6>
       <div class="text-center">
         <div class="h4 text-primary mb-1">${survivalRate}</div>
         <div class="progress mb-2" style="height: 8px;">
@@ -972,30 +1129,50 @@ function updatePIPAnalysisSummary() {
     </div>
 
     <div class="mb-3">
-      <h6 class="text-info mb-2">📊 핵심 지표</h6>
+      <h6 class="text-info mb-2">
+        📊 <span data-lang="KOR">핵심 지표</span>
+        <span data-lang="ENG" style="display: none;">Key Indicators</span>
+        <span data-lang="ESP" style="display: none;">Indicadores Clave</span>
+      </h6>
       <div class="row g-2 small">
         <div class="col-6">
           <div class="bg-light rounded p-2 text-center">
             <div class="fw-bold text-primary">${lifePop}</div>
-            <div class="text-muted" style="font-size: 0.75rem;">생활인구</div>
+            <div class="text-muted" style="font-size: 0.75rem;">
+              <span data-lang="KOR">생활인구</span>
+              <span data-lang="ENG" style="display: none;">Resident Pop.</span>
+              <span data-lang="ESP" style="display: none;">Pob. Residente</span>
+            </div>
           </div>
         </div>
         <div class="col-6">
           <div class="bg-light rounded p-2 text-center">
             <div class="fw-bold text-warning">${workingPop}</div>
-            <div class="text-muted" style="font-size: 0.75rem;">직장인구</div>
+            <div class="text-muted" style="font-size: 0.75rem;">
+              <span data-lang="KOR">직장인구</span>
+              <span data-lang="ENG" style="display: none;">Working Pop.</span>
+              <span data-lang="ESP" style="display: none;">Pob. Laboral</span>
+            </div>
           </div>
         </div>
         <div class="col-6">
           <div class="bg-light rounded p-2 text-center">
             <div class="fw-bold text-danger">${competitor}</div>
-            <div class="text-muted" style="font-size: 0.75rem;">경쟁업체</div>
+            <div class="text-muted" style="font-size: 0.75rem;">
+              <span data-lang="KOR">경쟁업체</span>
+              <span data-lang="ENG" style="display: none;">Competitors</span>
+              <span data-lang="ESP" style="display: none;">Competidores</span>
+            </div>
           </div>
         </div>
         <div class="col-6">
           <div class="bg-light rounded p-2 text-center">
             <div class="fw-bold text-secondary">${landValue}</div>
-            <div class="text-muted" style="font-size: 0.75rem;">공시지가</div>
+            <div class="text-muted" style="font-size: 0.75rem;">
+              <span data-lang="KOR">공시지가</span>
+              <span data-lang="ENG" style="display: none;">Land Value</span>
+              <span data-lang="ESP" style="display: none;">Valor de Tierra</span>
+            </div>
           </div>
         </div>
       </div>
@@ -1004,7 +1181,9 @@ function updatePIPAnalysisSummary() {
     <div class="alert alert-info py-2 px-3">
       <small>
         <i class="bi bi-info-circle me-1"></i>
-        좌측 채팅에서 분석 결과에 대해 자세히 문의하실 수 있습니다.
+        <span data-lang="KOR">좌측 채팅에서 분석 결과에 대해 자세히 문의하실 수 있습니다.</span>
+        <span data-lang="ENG" style="display: none;">You can inquire in detail about the analysis results in the left chat.</span>
+        <span data-lang="ESP" style="display: none;">Puede consultar en detalle sobre los resultados del análisis en el chat izquierdo.</span>
       </small>
     </div>
   `;
@@ -1019,115 +1198,8 @@ function getSurvivalBarClass(survivalRate) {
 }
 
 // ===========================================
-// PIP 메시지 전송
-// ===========================================
-
-// PIP 채팅 메시지 전송
-async function sendPIPMessage() {
-  const input = document.getElementById('pipChatInput');
-  const message = input.value.trim();
-  
-  if (!message || !chatSocket) return;
-  
-  // 새로운 세션이 필요한 경우 생성
-  if (!currentSessionId) {
-    try {
-      await createNewChatSession();
-    } catch (error) {
-      console.error('세션 생성 실패:', error);
-      addBotMessage('죄송합니다. 채팅 세션을 생성할 수 없습니다. 잠시 후 다시 시도해주세요.');
-      return;
-    }
-  }
-  
-  // 사용자 메시지 추가 (PIP와 원본 모두)
-  addPIPUserMessage(message);
-  addUserMessage(message);
-  
-  // 입력 필드 초기화
-  input.value = '';
-  const chatInput = document.getElementById('chatInput');
-  if (chatInput) {
-    chatInput.value = '';
-  }
-  
-  // 분석 데이터를 포함한 컨텍스트 생성
-  const contextualMessage = createContextualMessage(message);
-  
-  // 현재 언어 감지
-  const currentLanguage = getCurrentLanguage();
-  
-  // 언어별 컬렉션 이름 설정
-  const collectionName = getCollectionNameByLanguage(currentLanguage);
-  
-  // WebSocket으로 메시지 전송
-  chatSocket.send(JSON.stringify({
-    user_id: USER_ID,
-    session_id: currentSessionId,
-    question: contextualMessage,
-    collection: collectionName,
-    language: currentLanguage
-  }));
-  
-  // 봇 응답 준비 (PIP와 원본 모두)
-  preparePIPBotMessage();
-  prepareBotMessage();
-  
-  // 히스토리 업데이트
-  setTimeout(() => {
-    updatePIPChatHistory();
-  }, 100);
-}
-
-// PIP 사용자 메시지 추가
-function addPIPUserMessage(message) {
-  const messagesContainer = document.getElementById('pipChatMessages');
-  if (!messagesContainer) return;
-  
-  const messageDiv = document.createElement('div');
-  messageDiv.className = 'd-flex align-items-start mb-3 justify-content-end';
-  messageDiv.innerHTML = `
-    <div class="flex-grow-1 text-end me-2">
-      <div class="bg-primary text-white rounded-3 p-3 shadow-sm d-inline-block" style="max-width: 80%;">
-        <p class="mb-0">${escapeHtml(message)}</p>
-      </div>
-    </div>
-    <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; min-width: 40px;">
-      <i class="bi bi-person text-white" style="font-size: 18px;"></i>
-    </div>
-  `;
-  messagesContainer.appendChild(messageDiv);
-  messagesContainer.scrollTop = messagesContainer.scrollHeight;
-}
-
-// PIP 봇 응답 준비
-function preparePIPBotMessage() {
-  const messagesContainer = document.getElementById('pipChatMessages');
-  if (!messagesContainer) return;
-  
-  const messageDiv = document.createElement('div');
-  messageDiv.className = 'd-flex align-items-start mb-4';
-  messageDiv.id = 'currentPIPBotMessage';
-  messageDiv.innerHTML = `
-    <div class="bg-gradient bg-primary rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; min-width: 40px;">
-      <i class="bi bi-robot text-white" style="font-size: 18px;"></i>
-    </div>
-    <div class="flex-grow-1">
-      <div class="bg-white rounded-3 p-4 shadow-sm border">
-        <div class="d-flex align-items-center mb-2">
-          <strong class="text-primary me-2">분석결과 상담 AI</strong>
-          <span class="badge bg-success-subtle text-success">온라인</span>
-        </div>
-        <div id="pipBotMessageContent">
-          <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-          답변을 생성하고 있습니다...
-        </div>
-      </div>
-    </div>
-  `;
-  messagesContainer.appendChild(messageDiv);
-  messagesContainer.scrollTop = messagesContainer.scrollHeight;
-} 
+// PIP 메시지 전송은 analyze-pip.js에서 처리
+// =========================================== 
 
 // ===========================================
 // 언어 및 다국어화 유틸리티
@@ -1156,3 +1228,24 @@ function getCollectionNameByLanguage(language) {
       return 'analysis_result_consultation';
   }
 }
+
+// ===========================================
+// 윈도우 전역 함수 및 변수 할당 (PIP 접근용)
+// ===========================================
+window.sendChatMessage = sendChatMessage;
+window.createNewChatSession = createNewChatSession;
+window.addUserMessage = addUserMessage;
+window.prepareBotMessage = prepareBotMessage;
+window.addBotMessage = addBotMessage;
+window.createContextualMessage = createContextualMessage;
+
+// 동적 변수를 위한 getter 함수들
+Object.defineProperty(window, 'chatSocket', {
+  get: function() { return chatSocket; },
+  set: function(value) { chatSocket = value; }
+});
+
+Object.defineProperty(window, 'currentSessionId', {
+  get: function() { return currentSessionId; },
+  set: function(value) { currentSessionId = value; }
+});

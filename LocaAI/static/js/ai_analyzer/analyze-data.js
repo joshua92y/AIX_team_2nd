@@ -41,18 +41,7 @@ const businessTypes = [
   {id: 34, kor: "푸드트럭", eng: "Food truck", esp: "Camión de comida"},
   {id: 35, kor: "한식", eng: "Korean food", esp: "Comida coreana"},
   {id: 36, kor: "호프/통닭", eng: "Beer/chicken pub", esp: "Pub de cerveza/pollo"},
-  {id: 37, kor: "횟집", eng: "Raw fish restaurant", esp: "Restaurante de pescado crudo"},
-  // 추가 업종들 (누락된 업종들)
-  {id: 38, kor: "기타 휴게음식점", eng: "Other snack bars", esp: "Otros bares de aperitivos"},
-  {id: 39, kor: "떡카페", eng: "Rice cake cafe", esp: "Café de pasteles de arroz"},
-  {id: 40, kor: "냉면집", eng: "Cold noodles", esp: "Fideos fríos"},
-  {id: 41, kor: "김밥(도시락)", eng: "Kimbap (lunch box)", esp: "Kimbap (caja de almuerzo)"},
-  {id: 42, kor: "기타", eng: "Others", esp: "Otros"},
-  {id: 43, kor: "관광숙박업", eng: "Tourist hotel", esp: "Hotel turístico"},
-  {id: 44, kor: "서양음식", eng: "Western food", esp: "Comida occidental"},
-  {id: 45, kor: "극장", eng: "Theater", esp: "Teatro"},
-  {id: 46, kor: "식육(구이)", eng: "Grilled meat", esp: "Carne a la parrilla"},
-  {id: 47, kor: "탕류", eng: "Health soup", esp: "Sopa saludable"}
+  {id: 37, kor: "횟집", eng: "Raw fish restaurant", esp: "Restaurante de pescado crudo"}
 ];
 
 // 다국어 텍스트

@@ -161,8 +161,8 @@ async def save_to_db_chain(user_id, session_id, question, answer, summary, colle
     logger.debug("✅ ChatLog 저장 완료")
 
 # ✅ 전체 파이프라인
-async def run_rag_pipeline(user_id: int, session_id: str, question: str):
-    logger.debug(f"🚀 run_rag_pipeline 시작 | user_id={user_id}, session_id={session_id}, question={question[:30]}...")
+async def run_rag_pipeline(user_id: int, session_id: str, question: str, collection: str = None, language: str = None):
+    logger.debug(f"🚀 run_rag_pipeline 시작 | user_id={user_id}, session_id={session_id}, collection={collection}, language={language}, question={question[:30]}...")
     
     history = await DjangoChatHistory(user_id, session_id).load()
     memory = ConversationBufferWindowMemory(chat_memory=history, return_messages=True)
@@ -180,10 +180,17 @@ async def run_rag_pipeline(user_id: int, session_id: str, question: str):
     })
     logger.debug(f"🔍 요약이 포함된 질문: {question_with_summary['question'][:100]}...")
 
-    # 2️⃣ 컬렉션별 응답
+    # 2️⃣ 컬렉션별 응답 - 클라이언트가 지정한 컬렉션 사용
     allowed = set(settings.RAG_SETTINGS["COLLECTIONS"])
-    collection_names = [name for name in list_all_collections() if name in allowed]
-    logger.debug(f"📚 대상 컬렉션: {collection_names}")
+    all_collections = [name for name in list_all_collections() if name in allowed]
+    
+    # 클라이언트가 특정 컬렉션을 요청한 경우 해당 컬렉션만 사용
+    if collection and collection in all_collections:
+        collection_names = [collection]
+        logger.debug(f"📚 클라이언트 지정 컬렉션 사용: {collection_names}")
+    else:
+        collection_names = all_collections
+        logger.debug(f"📚 기본 모든 컬렉션 사용: {collection_names}")
 
     # ✅ PromptTemplate는 dict input 필요
     collection_input_dict = {
