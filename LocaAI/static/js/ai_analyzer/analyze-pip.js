@@ -443,122 +443,8 @@ function minimizeChatbotPIP() {
   closeChatbotPIP();
 }
 
-// PIP 채팅 메시지 전송
-async function sendPIPMessage() {
-  const input = document.getElementById('pipChatInput');
-  const message = input.value.trim();
-  
-  if (!message) return;
-  
-  const sendBtn = document.getElementById('pipChatSendBtn');
-  const statusDiv = document.getElementById('pipChatConnectionStatus');
-  
-  try {
-    // 버튼 비활성화 및 로딩 표시
-    sendBtn.disabled = true;
-    statusDiv.style.display = 'block';
-    input.disabled = true;
-    
-    // 현재 모드 가져오기
-    const mode = getCurrentPIPMode();
-    
-    // 사용자 메시지 표시
-    const pipChatMessages = document.getElementById('pipChatMessages');
-    const userMessageHTML = `
-      <div class="d-flex mb-3">
-        <div class="ms-auto">
-          <div class="bg-primary text-white rounded-3 p-3 shadow-sm" style="max-width: 400px;">
-            <p class="mb-0">${message}</p>
-          </div>
-          <small class="text-muted d-block mt-1 text-end">
-            ${new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
-          </small>
-        </div>
-      </div>
-    `;
-    pipChatMessages.insertAdjacentHTML('beforeend', userMessageHTML);
-    pipChatMessages.scrollTop = pipChatMessages.scrollHeight;
-    
-    // AI 응답 메시지 컨테이너 생성
-    const botMessageHTML = `
-      <div class="d-flex mb-3">
-        <div class="me-auto">
-          <div class="d-flex align-items-start">
-            <div class="bg-gradient bg-primary rounded-circle me-2 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px;">
-              <i class="bi bi-robot text-white" style="font-size: 14px;"></i>
-            </div>
-            <div class="bg-white rounded-3 p-3 shadow-sm" style="max-width: 500px;" id="pipCurrentBotMessage">
-              <div class="typing-indicator">
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
-            </div>
-          </div>
-          <small class="text-muted d-block mt-1 ms-5">
-            ${new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
-          </small>
-        </div>
-      </div>
-    `;
-    pipChatMessages.insertAdjacentHTML('beforeend', botMessageHTML);
-    pipChatMessages.scrollTop = pipChatMessages.scrollHeight;
-    
-    pipCurrentBotMessageText = '';
-    
-    // WebSocket으로 메시지 전송
-    if (window.chatSocket && window.chatSocket.readyState === WebSocket.OPEN) {
-      const language = window.getCurrentAILanguage ? window.getCurrentAILanguage() : 'ko';
-      
-      window.chatSocket.send(JSON.stringify({
-        'message': message,
-        'mode': mode,
-        'language': language
-      }));
-    } else {
-      throw new Error('WebSocket 연결이 끊어졌습니다');
-    }
-    
-    // 입력 필드 초기화
-    input.value = '';
-    
-  } catch (error) {
-    console.error('PIP 메시지 전송 오류:', error);
-    
-    // 오류 메시지 표시
-    const errorMessageHTML = `
-      <div class="d-flex mb-3">
-        <div class="me-auto">
-          <div class="d-flex align-items-start">
-            <div class="bg-danger rounded-circle me-2 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px;">
-              <i class="bi bi-exclamation-triangle text-white" style="font-size: 14px;"></i>
-            </div>
-            <div class="bg-light rounded-3 p-3 border border-danger" style="max-width: 500px;">
-              <p class="mb-0 text-danger">
-                <i class="bi bi-wifi-off me-1"></i>
-                연결 오류가 발생했습니다. 잠시 후 다시 시도해주세요.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-    pipChatMessages.insertAdjacentHTML('beforeend', errorMessageHTML);
-    pipChatMessages.scrollTop = pipChatMessages.scrollHeight;
-    
-  } finally {
-    // 버튼 및 입력 필드 활성화
-    sendBtn.disabled = false;
-    statusDiv.style.display = 'none';
-    input.disabled = false;
-    input.focus();
-    
-    // 히스토리 업데이트
-    setTimeout(() => {
-      updatePIPChatHistory();
-    }, 100);
-  }
-}
+// PIP 채팅 메시지 전송은 analyze-chatbot.js의 sendPIPMessage()를 사용합니다
+// 중복 제거하여 일관성 있는 메시지 처리를 보장합니다
 
 // PIP 관련 함수들은 analyze-chatbot.js에서 처리됩니다.
 // 필요한 경우 여기서 PIP 전용 UI 업데이트만 수행합니다.
@@ -985,58 +871,8 @@ function scrollToPIPMessage(sessionNumber) {
   }
 }
 
-// PIP 전용 스트리밍 메시지 업데이트
-function appendToPIPBotMessage(chunk) {
-  pipCurrentBotMessageText += chunk;
-  
-  // PIP 메시지 업데이트
-  const currentPIPMessage = document.getElementById('pipCurrentBotMessage');
-  if (currentPIPMessage) {
-    // 타이핑 인디케이터 제거하고 텍스트 표시
-    const typingIndicator = currentPIPMessage.querySelector('.typing-indicator');
-    if (typingIndicator) {
-      typingIndicator.remove();
-    }
-    
-    // 마크다운 파싱 후 표시
-    if (typeof marked !== 'undefined') {
-      currentPIPMessage.innerHTML = marked.parse(pipCurrentBotMessageText);
-    } else {
-      currentPIPMessage.innerHTML = `<p class="mb-0">${pipCurrentBotMessageText.replace(/\n/g, '<br>')}</p>`;
-    }
-    
-    // 스크롤 업데이트
-    const pipChatMessages = document.getElementById('pipChatMessages');
-    if (pipChatMessages) {
-      pipChatMessages.scrollTop = pipChatMessages.scrollHeight;
-    }
-  }
-}
-
-// PIP 전용 봇 메시지 완료 처리
-function finalizePIPBotMessage() {
-  const currentPIPMessage = document.getElementById('pipCurrentBotMessage');
-  
-  if (currentPIPMessage) {
-    // ID 제거하여 더 이상 업데이트되지 않도록 처리
-    currentPIPMessage.removeAttribute('id');
-    
-    // 최종 마크다운 파싱
-    if (pipCurrentBotMessageText && typeof marked !== 'undefined') {
-      currentPIPMessage.innerHTML = marked.parse(pipCurrentBotMessageText);
-    }
-  }
-  
-  // 메시지 텍스트 초기화
-  pipCurrentBotMessageText = '';
-  
-  // PIP 히스토리 업데이트
-  setTimeout(() => {
-    updatePIPChatHistory();
-  }, 100);
-  
-  console.log('📱 PIP 봇 메시지 완료 처리');
-}
+// PIP 전용 스트리밍 함수들은 analyze-chatbot.js로 통일하여 처리됩니다
+// 중복 제거하여 DOM 요소 ID 충돌을 방지합니다
 
 // 현재 언어 감지 함수
 function getCurrentLanguage() {
@@ -1064,8 +900,7 @@ function getCurrentLanguage() {
 // ===========================================
 window.updatePIPModalLanguage = updatePIPModalLanguage;
 window.updatePIPChatHistory = updatePIPChatHistory;
-window.appendToPIPBotMessage = appendToPIPBotMessage;
-window.finalizePIPBotMessage = finalizePIPBotMessage;
+// appendToPIPBotMessage와 finalizePIPBotMessage는 analyze-chatbot.js에서 처리
 window.getCurrentPIPMode = getCurrentPIPMode;
 window.openChatbotPIP = openChatbotPIP;
 window.closeChatbotPIP = closeChatbotPIP;

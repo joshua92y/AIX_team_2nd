@@ -517,8 +517,11 @@ function finalizeBotMessage() {
   
   const currentMessage = document.getElementById('currentBotMessage');
   const currentPIPMessage = document.getElementById('currentPIPBotMessage');
+  const pipContentElement = document.getElementById('pipBotMessageContent');
+  const mainContentElement = document.getElementById('botMessageContent');
   
   console.log("📋 완료할 메시지:", !!currentMessage, "PIP 메시지:", !!currentPIPMessage);
+  console.log("📋 콘텐츠 요소:", !!mainContentElement, "PIP 콘텐츠:", !!pipContentElement);
   
   if (currentMessage) {
     currentMessage.removeAttribute('id');
@@ -528,6 +531,17 @@ function finalizeBotMessage() {
     currentPIPMessage.removeAttribute('id');
     console.log("✅ PIP 봇 메시지 ID 제거 완료");
   }
+  
+  // 콘텐츠 요소 ID도 제거하여 다음 메시지와 충돌 방지
+  if (mainContentElement) {
+    mainContentElement.removeAttribute('id');
+    console.log("✅ 메인 콘텐츠 요소 ID 제거 완료");
+  }
+  if (pipContentElement) {
+    pipContentElement.removeAttribute('id');
+    console.log("✅ PIP 콘텐츠 요소 ID 제거 완료");
+  }
+  
   // 메시지 텍스트 초기화
   console.log("🧹 AI_Analyzer 메시지 텍스트 초기화");
   chatbotCurrentBotMessageText = '';
