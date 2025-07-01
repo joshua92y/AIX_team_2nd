@@ -9,11 +9,11 @@
 
     <nav id="navmenu" class="navmenu">
       <ul>
-        <li><a href="{% url 'index' %}" class="active">Home</a></li>
-        <li><a href="{% url 'about_us' %}">About us</a></li>
-        <li><a href="{% url 'AI_Analyzer:analyze_page' %}">Services</a></li>
-        <li><a href="{% url 'shopdash:dashboard' %}">Data</a></li>
-        <li><a href="{% url 'border:portfolio_list' %}">Portfolio</a></li>
+        <li><a href="{% url 'index' %}" class="{% if request.resolver_match.url_name == 'index' %}active{% endif %}">Home</a></li>
+        <li><a href="{% url 'about_us' %}" class="{% if request.resolver_match.url_name == 'about_us' %}active{% endif %}">About us</a></li>
+        <li><a href="{% url 'AI_Analyzer:analyze_page' %}" class="{% if request.resolver_match.url_name == 'analyze_page' %}active{% endif %}">Services</a></li>
+        <li><a href="{% url 'shopdash:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Data</a></li>
+        <li><a href="{% url 'border:portfolio_list' %}" class="{% if request.resolver_match.url_name == 'portfolio_list' %}active{% endif %}">Portfolio</a></li>
         <li><a href="/#contact">Contact Us</a></li>
 
         <!-- Support 드롭다운 -->
@@ -154,6 +154,14 @@
     .no-justify .language-link:hover,
     .no-justify .language-link:active {
       justify-content: flex-start;
+    }
+
+    .navmenu a.active {
+      color: #0d6efd;
+      font-weight: bold;
+    }
+    .navmenu a:hover {
+      color: #0d6efd;
     }
     </style>
 
