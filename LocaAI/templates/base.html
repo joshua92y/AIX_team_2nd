@@ -68,60 +68,6 @@
   <!-- Main JS -->
   <script src="{% static 'assets/js/main.js' %}"></script>
 
-  <script>
-    window.sessionLang = "{{ request.session.django_language|default:'KOR' }}";
-
-    if (!window.sessionLang || window.sessionLang === '') {
-      const browserLang = navigator.language || navigator.userLanguage;
-      console.log("[base.js] 감지된 브라우저 언어:", browserLang);
-      if (browserLang.startsWith('en')) {
-        window.sessionLang = 'ENG';
-      } else if (browserLang.startsWith('es')) {
-        window.sessionLang = 'ESP';
-      } else {
-        window.sessionLang = 'KOR';
-      }
-      console.log("[base.js] 설정된 기본 언어:", window.sessionLang);
-      setSelectedLangValue(window.sessionLang);
-    } else {
-      console.log("[base.js] 세션 언어 유지:", window.sessionLang);
-      funcChangeLang(window.sessionLang);
-    }
-    
-    // 선택한 언어를 세션에 저장하는 function
-    function setSelectedLangValue(lang) {
-      $.ajax({
-        type: 'POST',
-        url: '/set-lang/',
-        data: {
-          "lang": lang
-        },
-        headers: {
-          'X-CSRFToken': getCSRFToken()   // 토큰추가
-        },
-        success: function(res) {
-          funcChangeLang(lang);         // UI 전환
-          console.log(res.code, res.message, 'session lang changed to', lang)
-        },
-        error: function(xhr, status, error) {
-          console.log('session lang change error', lang)
-        }
-      });
-    }
-
-    // 언어 변경 함수
-    function funcChangeLang(lang) {
-      console.log("funcChangeLang 실행됨:", lang); // 콘솔에 출력 확인
-			$('[data-lang]').hide();
-			$('[data-lang="'+lang+'"]').show();
-		}
-        
-    // CSRF 토큰을 가져오는 function
-    function getCSRFToken() {
-      return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    }
-  </script>
-
   <!-- Extra JS Block -->
   {% block extra_js %}{% endblock %}
 </body>

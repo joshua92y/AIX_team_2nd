@@ -7,26 +7,50 @@
 <div class="container mt-4">
     <div class="card">
         <div class="card-body">
-            <h2 class="card-title mb-4">게시글 삭제</h2>
+            <h2 class="card-title mb-4">
+                <span data-lang="KOR">게시글 삭제</span>
+                <span data-lang="ENG" style="display:none">Delete Post</span>
+                <span data-lang="ESP" style="display:none">Eliminar publicación</span>
+            </h2>
             <div class="alert alert-warning">
-                <p>정말로 "{{ post.title }}" 게시글을 삭제하시겠습니까?</p>
-                <p class="mb-0">이 작업은 되돌릴 수 없습니다.</p>
+                <p>
+                    <span data-lang="KOR">정말로 "{{ post.title }}" 게시글을 삭제하시겠습니까?</span>
+                    <span data-lang="ENG" style="display:none">Are you sure you want to delete the post "{{ post.title }}"?</span>
+                    <span data-lang="ESP" style="display:none">¿Estás seguro de que deseas eliminar la publicación "{{ post.title }}"?</span>
+                </p>
+                <p class="mb-0">
+                    <span data-lang="KOR">이 작업은 되돌릴 수 없습니다.</span>
+                    <span data-lang="ENG" style="display:none">This action cannot be undone.</span>
+                    <span data-lang="ESP" style="display:none">Esta acción no se puede deshacer.</span>
+                </p>
             </div>
 
             <form method="post">
                 {% csrf_token %}
                 {% if not user.is_authenticated and post.guest_password %}
                 <div class="mb-3">
-                    <label for="password" class="form-label">비밀번호</label>
+                    <label for="password" class="form-label">
+                        <span data-lang="KOR">비밀번호</span>
+                        <span data-lang="ENG" style="display:none">Password</span>
+                        <span data-lang="ESP" style="display:none">Contraseña</span>
+                    </label>
                     <input type="password" class="form-control" id="password" name="password" required>
                 </div>
                 {% endif %}
                 <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-danger">삭제</button>
-                    <a href="{% url 'border:post_detail' post.pk %}" class="btn btn-secondary">취소</a>
+                    <button type="submit" class="btn btn-danger">
+                        <span data-lang="KOR">삭제</span>
+                        <span data-lang="ENG" style="display:none">Delete</span>
+                        <span data-lang="ESP" style="display:none">Eliminar</span>
+                    </button>
+                    <a href="{% url 'border:post_detail' post.pk %}" class="btn btn-secondary">
+                        <span data-lang="KOR">취소</span>
+                        <span data-lang="ENG" style="display:none">Cancel</span>
+                        <span data-lang="ESP" style="display:none">Cancelar</span>
+                    </a>
                 </div>
             </form>
         </div>
     </div>
 </div>
-{% endblock %} 
+{% endblock %}

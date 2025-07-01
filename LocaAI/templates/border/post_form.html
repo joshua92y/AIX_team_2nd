@@ -1,12 +1,15 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load i18n %}
 
 {% block title %}
     {% if form.instance.pk %}
-        {% trans "게시글 수정" %}
+        <span data-lang="KOR">게시글 수정</span>
+        <span data-lang="ENG" style="display:none">Edit Post</span>
+        <span data-lang="ESP" style="display:none">Editar publicación</span>
     {% else %}
-        {% trans "게시글 작성" %}
+        <span data-lang="KOR">게시글 작성</span>
+        <span data-lang="ENG" style="display:none">Create Post</span>
+        <span data-lang="ESP" style="display:none">Crear publicación</span>
     {% endif %}
 {% endblock %}
 
@@ -87,22 +90,38 @@
 <div class="container mt-4">
     <h2 class="mb-4">
         {% if form.instance.pk %}
-            {% trans "게시글 수정" %}
+            <span data-lang="KOR">게시글 수정</span>
+            <span data-lang="ENG" style="display:none">Edit Post</span>
+            <span data-lang="ESP" style="display:none">Editar publicación</span>
         {% else %}
-            {% trans "게시글 작성" %}
+            <span data-lang="KOR">게시글 작성</span>
+            <span data-lang="ENG" style="display:none">Create Post</span>
+            <span data-lang="ESP" style="display:none">Crear publicación</span>
         {% endif %}
     </h2>
 
     {% if show_password_form %}
     <div class="password-form">
-        <h3 class="mb-3">{% trans "비밀번호 확인" %}</h3>
+        <h3 class="mb-3">
+            <span data-lang="KOR">비밀번호 확인</span>
+            <span data-lang="ENG" style="display:none">Password Confirmation</span>
+            <span data-lang="ESP" style="display:none">Confirmar contraseña</span>
+        </h3>
         <form method="post">
             {% csrf_token %}
             <div class="form-group">
-                <label for="password" class="form-label">{% trans "비밀번호" %}</label>
+                <label for="password" class="form-label">
+                    <span data-lang="KOR">비밀번호</span>
+                    <span data-lang="ENG" style="display:none">Password</span>
+                    <span data-lang="ESP" style="display:none">Contraseña</span>
+                </label>
                 <input type="password" name="password" id="password" class="form-control" required>
             </div>
-            <button type="submit" class="btn btn-primary">{% trans "확인" %}</button>
+            <button type="submit" class="btn btn-primary">
+                <span data-lang="KOR">확인</span>
+                <span data-lang="ENG" style="display:none">Confirm</span>
+                <span data-lang="ESP" style="display:none">Confirmar</span>
+            </button>
         </form>
     </div>
     {% else %}
@@ -200,11 +219,23 @@
         {% endif %}
 
         <div class="mt-3">
-            <button type="submit" class="btn btn-primary">{% trans "저장" %}</button>
+            <button type="submit" class="btn btn-primary">
+                <span data-lang="KOR">저장</span>
+                <span data-lang="ENG" style="display:none">Save</span>
+                <span data-lang="ESP" style="display:none">Guardar</span>
+            </button>
             {% if form.instance.pk %}
-            <a href="{% url 'border:post_detail' pk=form.instance.pk %}" class="btn btn-secondary">{% trans "취소" %}</a>
+            <a href="{% url 'border:post_detail' pk=form.instance.pk %}" class="btn btn-secondary">
+                <span data-lang="KOR">취소</span>
+                <span data-lang="ENG" style="display:none">Cancel</span>
+                <span data-lang="ESP" style="display:none">Cancelar</span>
+            </a>
             {% else %}
-            <a href="{% url 'border:inquiry_list' %}" class="btn btn-secondary">{% trans "취소" %}</a>
+            <a href="{% url 'border:inquiry_list' %}" class="btn btn-secondary">
+                <span data-lang="KOR">취소</span>
+                <span data-lang="ENG" style="display:none">Cancel</span>
+                <span data-lang="ESP" style="display:none">Cancelar</span>
+            </a>
             {% endif %}
         </div>
     </form>
