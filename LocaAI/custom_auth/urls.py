@@ -2,14 +2,14 @@ from django.urls import path, reverse_lazy
 from django.contrib.auth import views as auth_views
 from . import views
 from .views import PasswordResetRequestView
+from .views import CustomPasswordResetConfirmView
+from .views import CustomPasswordResetCompleteView
 
 app_name = 'custom_auth'
 
 urlpatterns = [
     # 로그인/로그아웃
-    path('login/', auth_views.LoginView.as_view(
-        template_name='custom_auth/login.html',
-    ), name='login'),
+    path('login/', views.login_page, name='login'),
     path('logout/', views.logout_view, name='logout'),
     
     # 마이페이지
@@ -33,9 +33,9 @@ urlpatterns = [
     # 비밀번호 재설정 확인 (token 입력)
     path(
         'password-reset-confirm/<uidb64>/<token>/',
-        auth_views.PasswordResetConfirmView.as_view(
+        CustomPasswordResetConfirmView.as_view(
             template_name='custom_auth/password_reset_confirm.html',
-            success_url=reverse_lazy('custom_auth:password_reset_complete')  # ★ 핵심 수정
+            success_url=reverse_lazy('custom_auth:password_reset_complete')
         ),
         name='password_reset_confirm'
     ),
@@ -43,7 +43,7 @@ urlpatterns = [
     # 비밀번호 재설정 완료
     path(
         'password-reset-complete/',
-        auth_views.PasswordResetCompleteView.as_view(
+        CustomPasswordResetCompleteView.as_view(
             template_name='custom_auth/password_reset_complete.html'
         ),
         name='password_reset_complete'
