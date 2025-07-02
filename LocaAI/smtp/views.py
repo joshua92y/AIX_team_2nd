@@ -102,7 +102,7 @@ class NewsletterUnsubscribeView(APIView):
                 # ✅ 이메일 링크로 들어온 경우: 리디렉트
                 return redirect("smtp:newsletter_unsubscribe_done")
             else:
-                # ✅ 마이페이지에서 POST로 해지한 경우: 메시지만 JSON 응답
+                # ✅ POST로 해지한 경우: 메시지만 JSON 응답
                 return Response(
                     {'message': f"{subscriber.email} 님, 구독이 해지되었습니다."},
                     status=status.HTTP_200_OK
