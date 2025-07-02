@@ -1,3 +1,4 @@
+from django.contrib.auth import authenticate
 from django.contrib.auth.views import PasswordResetCompleteView
 from django.contrib.auth.views import PasswordResetConfirmView
 from django.utils import translation
@@ -30,9 +31,10 @@ def login_view(request):
     if lang_code:
         translation.activate(lang_code)
         request.LANGUAGE_CODE = lang_code
+        
     username = request.POST.get('username')
     password = request.POST.get('password')
-    
+
     try:
         user = User.objects.get(username=username)
         if user.check_password(password):
@@ -44,7 +46,8 @@ def login_view(request):
             login(request, user)
             return JsonResponse({
                 'status': 'success',
-                'session_token': str(user.session_token)
+                'session_token': str(user.session_token),
+                'redirect_url': request.POST.get('next') or '/'
             })
     except User.DoesNotExist:
         pass

@@ -365,7 +365,6 @@ a.button:hover {
   box-sizing: content-box;
 }
 #toggle-terms:before {
-  speak: none;
   display: block;
   -webkit-font-smoothing: antialiased;
 }
@@ -669,10 +668,7 @@ input {
 }
 /* MEDIUM VIEWPORT */
 @media only screen and (min-width: 40em) {
-    /* GLOBAL TRANSITION */
-    * {
-      /*transition: .25s ease-in-out;*/
-    }
+
     /* WRAP */
     .wrap {
         position: fixed;
@@ -820,4 +816,5 @@ input[type="submit"].error {
   .mobile-nav-toggle {
     display: none;
   }
+}
 }
