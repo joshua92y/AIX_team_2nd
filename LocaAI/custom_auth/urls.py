@@ -10,6 +10,7 @@ app_name = 'custom_auth'
 urlpatterns = [
     # 로그인/로그아웃
     path('login/', views.login_page, name='login'),
+    path('login/submit/', views.login_view, name='login_submit'),
     path('logout/', views.logout_view, name='logout'),
     
     # 마이페이지

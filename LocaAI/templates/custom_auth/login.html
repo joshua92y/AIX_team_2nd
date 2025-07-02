@@ -86,16 +86,13 @@
           
           <!-- LOGIN TAB -->
           <div id="login-tab-content" {% if not is_signup %}class="active"{% endif %}>
-            {% if login_error %}
-              <p class="error">{% trans "Invalid username or password." %}</p>
-            {% endif %}
-            <form class="login-form" method="post" action="{% url 'custom_auth:login' %}">
+            <form class="login-form" method="post" action="{% url 'custom_auth:login_submit' %}">
               {% csrf_token %}
               {% if next %}
               <input type="hidden" name="next" value="{{ next }}">
               {% endif %}
-              <input type="text" class="input" name="username" placeholder="Email or Username" autocomplete="username">
-              <input type="password" class="input" name="password" placeholder="Password" autocomplete="current-password">
+              <input type="text" class="input" name="username" placeholder="Email or Username">
+              <input type="password" class="input" name="password" placeholder="Password">
               <button type="submit" class="button">Login</button>
             </form>
             <div class="help-action">
@@ -107,24 +104,24 @@
           <div id="signup-tab-content" {% if is_signup %}class="active"{% endif %}>
             <form class="signup-form" method="post" action="{% url 'custom_auth:register' %}">
               {% csrf_token %}
-              <input type="text" name="username" class="input" placeholder="Username" autocomplete="username"
+              <input type="text" name="username" class="input" placeholder="Username"
                     value="{{ form.username.value|default_if_none:'' }}">
               {% if form.username.errors %}
                 <p class="error">{{ form.username.errors.0 }}</p>
               {% endif %}
 
-              <input type="email" name="email" class="input" placeholder="Email" autocomplete="email"
+              <input type="email" name="email" class="input" placeholder="Email"
                     value="{{ form.email.value|default_if_none:'' }}">
               {% if form.email.errors %}
                 <p class="error">{{ form.email.errors.0 }}</p>
               {% endif %}
 
-              <input type="password" name="password1" class="input" placeholder="Password" autocomplete="new-password">
+              <input type="password" name="password1" class="input" placeholder="Password">
               {% if form.password1.errors %}
                 <p class="error">{{ form.password1.errors.0 }}</p>
               {% endif %}
 
-              <input type="password" name="password2" class="input" placeholder="Password 확인" autocomplete="new-password">
+              <input type="password" name="password2" class="input" placeholder="Password 확인">
               {% if form.password2.errors %}
                 <p class="error">{{ form.password2.errors.0 }}</p>
               {% endif %}
