@@ -1495,6 +1495,9 @@ function createBotMessageHTML(content) {
   
   const label = labels[currentLanguage] || labels.ko;
   
+  // 마크다운 처리
+  const processedContent = typeof marked !== 'undefined' ? marked.parse(content) : content;
+  
   return `
     <div class="d-flex align-items-start mb-3">
       <div class="bg-gradient bg-primary rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; min-width: 36px;">
@@ -1506,7 +1509,7 @@ function createBotMessageHTML(content) {
             <strong class="text-primary me-2">${label.title}</strong>
             <span class="badge bg-success-subtle text-success">${label.status}</span>
           </div>
-          <div class="message-content">${content}</div>
+          <div class="message-content">${processedContent}</div>
         </div>
       </div>
     </div>

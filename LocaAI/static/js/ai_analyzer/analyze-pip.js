@@ -598,6 +598,8 @@ async function loadChatSession(sessionId) {
           </div>
         `;
       } else if (message.role === 'assistant') {
+        // 마크다운 처리
+        const processedContent = typeof marked !== 'undefined' ? marked.parse(message.content) : message.content;
         messagesHTML += `
           <div class="d-flex align-items-start mb-3">
             <div class="bg-gradient bg-primary rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; min-width: 36px;">
@@ -609,7 +611,7 @@ async function loadChatSession(sessionId) {
                   <strong class="text-primary me-2">분석결과 상담 AI</strong>
                   <span class="badge bg-success-subtle text-success">온라인</span>
                 </div>
-                <div class="message-content">${message.content}</div>
+                <div class="message-content">${processedContent}</div>
               </div>
             </div>
           </div>
