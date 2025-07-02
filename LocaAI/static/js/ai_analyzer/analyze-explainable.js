@@ -84,15 +84,15 @@ function formatMarkdownContent(content) {
 /**
  * 실제 생존확률을 기반으로 한 요약 생성 (150자 정도) - 다국어 지원
  */
-function extractCleanSummary(summary, actualSurvivalRate) {
+function extractCleanSummary(summary, actualSurvivalRate, targetLanguage = null) {
   if (!actualSurvivalRate && actualSurvivalRate !== 0) {
-    const currentLang = getCurrentLanguage();
+    const currentLang = targetLanguage || getCurrentLanguage();
     return currentLang === 'en' ? 'Analyzing...' : currentLang === 'es' ? 'Analizando...' : '분석 중...';
   }
   
   // 실제 생존확률 사용 (result.survival_percentage)
   const survivalRate = parseFloat(actualSurvivalRate);
-  const currentLang = getCurrentLanguage();
+  const currentLang = targetLanguage || getCurrentLanguage();
   
   // 다국어 메시지 템플릿
   const getAnalysisMessage = (lang, rate, level) => {
@@ -105,18 +105,18 @@ function extractCleanSummary(summary, actualSurvivalRate) {
         risky: `예측 생존확률 ${rate}%로 높은 위험이 예상됩니다. 입지 변경을 고려하거나 사업 모델을 전면 재검토하시기 바랍니다.`
       },
       en: {
-        excellent: `AI Analysis Result: Predicted survival probability is ${rate}% with excellent business environment. This location is suitable for startup with high success potential.`,
-        good: `AI Analysis Result: Predicted survival probability is ${rate}% with good business environment. Success is likely with proper marketing strategies and operational planning.`,
-        moderate: `AI Analysis Result: Predicted survival probability is ${rate}% with moderate business environment. Competitive differentiation strategies and careful business planning are needed.`,
-        challenging: `AI Analysis Result: Predicted survival probability is ${rate}% with challenging business environment. Please carefully review risk factors and consider professional consulting.`,
-        risky: `AI Analysis Result: Predicted survival probability is ${rate}% with high risk expected. Please consider changing location or completely reviewing business model.`
+        excellent: `Predicted survival probability is ${rate}% with excellent business environment. This location is suitable for startup with high success potential.`,
+        good: `Predicted survival probability is ${rate}% with good business environment. Success is likely with proper marketing strategies and operational planning.`,
+        moderate: `Predicted survival probability is ${rate}% with moderate business environment. Competitive differentiation strategies and careful business planning are needed.`,
+        challenging: `Predicted survival probability is ${rate}% with challenging business environment. Please carefully review risk factors and consider professional consulting.`,
+        risky: `Predicted survival probability is ${rate}% with high risk expected. Please consider changing location or completely reviewing business model.`
       },
       es: {
-        excellent: `Resultado del Análisis de IA: La probabilidad de supervivencia predicha es ${rate}% con excelente entorno empresarial. Esta ubicación es adecuada para startup con alto potencial de éxito.`,
-        good: `Resultado del Análisis de IA: La probabilidad de supervivencia predicha es ${rate}% con buen entorno empresarial. El éxito es probable con estrategias de marketing adecuadas y planificación operativa.`,
-        moderate: `Resultado del Análisis de IA: La probabilidad de supervivencia predicha es ${rate}% con entorno empresarial moderado. Se necesitan estrategias de diferenciación competitiva y planificación empresarial cuidadosa.`,
-        challenging: `Resultado del Análisis de IA: La probabilidad de supervivencia predicha es ${rate}% con entorno empresarial desafiante. Por favor revise cuidadosamente los factores de riesgo y considere consultoría profesional.`,
-        risky: `Resultado del Análisis de IA: La probabilidad de supervivencia predicha es ${rate}% con alto riesgo esperado. Por favor considere cambiar la ubicación o revisar completamente el modelo de negocio.`
+        excellent: `La probabilidad de supervivencia predicha es ${rate}% con excelente entorno empresarial. Esta ubicación es adecuada para startup con alto potencial de éxito.`,
+        good: `La probabilidad de supervivencia predicha es ${rate}% con buen entorno empresarial. El éxito es probable con estrategias de marketing adecuadas y planificación operativa.`,
+        moderate: `La probabilidad de supervivencia predicha es ${rate}% con entorno empresarial moderado. Se necesitan estrategias de diferenciación competitiva y planificación empresarial cuidadosa.`,
+        challenging: `La probabilidad de supervivencia predicha es ${rate}% con entorno empresarial desafiante. Por favor revise cuidadosamente los factores de riesgo y considere consultoría profesional.`,
+        risky: `La probabilidad de supervivencia predicha es ${rate}% con alto riesgo esperado. Por favor considere cambiar la ubicación o revisar completamente el modelo de negocio.`
       }
     };
     
@@ -408,6 +408,34 @@ function updateAIAnalysisSection(result) {
     // 전역 변수에 result 데이터만 저장 (이미 analyze-core.js에서 전체 데이터는 저장됨)
     window.currentAnalysisResult = result;
     
+    // 🎯 언어 변경 시 실시간 번역을 위한 함수 생성 및 노출
+    window.updateAIAnalysisLanguage = function(targetLanguage) {
+      console.log(`🔄 AI Analysis 언어 업데이트: ${targetLanguage}`);
+      
+      // 현재 AI Analysis 섹션이 있는지 확인
+      if (!analysisSection || analysisSection.length === 0) return;
+      
+      // 언어 코드 정규화
+      const langMap = {
+        'ko': 'KOR',
+        'en': 'ENG',
+        'es': 'ESP'
+      };
+      
+      const displayLang = langMap[targetLanguage] || 'KOR';
+      
+      // data-lang 기반 언어 전환
+      analysisSection.find('[data-lang]').hide();
+      analysisSection.find(`[data-lang="${displayLang}"]`).show();
+      
+      // cleanSummary 텍스트도 새 언어로 업데이트
+      if (result && result.ai_summary) {
+        const newCleanSummary = extractCleanSummary(result.ai_summary, result.survival_percentage, targetLanguage);
+        analysisSection.find('span').last().text(newCleanSummary);
+      }
+      
+      console.log(`✅ AI Analysis 언어 업데이트 완료: ${targetLanguage}`);
+    };
   } else {
     // 비회원: 다국어화된 메시지
     const survivalPercent = result.survival_percentage || 0;
@@ -493,7 +521,89 @@ function showDetailedAnalysis() {
   const data = window.currentAnalysisData;
   const result = data.result || data; // API 응답 구조에 따라 유연하게 처리
   
-  // 데이터 구조 확인
+  // 현재 언어 가져오기
+  const currentLang = getCurrentLanguage();
+  
+  // AI 분석 리포트 내용을 현재 언어에 맞게 처리
+  let aiReportContent = getAIExplanationText(result);
+  
+  // 🎯 AI 분석 리포트 내용 번역 (영어가 포함되어 있고 한국어가 아닌 경우)
+  if (currentLang !== 'ko' && typeof window.performFullTranslation === 'function') {
+    // 임시 div를 만들어서 번역 적용
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = formatMarkdownContent(aiReportContent);
+    
+    // 번역 시스템 적용
+    const allTextNodes = tempDiv.querySelectorAll('*');
+    allTextNodes.forEach(node => {
+      if (node.textContent && node.textContent.trim()) {
+        // 기본 번역 매핑 적용 (analyze-i18n.js 활용)
+        if (typeof window.performFullTranslation === 'function') {
+          // 텍스트 노드별로 번역 적용
+          const originalText = node.textContent;
+          
+          // 간단한 번역 매핑
+          const simpleTranslations = {
+            'Key conclusion': currentLang === 'en' ? 'Key conclusion' : 'Conclusión clave',
+            'Main positive factors': currentLang === 'en' ? 'Main positive factors' : 'Principales factores positivos',
+            'Main risk factors': currentLang === 'en' ? 'Main risk factors' : 'Principales factores de riesgo',
+            'Improvement suggestions': currentLang === 'en' ? 'Improvement suggestions' : 'Sugerencias de mejora',
+            'Overall opinion': currentLang === 'en' ? 'Overall opinion' : 'Opinión general',
+            'Low Competition': currentLang === 'en' ? 'Low Competition' : 'Competencia Baja',
+            'Strong Working Population': currentLang === 'en' ? 'Strong Working Population' : 'Fuerte Población Trabajadora',
+            'Diverse Demographics': currentLang === 'en' ? 'Diverse Demographics' : 'Demografía Diversa',
+            'High Foreign Visitor Potential': currentLang === 'en' ? 'High Foreign Visitor Potential' : 'Alto Potencial de Visitantes Extranjeros',
+            'No Schools Nearby': currentLang === 'en' ? 'No Schools Nearby' : 'Sin Escuelas Cercanas',
+            'Limited Local Amenities': currentLang === 'en' ? 'Limited Local Amenities' : 'Servicios Locales Limitados',
+            'High Land Value': currentLang === 'en' ? 'High Land Value' : 'Alto Valor del Terreno',
+            'Low Foreign Resident Population': currentLang === 'en' ? 'Low Foreign Resident Population' : 'Baja Población de Residentes Extranjeros',
+            'Targeted Marketing': currentLang === 'en' ? 'Targeted Marketing' : 'Marketing Dirigido',
+            'Partnerships with Local Businesses': currentLang === 'en' ? 'Partnerships with Local Businesses' : 'Asociaciones con Empresas Locales',
+            'Event Hosting': currentLang === 'en' ? 'Event Hosting' : 'Organización de Eventos'
+          };
+          
+          // 한국어로 번역하는 경우
+          if (currentLang === 'ko') {
+            const koTranslations = {
+              'Key conclusion': '핵심 결론',
+              'Main positive factors': '주요 긍정 요인',
+              'Main risk factors': '주요 위험 요인',
+              'Improvement suggestions': '개선 제안사항',
+              'Overall opinion': '종합 의견',
+              'Low Competition': '낮은 경쟁',
+              'Strong Working Population': '강한 직장인구',
+              'Diverse Demographics': '다양한 인구 구성',
+              'High Foreign Visitor Potential': '높은 외국인 방문객 잠재력',
+              'No Schools Nearby': '주변 학교 부재',
+              'Limited Local Amenities': '제한된 지역 편의시설',
+              'High Land Value': '높은 토지 가치',
+              'Low Foreign Resident Population': '낮은 외국인 거주인구',
+              'Targeted Marketing': '타겟 마케팅',
+              'Partnerships with Local Businesses': '지역 업체와의 파트너십',
+              'Event Hosting': '이벤트 개최'
+            };
+            
+            Object.keys(koTranslations).forEach(englishText => {
+              if (originalText.includes(englishText)) {
+                node.textContent = node.textContent.replace(new RegExp(englishText, 'g'), koTranslations[englishText]);
+              }
+            });
+          } else {
+            // 영어/스페인어 번역
+            Object.keys(simpleTranslations).forEach(englishText => {
+              if (originalText.includes(englishText)) {
+                node.textContent = node.textContent.replace(new RegExp(englishText, 'g'), simpleTranslations[englishText]);
+              }
+            });
+          }
+        }
+      }
+    });
+    
+    aiReportContent = tempDiv.innerHTML;
+  } else {
+    aiReportContent = formatMarkdownContent(aiReportContent);
+  }
   
   const modalHtml = `
     <div class="modal fade" id="detailAnalysisModal" tabindex="-1">
@@ -518,7 +628,7 @@ function showDetailedAnalysis() {
                   </div>
                   <div class="card-body">
                     <div style="line-height: 1.6; max-height: 400px; overflow-y: auto;">
-                      ${formatMarkdownContent(getAIExplanationText(result))}
+                      ${aiReportContent}
                     </div>
                   </div>
                 </div>
@@ -561,9 +671,6 @@ function showDetailedAnalysis() {
   $('body').append(modalHtml);
   
   // 모달이 생성된 후 언어 업데이트 적용
-  const currentLang = getCurrentLanguage();
-  
-  // data-lang 속성 기반 언어 업데이트
   const langMap = {
     'ko': 'KOR',
     'en': 'ENG', 

@@ -72,8 +72,11 @@ function getBusinessTypeName(id, lang = 'kor') {
 
 // 업종 이름 번역 (한국어명 기반) - 강화된 버전
 function translateBusinessType(koreanName, lang = 'kor') {
+  console.log(`🔄 업종명 번역 시도: "${koreanName}" → ${lang}`);
+  
   // 언어가 한국어이거나 지정되지 않은 경우 원본 반환
   if (!lang || lang === 'ko' || lang === 'kor') {
+    console.log(`✅ 한국어 요청, 원본 반환: ${koreanName}`);
     return koreanName;
   }
   
@@ -84,7 +87,7 @@ function translateBusinessType(koreanName, lang = 'kor') {
   );
   
   if (isAlreadyTranslated) {
-
+    console.log(`⚠️ 이미 번역된 텍스트, 그대로 반환: ${koreanName}`);
     return koreanName;
   }
   
@@ -115,10 +118,12 @@ function translateBusinessType(koreanName, lang = 'kor') {
     for (const variation of nameVariations) {
       const businessType = businessTypes.find(type => type.kor === variation);
       if (businessType) {
+        console.log(`✅ 영어 번역 성공: "${koreanName}" → "${businessType.eng}"`);
         return businessType.eng;
       }
     }
     
+    console.log(`❌ 영어 번역 실패: "${koreanName}" (매칭되는 업종 없음)`);
     return koreanName;
   }
   
@@ -127,14 +132,17 @@ function translateBusinessType(koreanName, lang = 'kor') {
     for (const variation of nameVariations) {
       const businessType = businessTypes.find(type => type.kor === variation);
       if (businessType) {
+        console.log(`✅ 스페인어 번역 성공: "${koreanName}" → "${businessType.esp}"`);
         return businessType.esp;
       }
     }
     
+    console.log(`❌ 스페인어 번역 실패: "${koreanName}" (매칭되는 업종 없음)`);
     return koreanName;
   }
   
   // 매칭되지 않는 언어의 경우 원본 반환
+  console.log(`⚠️ 지원하지 않는 언어: ${lang}, 원본 반환: ${koreanName}`);
   return koreanName;
 }
 
