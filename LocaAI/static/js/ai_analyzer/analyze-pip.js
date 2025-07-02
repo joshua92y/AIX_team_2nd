@@ -545,6 +545,29 @@ async function updatePIPChatHistory() {
   }
 }
 
+// 시스템 프롬프트에서 사용자의 실제 질문만 추출
+function extractUserQuestion(content) {
+  // 다국어 시스템 프롬프트 패턴들
+  const patterns = [
+    /위 분석 결과를 바탕으로 다음 질문에 답변해주세요:\s*/,  // 한국어
+    /Based on the above analysis results.*answer.*following question:\s*/i,  // 영어 (미래 대비)
+    /Basándose en.*resultados.*análisis.*responda.*siguiente pregunta:\s*/i  // 스페인어 (미래 대비)
+  ];
+  
+  // 각 패턴을 확인하여 매칭되는 것 찾기
+  for (const pattern of patterns) {
+    if (pattern.test(content)) {
+      const parts = content.split(pattern);
+      if (parts.length > 1 && parts[1].trim()) {
+        return parts[1].trim();
+      }
+    }
+  }
+  
+  // 어떤 패턴도 매칭되지 않으면 원본 그대로 반환
+  return content;
+}
+
 // 채팅 세션 로드 함수
 async function loadChatSession(sessionId) {
   if (!sessionId || sessionId === currentSessionId) return;
@@ -585,11 +608,13 @@ async function loadChatSession(sessionId) {
     if (chatLog && chatLog.length > 0) {
       chatLog.forEach(message => {
       if (message.role === 'user') {
+        // 시스템 프롬프트에서 사용자의 실제 질문만 추출
+        const userQuestion = extractUserQuestion(message.content);
         messagesHTML += `
           <div class="d-flex align-items-start mb-3">
             <div class="ms-auto d-flex align-items-start">
               <div class="bg-primary text-white rounded-3 p-3 shadow-sm me-2" style="max-width: 70%;">
-                <p class="mb-0">${message.content}</p>
+                <p class="mb-0">${userQuestion}</p>
               </div>
               <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; min-width: 36px;">
                 <i class="bi bi-person-fill text-white" style="font-size: 16px;"></i>
