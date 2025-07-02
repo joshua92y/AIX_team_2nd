@@ -46,7 +46,8 @@ def login_view(request):
             login(request, user)
             return JsonResponse({
                 'status': 'success',
-                'session_token': str(user.session_token)
+                'session_token': str(user.session_token),
+                'redirect_url': request.POST.get('next') or '/'
             })
     except User.DoesNotExist:
         pass

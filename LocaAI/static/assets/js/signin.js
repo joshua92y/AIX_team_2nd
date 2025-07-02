@@ -112,3 +112,28 @@ $('.signup-form').on('submit', function(event) {
     }
   });
 });
+
+// 로그인 AJAX 처리
+$('.login-form').on('submit', function(event) {
+  event.preventDefault();
+
+  const form = $(this);
+  const data = form.serialize();
+
+  $.ajax({
+    type: 'POST',
+    url: form.attr('action'),
+    data: data,
+    success: function(response) {
+      if (response.status === 'success') {
+        const nextUrl = form.find('input[name="next"]').val() || '/';
+        window.location.href = nextUrl;
+      } else {
+        alert('❌ ' + response.message);
+      }
+    },
+    error: function() {
+      alert('⚠️ 로그인 중 오류가 발생했습니다.');
+    }
+  });
+});
