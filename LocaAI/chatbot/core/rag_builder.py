@@ -243,13 +243,9 @@ async def build_combine_answers_chain(language: str = "ko"):
         prompt = PromptTemplate.from_template(prompt_obj.content)
         logger.info(f"✅ Loaded prompt '{prompt_name}' from DB.")
     except Prompt.DoesNotExist:
-        logger.error(f"❌ Prompt '{prompt_name}' not found. Using fallback.")
-        fallback_templates = {
-            "ko": "다음은 여러 출처의 답변입니다:\n\n{answers}\n\n최종 요약된 답변을 작성해 주세요.",
-            "en": "Based on the following multiple sources:\n\n{answers}\n\nPlease provide a final, summarized answer.",
-            "es": "Basado en las siguientes fuentes:\n\n{answers}\n\nPor favor, proporciona una respuesta final resumida."
-        }
-        prompt = PromptTemplate.from_template(fallback_templates.get(language, fallback_templates["ko"]))
+        logger.error(f"❌ CRITICAL: Prompt '{prompt_name}' not found in database!")
+        logger.error("💡 Solution: Run 'python manage.py load_default_prompts' to load missing prompts.")
+        raise ValueError(f"Required prompt '{prompt_name}' is missing from database. Please run 'python manage.py load_default_prompts' to initialize default prompts.")
 
     def format_for_prompt(answers_dict: dict) -> dict:
         return {
@@ -285,35 +281,9 @@ async def run_llm_pipeline(user_id: int, session_id: str, question: str, languag
         llm_prompt = PromptTemplate.from_template(prompt_obj.content)
         logger.info(f"✅ Loaded prompt '{prompt_name}' from DB for language '{language}'.")
     except Prompt.DoesNotExist:
-        logger.error(f"❌ CRITICAL: Prompt '{prompt_name}' not found in the database. This prompt is required for the LLM pipeline.")
-        # 기본 프롬프트로 fallback - 상담 AI 역할
-        fallback_templates = {
-            "ko": """당신은 상권 분석 및 창업 상담 전문 AI입니다. 사용자가 제공한 정보와 질문을 바탕으로 전문적인 상담을 제공해주세요.
-
-질문: {question}
-
-대화 히스토리:
-{chat_history}
-
-위 내용을 바탕으로 상권 분석, 창업, 사업 운영에 대한 전문적이고 실용적인 조언을 제공해 주세요. 구체적인 데이터나 수치가 없더라도 일반적인 업계 지식과 경험을 바탕으로 도움이 되는 답변을 해주세요.""",
-            "en": """You are a professional AI consultant specializing in commercial area analysis and business consulting. Please provide expert consultation based on the information and questions provided by the user.
-
-Question: {question}
-
-Chat History:
-{chat_history}
-
-Based on the above content, please provide professional and practical advice on commercial area analysis, business startup, and business operations. Even without specific data or figures, please give helpful answers based on general industry knowledge and experience.""",
-            "es": """Eres un consultor de IA profesional especializado en análisis de áreas comerciales y consultoría empresarial. Proporciona consultoría experta basada en la información y preguntas proporcionadas por el usuario.
-
-Pregunta: {question}
-
-Historial de chat:
-{chat_history}
-
-Basado en el contenido anterior, proporciona consejos profesionales y prácticos sobre análisis de áreas comerciales, creación de empresas y operaciones comerciales. Incluso sin datos o cifras específicas, da respuestas útiles basadas en conocimiento general de la industria y experiencia."""
-        }
-        llm_prompt = PromptTemplate.from_template(fallback_templates.get(language, fallback_templates["ko"]))
+        logger.error(f"❌ CRITICAL: Prompt '{prompt_name}' not found in database!")
+        logger.error("💡 Solution: Run 'python manage.py load_default_prompts' to load missing prompts.")
+        raise ValueError(f"Required prompt '{prompt_name}' is missing from database. Please run 'python manage.py load_default_prompts' to initialize default prompts.")
 
     # ✅ LLM 체인 구성
     llm_chain = (

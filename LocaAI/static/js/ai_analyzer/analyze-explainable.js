@@ -2,7 +2,7 @@
 // 회원용 XGBoost 설명 가능 AI 결과 표시 및 시각화
 
 // 스크립트 로딩 확인
-console.log('🔄 analyze-explainable.js 로드됨 - 회원 AI 분석 기능 활성화');
+// AI 분석 기능 로드됨
 
 // ===========================================
 // 전역 변수
@@ -61,7 +61,7 @@ function formatMarkdownContent(content) {
            '분석 내용을 불러오는 중...';
   }
   
-  console.log('🔍 formatMarkdownContent 원본 내용:', content.substring(0, 200) + '...');
+
   
   // 간단하고 안전한 포맷팅
   const formatted = content
@@ -76,7 +76,7 @@ function formatMarkdownContent(content) {
     // 줄바꿈을 <br>로 변환
     .replace(/\n/g, '<br>');
     
-  console.log('🔍 formatMarkdownContent 변환 결과:', formatted.substring(0, 200) + '...');
+
   
   return formatted;
 }
@@ -292,7 +292,7 @@ function updateFactorsUI(positiveFactors, riskFactors) {
       strengthsList.innerHTML = positiveFactors.map(factor => 
         `<li class="mb-1">${factor}</li>`
       ).join('');
-      console.log('✅ 강점 업데이트 완료:', positiveFactors);
+  
     } else {
       console.log('⚠️ 긍정 요인이 없습니다');
       strengthsList.innerHTML = '<li class="mb-1">상권 분석 결과를 종합적으로 검토하세요</li>';
@@ -310,7 +310,7 @@ function updateFactorsUI(positiveFactors, riskFactors) {
       cautionsList.innerHTML = riskFactors.map(factor => 
         `<li class="mb-1">${factor}</li>`
       ).join('');
-      console.log('✅ 주의사항 업데이트 완료:', riskFactors);
+      
     } else {
       console.log('⚠️ 위험 요인이 없습니다');
       cautionsList.innerHTML = '<li class="mb-1">현재 상권 조건이 양호합니다</li>';
@@ -450,7 +450,7 @@ function updateAIAnalysisSection(result) {
 function getAIExplanationText(result) {
   const currentLang = getCurrentLanguage();
   
-  console.log('🔍 getAIExplanationText 호출됨, result:', result);
+
   
   // 다양한 필드명 시도 (우선순위 순)
   const possibleFields = [
@@ -463,11 +463,8 @@ function getAIExplanationText(result) {
   ];
   
   for (const field of possibleFields) {
-    console.log(`🔍 필드 확인: ${field} =`, result[field]);
     if (result[field] && typeof result[field] === 'string' && result[field].trim().length > 0) {
       const content = result[field].trim();
-      console.log(`✅ AI 설명 텍스트 발견: ${field}`, content.substring(0, 100) + '...');
-      console.log(`📝 전체 내용 길이: ${content.length}자`);
       return content;
     }
   }
@@ -496,14 +493,7 @@ function showDetailedAnalysis() {
   const data = window.currentAnalysisData;
   const result = data.result || data; // API 응답 구조에 따라 유연하게 처리
   
-  // 디버깅: 데이터 구조 확인
-  console.log('🔍 [DEBUG] currentAnalysisData:', data);
-  console.log('🔍 [DEBUG] result:', result);
-  console.log('🔍 [DEBUG] AI 설명 필드들 확인:');
-  console.log('- result.ai_summary:', result.ai_summary);
-  console.log('- result.ai_explanation:', result.ai_explanation);
-  console.log('- result.analysis_result:', result.analysis_result);
-  console.log('- result.ai_analysis:', result.ai_analysis);
+  // 데이터 구조 확인
   
   const modalHtml = `
     <div class="modal fade" id="detailAnalysisModal" tabindex="-1">
@@ -572,7 +562,6 @@ function showDetailedAnalysis() {
   
   // 모달이 생성된 후 언어 업데이트 적용
   const currentLang = getCurrentLanguage();
-  console.log('🌐 모달 생성 후 언어 업데이트:', currentLang);
   
   // data-lang 속성 기반 언어 업데이트
   const langMap = {
@@ -599,8 +588,6 @@ function drawChart(data) {
   const ctx = document.getElementById('featureChart');
   if (!ctx) return;
   
-  console.log('차트 데이터:', data);
-  
   if (featureImportanceChart) {
     featureImportanceChart.destroy();
   }
@@ -611,10 +598,6 @@ function drawChart(data) {
   const competitors = data['Competitor_C'] || data.competitor_300m || 0;
   const landValue = data['Total_LV'] || data.total_land_value || 0;
   const businessDiversity = data['Business_D'] || data.business_diversity_300m || 0;
-  
-  console.log('추출된 값들:', {
-    lifePopulation, workingPopulation, competitors, landValue, businessDiversity
-  });
   
   // 현재 언어 가져오기
   const currentLang = getCurrentLanguage();

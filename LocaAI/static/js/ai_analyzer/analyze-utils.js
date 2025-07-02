@@ -17,7 +17,7 @@ function formatLandValue(value, lang = null) {
     lang = window.getCurrentAILanguage ? window.getCurrentAILanguage() : 'ko';
   }
   
-  console.log(`💰 formatLandValue 호출: ${value}, 언어: ${lang}`);
+
   
   // 언어별 단위 정의
   const units = {
@@ -30,15 +30,12 @@ function formatLandValue(value, lang = null) {
   
   if (value >= 100000000) {
     const formatted = `${unit.currency}${(value / 100000000).toFixed(1)}${unit.hundred_million}`;
-    console.log(`✅ 억 단위 포맷팅: ${value} -> ${formatted}`);
     return formatted;
   } else if (value >= 10000) {
     const formatted = `${unit.currency}${(value / 10000).toFixed(0)}${unit.ten_thousand}`;
-    console.log(`✅ 만 단위 포맷팅: ${value} -> ${formatted}`);
     return formatted;
   } else {
     const formatted = `${unit.currency}${value.toLocaleString()}`;
-    console.log(`✅ 기본 단위 포맷팅: ${value} -> ${formatted}`);
     return formatted;
   }
 }
@@ -73,7 +70,6 @@ function getCsrfToken() {
     token = CSRF_TOKEN; // 전역 변수로 설정된 CSRF 토큰 사용
   }
   
-  console.log('CSRF 토큰:', token ? '존재함' : '없음');
   return token || '';
 }
 

@@ -16,24 +16,20 @@ function openAddressSearch() {
       // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드
       
       // 디버깅: 전달받은 데이터 구조 확인
-      console.log('🔍 [DEBUG] Daum API 데이터:', data);
-      console.log('🔍 [DEBUG] sido:', data.sido);
-      console.log('🔍 [DEBUG] sigungu:', data.sigungu);
-      console.log('🔍 [DEBUG] roadAddress:', data.roadAddress);
-      console.log('🔍 [DEBUG] jibunAddress:', data.jibunAddress);
+      
       
       // 서울특별시 지역 검증
       const isSeoulAddress = isSeoulArea(data);
-      console.log('🔍 [DEBUG] 서울 지역 검증 결과:', isSeoulAddress);
+      
       
       if (!isSeoulAddress) {
         // 서울 이외 지역 선택 시 경고 메시지 표시
-        console.log('❌ [DEBUG] 서울 이외 지역 차단됨');
+        
         showNonSeoulWarning(data);
         return; // 주소 설정을 차단
       }
       
-      console.log('✅ [DEBUG] 서울 지역 확인됨, 주소 설정 진행');
+      
       
       // 기본 주소 정보
       let fullAddr = '';
@@ -226,20 +222,14 @@ function isSeoulArea(data) {
   const roadAddress = data.roadAddress || '';
   const jibunAddress = data.jibunAddress || '';
   
-  console.log('🔍 [isSeoulArea] 검증 시작');
-  console.log('  - sido:', sido);
-  console.log('  - sigungu:', sigungu);
-  console.log('  - roadAddress:', roadAddress);
-  console.log('  - jibunAddress:', jibunAddress);
+
   
   // 서울특별시 키워드 검증
   const seoulKeywords = ['서울특별시', '서울시', '서울'];
   
   // 1. sido 필드 검증
   const sidoMatch = sido && seoulKeywords.some(keyword => sido.includes(keyword));
-  console.log('  - sido 검증:', sidoMatch, sido);
   if (sidoMatch) {
-    console.log('✅ [isSeoulArea] sido로 서울 확인됨');
     return true;
   }
   
@@ -247,9 +237,7 @@ function isSeoulArea(data) {
   const addressMatch = seoulKeywords.some(keyword => 
     roadAddress.includes(keyword) || jibunAddress.includes(keyword)
   );
-  console.log('  - 주소 문자열 검증:', addressMatch);
   if (addressMatch) {
-    console.log('✅ [isSeoulArea] 주소 문자열로 서울 확인됨');
     return true;
   }
   
@@ -265,14 +253,10 @@ function isSeoulArea(data) {
     roadAddress.includes(district) || jibunAddress.includes(district) || sigungu.includes(district)
   );
   
-  console.log('  - 구 이름 검증:', !!matchedDistrict, matchedDistrict || '없음');
-  
   if (matchedDistrict) {
-    console.log('✅ [isSeoulArea] 구 이름으로 서울 확인됨:', matchedDistrict);
     return true;
   }
   
-  console.log('❌ [isSeoulArea] 서울 지역 아님');
   return false;
 }
 
@@ -304,7 +288,6 @@ function showNonSeoulWarning(data) {
   
   // 경고창을 닫은 후 다시 주소 검색 모달을 여는 콜백 함수
   const reopenAddressSearch = () => {
-    console.log('🔄 [DEBUG] 경고창 닫음, 주소 검색 모달 재오픈');
     // 잠시 후 다시 주소 검색 모달 열기
     setTimeout(() => {
       openAddressSearch();
@@ -410,7 +393,6 @@ function closeCustomAlert() {
   
   // 콜백 함수가 있으면 실행
   if (window.customAlertCallback && typeof window.customAlertCallback === 'function') {
-    console.log('🔄 [DEBUG] 콜백 함수 실행');
     window.customAlertCallback();
     window.customAlertCallback = null; // 콜백 함수 초기화
   }
