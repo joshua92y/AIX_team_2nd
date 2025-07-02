@@ -3,8 +3,7 @@
  * 챗봇 PIP 확대, 채팅 히스토리, 세션 관리 기능
  */
 
-// 전역 변수
-let pipCurrentBotMessageText = '';
+// 전역 변수 (pipCurrentBotMessageText는 analyze-chatbot.js에서 선언됨)
 
 // PIP 예시 질문 입력 함수
 function fillPIPExampleQuestion(question) {

@@ -7,6 +7,12 @@
 let currentSessionId = null;
 let chatSocket = null;
 let chatbotCurrentBotMessageText = '';
+let pipCurrentBotMessageText = ''; // PIP 전용 텍스트 변수
+
+// 공유 메시지 시스템 - 두 창이 완전히 동기화됨
+let sharedMessages = [];
+let currentBotMessageId = null;
+let isStreamingInProgress = false;
 
 // ===========================================
 // WebSocket 초기화 및 연결 관리
@@ -205,10 +211,15 @@ async function createNewChatSession() {
 
 // 채팅 메시지 전송
 async function sendChatMessage() {
+  console.log('🚀🚀🚀 sendChatMessage 함수 호출됨!!! 🚀🚀🚀');
+  console.log('📍 함수 호출 시점:', new Date().toLocaleTimeString());
+  console.log('📋 호출 스택:', new Error().stack);
+  
   const input = document.getElementById('chatInput');
-  const message = input.value.trim();
+  const message = input ? input.value.trim() : '';
   
   console.log('💬 챗봇 메시지 전송 시작:', message);
+  console.log('📝 입력 요소 존재:', !!input);
   console.log('🔌 WebSocket 상태:', chatSocket?.readyState);
   console.log('👤 사용자 ID:', USER_ID);
   console.log('🔑 세션 ID:', currentSessionId);
@@ -349,12 +360,66 @@ function createContextualMessage(userMessage) {
   return context;
 }
 
-// 사용자 메시지 추가
+// 통합 사용자 메시지 추가 - 두 창 완전 동기화
 function addUserMessage(message) {
-  const messagesContainer = document.getElementById('chatMessages');
-  if (messagesContainer) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'd-flex align-items-start mb-3 justify-content-end';
+  // 메시지를 공유 배열에 저장
+  const messageData = {
+    id: Date.now(),
+    type: 'user',
+    content: message,
+    timestamp: new Date()
+  };
+  sharedMessages.push(messageData);
+  
+  // 사이드바와 PIP 모두 업데이트
+  updateBothChatContainers();
+}
+
+// 두 채팅 창 모두 업데이트하는 통합 함수
+function updateBothChatContainers() {
+  updateChatContainer('chatMessages', false); // 사이드바
+  updateChatContainer('pipChatMessages', true); // PIP
+}
+
+// 개별 채팅 컨테이너 업데이트
+function updateChatContainer(containerId, isPIP = false) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  
+  // 기존 메시지들 제거 (현재 스트리밍 중인 메시지 제외)
+  const existingMessages = container.querySelectorAll('.chat-message:not(#currentBotMessage):not(#currentPIPBotMessage)');
+  existingMessages.forEach(msg => msg.remove());
+  
+  // 모든 메시지 다시 렌더링
+  sharedMessages.forEach(msg => {
+    if (msg.type === 'user') {
+      addUserMessageToContainer(container, msg.content, isPIP);
+    } else if (msg.type === 'bot' && msg.completed) {
+      addBotMessageToContainer(container, msg.content, isPIP);
+    }
+  });
+  
+  // 스크롤을 아래로
+  container.scrollTop = container.scrollHeight;
+}
+
+// 사용자 메시지를 특정 컨테이너에 추가
+function addUserMessageToContainer(container, message, isPIP = false) {
+  const messageDiv = document.createElement('div');
+  messageDiv.className = 'd-flex align-items-start mb-3 justify-content-end chat-message';
+  
+  if (isPIP) {
+    messageDiv.innerHTML = `
+      <div class="flex-grow-1 text-end me-2">
+        <div class="bg-primary text-white rounded-3 p-3 shadow-sm d-inline-block" style="max-width: 80%;">
+          <p class="mb-0">${escapeHtml(message)}</p>
+        </div>
+      </div>
+      <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; min-width: 40px;">
+        <i class="bi bi-person text-white" style="font-size: 18px;"></i>
+      </div>
+    `;
+  } else {
     messageDiv.innerHTML = `
       <div class="flex-grow-1 text-end me-2">
         <div class="bg-primary text-white rounded p-2 shadow-sm d-inline-block" style="max-width: 80%;">
@@ -365,70 +430,18 @@ function addUserMessage(message) {
         <i class="bi bi-person text-white" style="font-size: 14px;"></i>
       </div>
     `;
-    messagesContainer.appendChild(messageDiv);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
   }
   
-  // PIP 메시지도 동시에 추가
-  const pipMessagesContainer = document.getElementById('pipChatMessages');
-  if (pipMessagesContainer) {
-    const pipMessageDiv = document.createElement('div');
-    pipMessageDiv.className = 'd-flex align-items-start mb-3 justify-content-end';
-    pipMessageDiv.innerHTML = `
-      <div class="flex-grow-1 text-end me-2">
-        <div class="bg-primary text-white rounded-3 p-3 shadow-sm d-inline-block" style="max-width: 80%;">
-          <p class="mb-0">${escapeHtml(message)}</p>
-        </div>
-      </div>
-      <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; min-width: 40px;">
-        <i class="bi bi-person text-white" style="font-size: 18px;"></i>
-      </div>
-    `;
-    pipMessagesContainer.appendChild(pipMessageDiv);
-    pipMessagesContainer.scrollTop = pipMessagesContainer.scrollHeight;
-  }
+  container.appendChild(messageDiv);
 }
 
-// 봇 응답 준비
-function prepareBotMessage() {
-  console.log("✨ AI_Analyzer prepareBotMessage 호출됨");
+// 봇 메시지를 특정 컨테이너에 추가 (완료된 메시지)
+function addBotMessageToContainer(container, message, isPIP = false) {
+  const messageDiv = document.createElement('div');
+  messageDiv.className = 'd-flex align-items-start mb-3 chat-message';
   
-  const messagesContainer = document.getElementById('chatMessages');
-  if (messagesContainer) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'd-flex align-items-start mb-3';
-    messageDiv.id = 'currentBotMessage';
+  if (isPIP) {
     messageDiv.innerHTML = `
-      <div class="bg-primary rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; min-width: 32px;">
-        <i class="bi bi-robot text-white" style="font-size: 14px;"></i>
-      </div>
-      <div class="flex-grow-1">
-        <div class="bg-white rounded p-2 shadow-sm">
-          <small class="text-muted d-block mb-1">
-            <span data-lang="KOR">분석결과 상담 AI</span>
-            <span data-lang="ENG" style="display: none;">Analysis Consultation AI</span>
-            <span data-lang="ESP" style="display: none;">IA de Consulta de Análisis</span>
-          </small>
-          <p class="mb-0 small" id="botMessageContent">
-            <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-            <span data-lang="KOR">답변을 생성하고 있습니다...</span>
-            <span data-lang="ENG" style="display: none;">Generating response...</span>
-            <span data-lang="ESP" style="display: none;">Generando respuesta...</span>
-          </p>
-        </div>
-      </div>
-    `;
-    messagesContainer.appendChild(messageDiv);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-  }
-
-  // PIP 봇 메시지도 동시에 준비
-  const pipMessagesContainer = document.getElementById('pipChatMessages');
-  if (pipMessagesContainer) {
-    const pipMessageDiv = document.createElement('div');
-    pipMessageDiv.className = 'd-flex align-items-start mb-4';
-    pipMessageDiv.id = 'currentPIPBotMessage';
-    pipMessageDiv.innerHTML = `
       <div class="bg-gradient bg-primary rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; min-width: 40px;">
         <i class="bi bi-robot text-white" style="font-size: 18px;"></i>
       </div>
@@ -446,7 +459,123 @@ function prepareBotMessage() {
               <span data-lang="ESP" style="display: none;">En línea</span>
             </span>
           </div>
-          <div id="pipBotMessageContent">
+          <div>${marked.parse(message)}</div>
+        </div>
+      </div>
+    `;
+  } else {
+    messageDiv.innerHTML = `
+      <div class="bg-primary rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; min-width: 32px;">
+        <i class="bi bi-robot text-white" style="font-size: 14px;"></i>
+      </div>
+      <div class="flex-grow-1">
+        <div class="bg-white rounded p-2 shadow-sm">
+          <small class="text-muted d-block mb-1">
+            <span data-lang="KOR">분석결과 상담 AI</span>
+            <span data-lang="ENG" style="display: none;">Analysis Consultation AI</span>
+            <span data-lang="ESP" style="display: none;">IA de Consulta de Análisis</span>
+          </small>
+          <div class="mb-0 small">${marked.parse(message)}</div>
+        </div>
+      </div>
+    `;
+  }
+  
+  container.appendChild(messageDiv);
+}
+
+// 통합 봇 응답 준비 - 두 창 완전 동기화
+function prepareBotMessage() {
+  console.log("✨ AI_Analyzer prepareBotMessage 호출됨 (통합 버전)");
+  
+  // 스트리밍 상태 설정
+  isStreamingInProgress = true;
+  currentBotMessageId = Date.now();
+  
+  // 메시지 텍스트 변수 초기화 (단일 텍스트 변수 사용)
+  chatbotCurrentBotMessageText = '';
+  console.log("🧹 통합 메시지 텍스트 변수 초기화 완료");
+  
+  // 미완료된 봇 메시지 제거
+  removeIncompleteBotMessages();
+  
+  // 사이드바에 스트리밍 메시지 생성
+  createStreamingBotMessage('chatMessages', 'currentBotMessage', 'botMessageContent', false);
+  
+  // PIP에 스트리밍 메시지 생성
+  createStreamingBotMessage('pipChatMessages', 'currentPIPBotMessage', 'pipBotMessageContent', true);
+}
+
+// 미완료된 봇 메시지 제거
+function removeIncompleteBotMessages() {
+  // 사이드바의 미완료 메시지 제거
+  const existingBotMessage = document.getElementById('currentBotMessage');
+  if (existingBotMessage) {
+    const contentElement = existingBotMessage.querySelector('#botMessageContent');
+    if (contentElement && isIncompleteMessage(contentElement)) {
+      console.log("🗑️ 사이드바 미완료 메시지 제거");
+      existingBotMessage.remove();
+    } else {
+      console.log("✅ 사이드바 완료된 메시지 - 히스토리로 유지");
+      existingBotMessage.removeAttribute('id');
+    }
+  }
+  
+  // PIP의 미완료 메시지 제거
+  const existingPIPBotMessage = document.getElementById('currentPIPBotMessage');
+  if (existingPIPBotMessage) {
+    const pipContentElement = existingPIPBotMessage.querySelector('#pipBotMessageContent');
+    if (pipContentElement && isIncompleteMessage(pipContentElement)) {
+      console.log("🗑️ PIP 미완료 메시지 제거");
+      existingPIPBotMessage.remove();
+    } else {
+      console.log("✅ PIP 완료된 메시지 - 히스토리로 유지");
+      existingPIPBotMessage.removeAttribute('id');
+    }
+  }
+}
+
+// 메시지가 미완료 상태인지 확인
+function isIncompleteMessage(contentElement) {
+  return contentElement && (
+    contentElement.innerHTML.includes('spinner-border') || 
+    contentElement.innerHTML.includes('답변을 생성하고 있습니다') ||
+    contentElement.innerHTML.includes('Generating response') ||
+    contentElement.innerHTML.includes('Generando respuesta')
+  );
+}
+
+// 스트리밍 봇 메시지 생성
+function createStreamingBotMessage(containerId, messageId, contentId, isPIP = false) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  
+  const messageDiv = document.createElement('div');
+  messageDiv.className = isPIP ? 'd-flex align-items-start mb-4' : 'd-flex align-items-start mb-3';
+  messageDiv.id = messageId;
+  
+  console.log(`🔨 ${isPIP ? 'PIP' : '사이드바'} 스트리밍 메시지 생성 중...`);
+  
+  if (isPIP) {
+    messageDiv.innerHTML = `
+      <div class="bg-gradient bg-primary rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; min-width: 40px;">
+        <i class="bi bi-robot text-white" style="font-size: 18px;"></i>
+      </div>
+      <div class="flex-grow-1">
+        <div class="bg-white rounded-3 p-4 shadow-sm border">
+          <div class="d-flex align-items-center mb-2">
+            <strong class="text-primary me-2">
+              <span data-lang="KOR">분석결과 상담 AI</span>
+              <span data-lang="ENG" style="display: none;">Analysis Consultation AI</span>
+              <span data-lang="ESP" style="display: none;">IA de Consulta de Análisis</span>
+            </strong>
+            <span class="badge bg-success-subtle text-success">
+              <span data-lang="KOR">온라인</span>
+              <span data-lang="ENG" style="display: none;">Online</span>
+              <span data-lang="ESP" style="display: none;">En línea</span>
+            </span>
+          </div>
+          <div id="${contentId}">
             <span class="spinner-border spinner-border-sm me-2" role="status"></span>
             <span data-lang="KOR">답변을 생성하고 있습니다...</span>
             <span data-lang="ENG" style="display: none;">Generating response...</span>
@@ -455,81 +584,130 @@ function prepareBotMessage() {
         </div>
       </div>
     `;
-    pipMessagesContainer.appendChild(pipMessageDiv);
-    pipMessagesContainer.scrollTop = pipMessagesContainer.scrollHeight;
+  } else {
+    messageDiv.innerHTML = `
+      <div class="bg-primary rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; min-width: 32px;">
+        <i class="bi bi-robot text-white" style="font-size: 14px;"></i>
+      </div>
+      <div class="flex-grow-1">
+        <div class="bg-white rounded p-2 shadow-sm">
+          <small class="text-muted d-block mb-1">
+            <span data-lang="KOR">분석결과 상담 AI</span>
+            <span data-lang="ENG" style="display: none;">Analysis Consultation AI</span>
+            <span data-lang="ESP" style="display: none;">IA de Consulta de Análisis</span>
+          </small>
+          <p class="mb-0 small" id="${contentId}">
+            <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+            <span data-lang="KOR">답변을 생성하고 있습니다...</span>
+            <span data-lang="ENG" style="display: none;">Generating response...</span>
+            <span data-lang="ESP" style="display: none;">Generando respuesta...</span>
+          </p>
+        </div>
+      </div>
+    `;
   }
+  
+  container.appendChild(messageDiv);
+  container.scrollTop = container.scrollHeight;
+  
+  console.log(`✅ ${isPIP ? 'PIP' : '사이드바'} 스트리밍 메시지 생성 완료`);
 }
 
-// 봇 메시지에 스트리밍 텍스트 추가
+// 통합 스트리밍 텍스트 추가 - 두 창 완전 동기화
 function appendToCurrentBotMessage(chunk) {
-  console.log("🔄 AI_Analyzer appendToCurrentBotMessage 호출됨");
+  console.log("🔄 AI_Analyzer appendToCurrentBotMessage 호출됨 (통합 버전)");
+  console.log("📝 청크 내용:", chunk);
   
-  const contentElement = document.getElementById('botMessageContent');
-  const pipContentElement = document.getElementById('pipBotMessageContent');
-  
-  console.log("📋 현재 봇 메시지 element:", !!contentElement, "PIP element:", !!pipContentElement);
-  
-  if (contentElement) {
-    if (contentElement.innerHTML.includes('spinner-border')) {
-      // 첫 번째 청크: 스피너 제거하고 텍스트 시작
-      console.log("✨ AI_Analyzer 첫 번째 청크 처리");
-      chatbotCurrentBotMessageText = chunk;
-      contentElement.innerHTML = marked.parse(chunk);
-    } else {
-      // 후속 청크: 기존 텍스트에 추가
-      console.log("🔄 AI_Analyzer 후속 청크 추가 - 총 길이:", chatbotCurrentBotMessageText.length + chunk.length);
-      chatbotCurrentBotMessageText += chunk;
-      contentElement.innerHTML = marked.parse(chatbotCurrentBotMessageText);
-    }
-    const chatMessages = document.getElementById('chatMessages');
-    if (chatMessages) {
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
+  if (!isStreamingInProgress) {
+    console.warn("⚠️ 스트리밍이 진행 중이 아님 - prepareBotMessage를 먼저 호출하세요");
+    return;
   }
+  
+  // 첫 번째 청크인지 확인
+  const isFirstChunk = chatbotCurrentBotMessageText === '';
+  
+  if (isFirstChunk) {
+    console.log("✨ 첫 번째 청크 처리 - 스피너 제거");
+    chatbotCurrentBotMessageText = chunk;
+  } else {
+    console.log("🔄 후속 청크 추가 - 총 길이:", chatbotCurrentBotMessageText.length + chunk.length);
+    chatbotCurrentBotMessageText += chunk;
+  }
+  
+  // 마크다운 파싱
+  const parsedContent = marked.parse(chatbotCurrentBotMessageText);
+  
+  // 사이드바 업데이트
+  updateStreamingContent('botMessageContent', parsedContent, isFirstChunk, 'chatMessages');
+  
+  // PIP 업데이트 (완전히 동일한 내용)
+  updateStreamingContent('pipBotMessageContent', parsedContent, isFirstChunk, 'pipChatMessages');
+}
 
-  // PIP도 동시에 업데이트
-  if (pipContentElement) {
-    if (pipContentElement.innerHTML.includes('spinner-border') || pipContentElement.innerHTML.includes('typing-indicator')) {
-      // 첫 번째 청크: 스피너/타이핑 인디케이터 제거하고 텍스트 시작
-      if (typeof marked !== 'undefined') {
-        pipContentElement.innerHTML = marked.parse(chunk);
-      } else {
-        pipContentElement.innerHTML = `<p class="mb-0">${chunk.replace(/\n/g, '<br>')}</p>`;
-      }
-    } else {
-      // 후속 청크: 기존 텍스트에 추가
-      if (typeof marked !== 'undefined') {
-        pipContentElement.innerHTML = marked.parse(chatbotCurrentBotMessageText);
-      } else {
-        pipContentElement.innerHTML = `<p class="mb-0">${chatbotCurrentBotMessageText.replace(/\n/g, '<br>')}</p>`;
-      }
+// 개별 스트리밍 콘텐츠 업데이트
+function updateStreamingContent(contentId, parsedContent, isFirstChunk, containerId) {
+  const contentElement = document.getElementById(contentId);
+  const container = document.getElementById(containerId);
+  
+  if (!contentElement) {
+    console.warn(`⚠️ ${contentId} 요소를 찾을 수 없음`);
+    if (contentId === 'botMessageContent') {
+      // 사이드바에서 요소를 찾지 못하면 오류 메시지 표시
+      console.error("❌ 사이드바 botMessageContent 요소를 찾을 수 없습니다!");
+      addBotMessage(`스트리밍 처리 오류가 발생했습니다.`);
     }
-    const pipChatMessages = document.getElementById('pipChatMessages');
-    if (pipChatMessages) {
-      pipChatMessages.scrollTop = pipChatMessages.scrollHeight;
-    }
+    return;
+  }
+  
+  if (isFirstChunk && contentElement.innerHTML.includes('spinner-border')) {
+    console.log(`✨ ${contentId} 첫 번째 청크 - 스피너 제거하고 텍스트 시작`);
+  }
+  
+  // 콘텐츠 업데이트 (완전히 동일한 내용)
+  contentElement.innerHTML = parsedContent;
+  
+  // 스크롤 아래로
+  if (container) {
+    container.scrollTop = container.scrollHeight;
   }
 }
 
-// 봇 메시지 완료 처리
+// 통합 봇 메시지 완료 처리 - 공유 배열에 저장
 function finalizeBotMessage() {
-  console.log("🏁 AI_Analyzer finalizeBotMessage 호출됨");
+  console.log("🏁 AI_Analyzer finalizeBotMessage 호출됨 (통합 버전)");
   
+  if (!isStreamingInProgress || !chatbotCurrentBotMessageText) {
+    console.warn("⚠️ 완료할 스트리밍 메시지가 없음");
+    return;
+  }
+  
+  // 완료된 메시지를 공유 배열에 저장
+  const messageData = {
+    id: currentBotMessageId,
+    type: 'bot',
+    content: chatbotCurrentBotMessageText,
+    completed: true,
+    timestamp: new Date()
+  };
+  sharedMessages.push(messageData);
+  console.log("📚 완료된 봇 메시지를 공유 배열에 저장");
+  
+  // 현재 스트리밍 메시지 정리
   const currentMessage = document.getElementById('currentBotMessage');
   const currentPIPMessage = document.getElementById('currentPIPBotMessage');
-  const pipContentElement = document.getElementById('pipBotMessageContent');
   const mainContentElement = document.getElementById('botMessageContent');
+  const pipContentElement = document.getElementById('pipBotMessageContent');
   
-  console.log("📋 완료할 메시지:", !!currentMessage, "PIP 메시지:", !!currentPIPMessage);
-  console.log("📋 콘텐츠 요소:", !!mainContentElement, "PIP 콘텐츠:", !!pipContentElement);
-  
+  // 메시지 컨테이너와 콘텐츠 요소의 ID 제거 (히스토리로 남기지만 ID 충돌 방지)
   if (currentMessage) {
     currentMessage.removeAttribute('id');
-    console.log("✅ 메인 봇 메시지 ID 제거 완료");
+    currentMessage.classList.add('chat-message'); // 히스토리 메시지로 표시
+    console.log("✅ 메인 봇 메시지 ID 제거 및 히스토리 클래스 추가");
   }
   if (currentPIPMessage) {
     currentPIPMessage.removeAttribute('id');
-    console.log("✅ PIP 봇 메시지 ID 제거 완료");
+    currentPIPMessage.classList.add('chat-message'); // 히스토리 메시지로 표시
+    console.log("✅ PIP 봇 메시지 ID 제거 및 히스토리 클래스 추가");
   }
   
   // 콘텐츠 요소 ID도 제거하여 다음 메시지와 충돌 방지
@@ -542,9 +720,13 @@ function finalizeBotMessage() {
     console.log("✅ PIP 콘텐츠 요소 ID 제거 완료");
   }
   
-  // 메시지 텍스트 초기화
-  console.log("🧹 AI_Analyzer 메시지 텍스트 초기화");
+  // 스트리밍 상태 초기화
+  isStreamingInProgress = false;
+  currentBotMessageId = null;
   chatbotCurrentBotMessageText = '';
+  pipCurrentBotMessageText = ''; // 호환성을 위해 유지
+  
+  console.log("🧹 스트리밍 상태 및 메시지 텍스트 초기화 완료");
   
   // PIP 히스토리 업데이트
   setTimeout(() => {
@@ -1041,77 +1223,36 @@ function minimizeChatbotPIP() {
 }
 
 // PIP 챗봇 메시지 전송 (모드와 언어 지원)
+// PIP에서 메시지 전송 - 통합 시스템 사용
 async function sendPIPMessage() {
-  const input = document.getElementById('pipChatInput');
-  const message = input.value.trim();
+  console.log('🎯 PIP 메시지 전송 시작 (통합 버전)');
   
+  const input = document.getElementById('pipChatInput');
+  if (!input) return;
+  
+  const message = input.value.trim();
   if (!message) return;
   
-  const sendBtn = document.getElementById('pipChatSendBtn');
-  const statusDiv = document.getElementById('pipChatConnectionStatus');
+  // PIP 입력값을 메인 입력창에도 동기화
+  const mainInput = document.getElementById('chatInput');
+  if (mainInput) {
+    mainInput.value = message;
+  }
   
+  // PIP 입력 초기화
+  input.value = '';
+  
+  // 통합된 sendChatMessage 함수 호출 - 두 창 자동 동기화
   try {
-    // 버튼 비활성화 및 로딩 표시
-    sendBtn.disabled = true;
-    statusDiv.style.display = 'block';
-    input.disabled = true;
-    
-    // 현재 모드와 언어 가져오기
-    const mode = getCurrentPIPMode();
-    const language = getCurrentLanguage();
-    
-    // 사용자 메시지 표시
-    addUserMessage(message);
-    
-    // 컨텍스트 메시지 생성
-    const contextualMessage = createContextualMessage(message);
-    console.log('📝 PIP 컨텍스트 메시지 길이:', contextualMessage.length);
-    
-    // 언어별 컬렉션 이름 설정
-    const collectionName = getCollectionNameByLanguage(language);
-    
-    // WebSocket으로 메시지 전송
-    const messageData = {
-      user_id: USER_ID,
-      session_id: currentSessionId,
-      question: contextualMessage,
-      mode: mode,
-      collection: collectionName,
-      language: language
-    };
-    
-    console.log('📤 PIP WebSocket 메시지 전송:', messageData);
-    
-    if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
-      const messageString = JSON.stringify(messageData);
-      chatSocket.send(messageString);
-      console.log('✅ PIP 메시지 전송 완료');
-      
-      // 봇 응답 준비
-      prepareBotMessage();
-      
-    } else {
-      throw new Error('WebSocket 연결이 끊어졌습니다');
-    }
-    
-    // 입력 필드 초기화
-    input.value = '';
-    
+    await sendChatMessage();
+    console.log('✅ PIP에서 통합 메시지 전송 완료');
   } catch (error) {
     console.error('❌ PIP 메시지 전송 실패:', error);
-    addBotMessage('메시지 전송에 실패했습니다. 다시 시도해주세요.');
-    
-  } finally {
-    // 버튼 및 입력 필드 활성화
-    sendBtn.disabled = false;
-    statusDiv.style.display = 'none';
-    input.disabled = false;
-    input.focus();
-    
-    // 히스토리 업데이트
-    setTimeout(() => {
-      updatePIPChatHistory();
-    }, 100);
+    // 실패 시 원래 입력값 복원
+    input.value = message;
+    if (mainInput) {
+      mainInput.value = '';
+    }
   }
 }
 
