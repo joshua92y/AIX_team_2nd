@@ -900,25 +900,13 @@ function scrollToPIPMessage(sessionNumber) {
 // PIP 전용 스트리밍 함수들은 analyze-chatbot.js로 통일하여 처리됩니다
 // 중복 제거하여 DOM 요소 ID 충돌을 방지합니다
 
-// 현재 언어 감지 함수
+// getCurrentLanguage 함수 간소화 - AI_ANALYZER_I18N 시스템과 연동
 function getCurrentLanguage() {
-  // 글로벌 함수 사용 시도
-  if (typeof window.getCurrentAILanguage === 'function') {
+  // 새로운 통합 시스템 사용
+  if (window.getCurrentAILanguage) {
     return window.getCurrentAILanguage();
   }
-  
-  // 직접 감지
-  const langElement = document.querySelector('[data-lang]');
-  if (!langElement) return 'ko';
-  
-  // 현재 보이는 언어 요소 찾기
-  const visibleLangElement = document.querySelector('[data-lang="KOR"]:not([style*="display: none"]), [data-lang="ENG"]:not([style*="display: none"]), [data-lang="ESP"]:not([style*="display: none"])');
-  if (visibleLangElement) {
-    const lang = visibleLangElement.getAttribute('data-lang');
-    return lang === 'KOR' ? 'ko' : lang === 'ENG' ? 'en' : 'es';
-  }
-  
-  return 'ko';
+  return 'ko'; // 백업
 }
 
 // ===========================================

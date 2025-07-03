@@ -72,7 +72,10 @@ class AnalyzerMain {
     
     const statusElement = document.getElementById('chatbotStatus');
     if (statusElement) {
-      statusElement.textContent = '대기중';
+      // AI_ANALYZER_I18N 시스템을 사용하여 다국어화
+      if (window.AI_ANALYZER_I18N) {
+        statusElement.textContent = AI_ANALYZER_I18N.translate('대기중');
+      }
       statusElement.className = 'badge bg-secondary';
     }
   }
@@ -105,7 +108,10 @@ class AnalyzerMain {
     
     const statusElement = document.getElementById('chatbotStatus');
     if (statusElement) {
-      statusElement.textContent = '준비완료';
+      // AI_ANALYZER_I18N 시스템을 사용하여 다국어화
+      if (window.AI_ANALYZER_I18N) {
+        statusElement.textContent = AI_ANALYZER_I18N.translate('준비완료');
+      }
       statusElement.className = 'badge bg-success';
     }
     
@@ -155,7 +161,10 @@ class AnalyzerMain {
       
       const statusElement = document.getElementById('chatbotStatus');
       if (statusElement) {
-        statusElement.textContent = '연결됨';
+        // AI_ANALYZER_I18N 시스템을 사용하여 다국어화
+        if (window.AI_ANALYZER_I18N) {
+          statusElement.textContent = AI_ANALYZER_I18N.translate('연결됨');
+        }
         statusElement.className = 'badge bg-success';
       }
     };
@@ -183,7 +192,10 @@ class AnalyzerMain {
       // WebSocket 연결 종료
       const statusElement = document.getElementById('chatbotStatus');
       if (statusElement) {
-        statusElement.textContent = '연결끊김';
+        // AI_ANALYZER_I18N 시스템을 사용하여 다국어화
+        if (window.AI_ANALYZER_I18N) {
+          statusElement.textContent = AI_ANALYZER_I18N.translate('연결끊김');
+        }
         statusElement.className = 'badge bg-warning';
       }
     };
@@ -192,7 +204,10 @@ class AnalyzerMain {
       console.error('챗봇 WebSocket 오류:', e);
       const statusElement = document.getElementById('chatbotStatus');
       if (statusElement) {
-        statusElement.textContent = '오류';
+        // AI_ANALYZER_I18N 시스템을 사용하여 다국어화
+        if (window.AI_ANALYZER_I18N) {
+          statusElement.textContent = AI_ANALYZER_I18N.translate('오류');
+        }
         statusElement.className = 'badge bg-danger';
       }
     };
@@ -382,12 +397,22 @@ class AnalyzerMain {
       <div class="flex-grow-1">
         <div class="bg-white rounded-3 p-4 shadow-sm border">
           <div class="d-flex align-items-center mb-2">
-            <strong class="text-primary me-2">분석결과 상담 AI</strong>
-            <span class="badge bg-success-subtle text-success">온라인</span>
+            <strong class="text-primary me-2">
+              <span data-lang="KOR">분석결과 상담 AI</span>
+              <span data-lang="ENG" style="display: none;">Analysis Consultation AI</span>
+              <span data-lang="ESP" style="display: none;">IA de Consulta de Análisis</span>
+            </strong>
+            <span class="badge bg-success-subtle text-success">
+              <span data-lang="KOR">온라인</span>
+              <span data-lang="ENG" style="display: none;">Online</span>
+              <span data-lang="ESP" style="display: none;">En línea</span>
+            </span>
           </div>
           <div id="botMessageContent">
             <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-            답변을 생성하고 있습니다...
+            <span data-lang="KOR">답변을 생성하고 있습니다...</span>
+            <span data-lang="ENG" style="display: none;">Generating response...</span>
+            <span data-lang="ESP" style="display: none;">Generando respuesta...</span>
           </div>
         </div>
       </div>
@@ -457,8 +482,16 @@ class AnalyzerMain {
       <div class="flex-grow-1">
         <div class="bg-white rounded-3 p-4 shadow-sm border">
           <div class="d-flex align-items-center mb-2">
-            <strong class="text-primary me-2">분석결과 상담 AI</strong>
-            <span class="badge bg-success-subtle text-success">온라인</span>
+            <strong class="text-primary me-2">
+              <span data-lang="KOR">분석결과 상담 AI</span>
+              <span data-lang="ENG" style="display: none;">Analysis Consultation AI</span>
+              <span data-lang="ESP" style="display: none;">IA de Consulta de Análisis</span>
+            </strong>
+            <span class="badge bg-success-subtle text-success">
+              <span data-lang="KOR">온라인</span>
+              <span data-lang="ENG" style="display: none;">Online</span>
+              <span data-lang="ESP" style="display: none;">En línea</span>
+            </span>
           </div>
           <div>
             ${this.escapeHtml(message)}

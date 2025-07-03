@@ -50,12 +50,13 @@ const PDF_TRANSLATIONS = {
   }
 };
 
-// 현재 언어 감지 함수
+// getCurrentLanguage 함수 간소화 - AI_ANALYZER_I18N 시스템과 연동
 function getCurrentLanguage() {
-  // HTML lang 속성에서 언어 감지
-  const htmlLang = document.documentElement.lang || 'ko';
-  const langCode = htmlLang.split('-')[0]; // 'ko-kr' -> 'ko'
-  return PDF_TRANSLATIONS[langCode] ? langCode : 'ko';
+  // 새로운 통합 시스템 사용
+  if (window.getCurrentAILanguage) {
+    return window.getCurrentAILanguage();
+  }
+  return 'ko'; // 백업
 }
 
 // 번역 텍스트 가져오기 함수
@@ -217,34 +218,34 @@ function downloadPreviewLightweightPDF() {
       
       // 파일명 생성
       const currentDate = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-      const filename = `AI_상권분석_경량_${currentDate}.pdf`;
+      const filename = `${getTranslation('lightweight_filename_prefix')}${currentDate}.pdf`;
       
       // PDF 다운로드
       doc.save(filename);
       
       // 버튼 상태 복원
-      document.getElementById('previewDownloadLightPdfBtn').innerHTML = '<i class="bi bi-file-text me-2"></i>경량 PDF (텍스트)';
+      document.getElementById('previewDownloadLightPdfBtn').innerHTML = `<i class="bi bi-file-text me-2"></i>${getTranslation('lightweight_pdf')}`;
       document.getElementById('previewDownloadLightPdfBtn').disabled = false;
       document.getElementById('previewDownloadPdfBtn').disabled = false;
       
-      alert('경량 PDF 다운로드가 완료되었습니다.');
+      alert(getTranslation('lightweight_download_complete'));
       
     }).catch(error => {
       console.error('html2canvas 오류:', error);
-      alert('경량 PDF 생성 중 오류가 발생했습니다: ' + error.message);
+      alert(getTranslation('lightweight_generation_error') + error.message);
       
       // 버튼 상태 복원
-      document.getElementById('previewDownloadLightPdfBtn').innerHTML = '<i class="bi bi-file-text me-2"></i>경량 PDF (텍스트)';
+      document.getElementById('previewDownloadLightPdfBtn').innerHTML = `<i class="bi bi-file-text me-2"></i>${getTranslation('lightweight_pdf')}`;
       document.getElementById('previewDownloadLightPdfBtn').disabled = false;
       document.getElementById('previewDownloadPdfBtn').disabled = false;
     });
     
   } catch (error) {
     console.error('경량 PDF 생성 오류:', error);
-    alert('경량 PDF 생성 중 오류가 발생했습니다: ' + error.message);
+    alert(getTranslation('lightweight_generation_error') + error.message);
     
     // 버튼 상태 복원
-    document.getElementById('previewDownloadLightPdfBtn').innerHTML = '<i class="bi bi-file-text me-2"></i>경량 PDF (텍스트)';
+    document.getElementById('previewDownloadLightPdfBtn').innerHTML = `<i class="bi bi-file-text me-2"></i>${getTranslation('lightweight_pdf')}`;
     document.getElementById('previewDownloadLightPdfBtn').disabled = false;
     document.getElementById('previewDownloadPdfBtn').disabled = false;
   }
@@ -253,7 +254,7 @@ function downloadPreviewLightweightPDF() {
 // 경량 PDF 다운로드 함수
 function downloadLightweightPDF() {
   if (!currentRequestId) {
-    alert('분석 결과가 없습니다.');
+    alert(getTranslation('no_analysis_result'));
     return;
   }
   
@@ -657,6 +658,7 @@ function populatePreviewData(data, requestId) {
   console.log('PDF 미리보기 데이터:', data);
   const request = data.request;
   const result = data.result;
+  const currentLang = getCurrentLanguage(); // 함수 전체에서 사용할 언어 코드
   
   console.log('Request 데이터:', request);
   console.log('Result 데이터:', result);
@@ -679,25 +681,46 @@ function populatePreviewData(data, requestId) {
     console.log('주소 설정 완료:', request.address);
   }
   if (businessTypeElement) {
-    const businessTypeName = getBusinessTypeName(request.business_type_id);
-    businessTypeElement.textContent = businessTypeName || '-';
-    console.log('업종 설정 완료:', businessTypeName);
+    // 직접 출력 방식: 현재 언어에 맞는 업종명을 직접 가져오기
+    let businessTypeName = '-';
+    
+    if (window.businessTypes && request.business_type_id) {
+      const businessType = window.businessTypes.find(type => type.id == request.business_type_id);
+      if (businessType) {
+        if (currentLang === 'en' && businessType.eng) {
+          businessTypeName = businessType.eng;
+        } else if (currentLang === 'es' && businessType.esp) {
+          businessTypeName = businessType.esp;
+        } else {
+          businessTypeName = businessType.kor;
+        }
+      }
+    }
+    
+    businessTypeElement.textContent = businessTypeName;
+    console.log('📝 PDF 업종명 설정 완료:', businessTypeName, `(언어: ${currentLang}, ID: ${request.business_type_id})`);
   }
   if (areaElement) {
     areaElement.textContent = request.area || '-';
     console.log('면적 설정 완료:', request.area);
   }
   
-  // 분석일시
-  const analysisDate = new Date(request.created_at).toLocaleDateString('ko-KR', {
+  // 분석일시 - 언어별 포맷팅
+  let locale = 'ko-KR';
+  if (currentLang === 'en') locale = 'en-US';
+  else if (currentLang === 'es') locale = 'es-ES';
+  
+  const analysisDate = new Date(request.created_at).toLocaleDateString(locale, {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit'
   });
+  
   document.getElementById('previewAnalysisDate').textContent = analysisDate;
   document.getElementById('previewReportGeneratedDate').textContent = analysisDate;
+  console.log('📅 PDF 분석일시 설정 완료:', analysisDate, `(언어: ${currentLang}, locale: ${locale})`);
   
   // AI 생존 확률
   console.log('생존 확률:', result.survival_percentage);
@@ -717,7 +740,6 @@ function populatePreviewData(data, requestId) {
   
   // 생존 확률에 따른 색상 및 메시지
   const survivalComment = document.getElementById('previewSurvivalComment');
-  const currentLang = getCurrentLanguage();
   const texts = getTranslation('survivalTexts') || {};
   
   if (survivalRate >= 80) {
@@ -865,24 +887,52 @@ function populatePreviewData(data, requestId) {
   currentPreviewRequestId = requestId;
   
   // PDF 미리보기 모달 다국어화 적용
+  updatePdfPreviewSectionTitles(currentLang);
+  
+  // 언어 변경 이벤트 리스너 등록 (PDF 모달이 열려있을 때)
+  if (typeof AI_ANALYZER_I18N !== 'undefined' && AI_ANALYZER_I18N.onLanguageChange) {
+    AI_ANALYZER_I18N.onLanguageChange(() => {
+      if (document.getElementById('pdfPreviewModal').style.display !== 'none') {
+        console.log('🔄 PDF 모달 언어 변경 감지 - 다국어화 재적용');
+        setTimeout(() => {
+          updatePdfPreviewSectionTitles(getCurrentLanguage());
+          
+          // 업종명들도 다시 업데이트
+          if (window.allBusinessRecommendations) {
+            populateBusinessRecommendations(window.allBusinessRecommendations);
+          }
+          
+          // 강점/주의사항도 다시 업데이트
+          if (window.currentPreviewData && window.currentPreviewData.result) {
+            populateStrengthsAndCautions(window.currentPreviewData.result);
+          }
+        }, 100);
+      }
+    });
+  }
+  
   if (typeof updatePdfPreviewTexts === 'function') {
-    const currentLanguage = getCurrentLanguage();
-    const texts = LANGUAGE_TEXTS ? LANGUAGE_TEXTS[currentLanguage] : null;
+    const texts = LANGUAGE_TEXTS ? LANGUAGE_TEXTS[currentLang] : null;
     if (texts) {
-      console.log('📄 PDF 미리보기 모달 다국어화 적용:', currentLanguage);
+      console.log('📄 PDF 미리보기 모달 다국어화 적용:', currentLang);
       updatePdfPreviewTexts(texts);
     }
   }
+  
+  // 현재 미리보기 데이터를 전역 변수에 저장 (언어 변경 시 재사용)
+  window.currentPreviewData = data;
 }
 
-// 업종 추천 데이터를 PDF 미리보기에 채우는 함수
+// 업종 추천 데이터를 PDF 미리보기에 채우는 함수 (직접 출력 방식)
 function populateBusinessRecommendations(recommendations) {
   try {
-    console.log('populateBusinessRecommendations 호출됨:', recommendations);
+    console.log('📊 PDF 업종 추천 데이터 처리 시작:', recommendations);
     if (!recommendations || recommendations.length === 0) {
       console.log('업종 추천 데이터가 없음');
       return;
     }
+    
+    const currentLang = window.getCurrentAILanguage ? window.getCurrentAILanguage() : 'ko';
     
     // 1위 업종 데이터
     if (recommendations[0]) {
@@ -892,19 +942,15 @@ function populateBusinessRecommendations(recommendations) {
       const businessTypeElement = document.getElementById('previewRecommendedBusinessType');
       const percentageElement = document.getElementById('previewRecommendedPercentage');
       
-      console.log('업종명 엘리먼트:', businessTypeElement);
-      console.log('퍼센트 엘리먼트:', percentageElement);
-      
       if (businessTypeElement) {
-        const currentLang = window.getCurrentAILanguage ? window.getCurrentAILanguage() : 'ko';
-        const translatedName = window.translateBusinessType ? 
-          window.translateBusinessType(firstPlace.name, currentLang) : firstPlace.name;
-        businessTypeElement.textContent = translatedName || '-';
-        console.log('업종명 설정:', firstPlace.name, '->', translatedName);
+        // 직접 출력 방식: 현재 언어에 맞는 업종명을 직접 가져오기
+        const businessTypeName = getBusinessTypeNameByCurrentLanguage(firstPlace.name, currentLang);
+        businessTypeElement.textContent = businessTypeName || '-';
+        console.log('📝 1위 업종명 설정:', firstPlace.name, '->', businessTypeName);
       }
       if (percentageElement) {
         percentageElement.textContent = (firstPlace.percentage || 0).toFixed(1) + '%';
-        console.log('퍼센트 설정:', firstPlace.percentage);
+        console.log('📊 1위 퍼센트 설정:', firstPlace.percentage);
       }
       
       // 1위 업종 진행바
@@ -924,36 +970,73 @@ function populateBusinessRecommendations(recommendations) {
     // 2위 업종 데이터
     if (recommendations[1]) {
       const secondPlace = recommendations[1];
-      const currentLang = window.getCurrentAILanguage ? window.getCurrentAILanguage() : 'ko';
-      const translatedName2nd = window.translateBusinessType ? 
-        window.translateBusinessType(secondPlace.name, currentLang) : secondPlace.name;
-      document.getElementById('previewRecommended2nd').textContent = translatedName2nd || '-';
+      const businessTypeName2nd = getBusinessTypeNameByCurrentLanguage(secondPlace.name, currentLang);
+      document.getElementById('previewRecommended2nd').textContent = businessTypeName2nd || '-';
       document.getElementById('previewRecommended2ndPercent').textContent = (secondPlace.percentage || 0).toFixed(1) + '%';
+      console.log('📝 2위 업종명 설정:', secondPlace.name, '->', businessTypeName2nd);
     }
     
     // 3위 업종 데이터
     if (recommendations[2]) {
       const thirdPlace = recommendations[2];
-      const currentLang = window.getCurrentAILanguage ? window.getCurrentAILanguage() : 'ko';
-      const translatedName3rd = window.translateBusinessType ? 
-        window.translateBusinessType(thirdPlace.name, currentLang) : thirdPlace.name;
-      document.getElementById('previewRecommended3rd').textContent = translatedName3rd || '-';
+      const businessTypeName3rd = getBusinessTypeNameByCurrentLanguage(thirdPlace.name, currentLang);
+      document.getElementById('previewRecommended3rd').textContent = businessTypeName3rd || '-';
       document.getElementById('previewRecommended3rdPercent').textContent = (thirdPlace.percentage || 0).toFixed(1) + '%';
+      console.log('📝 3위 업종명 설정:', thirdPlace.name, '->', businessTypeName3rd);
     }
     
     // 4위 업종 데이터
     if (recommendations[3]) {
       const fourthPlace = recommendations[3];
-      const currentLang = window.getCurrentAILanguage ? window.getCurrentAILanguage() : 'ko';
-      const translatedName4th = window.translateBusinessType ? 
-        window.translateBusinessType(fourthPlace.name, currentLang) : fourthPlace.name;
-      document.getElementById('previewRecommended4th').textContent = translatedName4th || '-';
+      const businessTypeName4th = getBusinessTypeNameByCurrentLanguage(fourthPlace.name, currentLang);
+      document.getElementById('previewRecommended4th').textContent = businessTypeName4th || '-';
       document.getElementById('previewRecommended4thPercent').textContent = (fourthPlace.percentage || 0).toFixed(1) + '%';
+      console.log('📝 4위 업종명 설정:', fourthPlace.name, '->', businessTypeName4th);
     }
     
+    console.log('✅ PDF 업종 추천 데이터 처리 완료');
+    
+    // 업종 추천 데이터를 전역 변수에 저장 (언어 변경 시 재사용)
+    window.allBusinessRecommendations = recommendations;
+    
   } catch (error) {
-    console.error('업종 추천 데이터 처리 오류:', error);
+    console.error('❌ 업종 추천 데이터 처리 오류:', error);
   }
+}
+
+// PDF용 업종명 직접 가져오기 함수
+function getBusinessTypeNameByCurrentLanguage(koreanName, targetLanguage) {
+  if (!window.businessTypes || !koreanName) return koreanName;
+  
+  // analyze-core.js의 getBusinessTypeNameByLanguage 함수 사용
+  if (typeof window.getBusinessTypeNameByLanguage === 'function') {
+    return window.getBusinessTypeNameByLanguage(koreanName, targetLanguage);
+  }
+  
+  // 폴백: 직접 처리
+  const nameVariations = [
+    koreanName.trim(),
+    koreanName.replace('외국음식전문점(인도,태국등)', '외국음식전문점(인도, 태국 등)'),
+    koreanName.replace('외국음식전문점(인도, 태국 등)', '외국음식전문점(인도,태국등)'),
+    // 패밀리레스트랑/패밀리레스토랑 변형 처리
+    koreanName.replace('패밀리레스트랑', '패밀리레스토랑'),
+    koreanName.replace('패밀리레스토랑', '패밀리레스트랑'),
+    koreanName.replace(/,\s*/g, ', '), 
+    koreanName.replace(/\s*,/g, ','),
+    koreanName.replace(/\s+/g, ''),
+  ];
+  
+  for (const variation of nameVariations) {
+    const businessType = window.businessTypes.find(type => type.kor === variation);
+    if (businessType) {
+      if (targetLanguage === 'en' && businessType.eng) return businessType.eng;
+      if (targetLanguage === 'es' && businessType.esp) return businessType.esp;
+      return businessType.kor;
+    }
+  }
+  
+  console.log(`⚠️ PDF 업종명 매칭 실패: "${koreanName}" (${targetLanguage})`);
+  return koreanName;
 }
 
 // AI 분석 리포트를 PDF 미리보기에 채우는 함수
@@ -1018,56 +1101,133 @@ function populateAiReport(aiExplanation) {
 function populateStrengthsAndCautions(result) {
   const strengths = [];
   const cautions = [];
+  const currentLang = getCurrentLanguage(); // 이 함수 내에서만 사용
   
   console.log('미리보기 강점/주의사항 분석 데이터:', result);
   // 강점/주의사항 분석을 위한 데이터 처리
   
+  // 단위 텍스트 다국어화
+  const peopleUnit = currentLang === 'en' ? ' people' : currentLang === 'es' ? ' personas' : '명';
+  const storeUnit = currentLang === 'en' ? ' stores' : currentLang === 'es' ? ' tiendas' : '개';
+  
   // 생활인구 분석
   const lifePop300 = result.life_pop_300m || 0;
   if (lifePop300 > 5000) {
-    strengths.push('300m 반경 내 생활인구가 풍부합니다 (' + Math.round(lifePop300).toLocaleString() + '명)');
+    if (currentLang === 'en') {
+      strengths.push(`Rich residential population within 300m (${Math.round(lifePop300).toLocaleString()} people)`);
+    } else if (currentLang === 'es') {
+      strengths.push(`Rica población residente dentro de 300m (${Math.round(lifePop300).toLocaleString()} personas)`);
+    } else {
+      strengths.push('300m 반경 내 생활인구가 풍부합니다 (' + Math.round(lifePop300).toLocaleString() + '명)');
+    }
   } else if (lifePop300 < 2000) {
-    cautions.push('300m 반경 내 생활인구가 부족합니다 (' + Math.round(lifePop300).toLocaleString() + '명)');
+    if (currentLang === 'en') {
+      cautions.push(`Low residential population within 300m (${Math.round(lifePop300).toLocaleString()} people)`);
+    } else if (currentLang === 'es') {
+      cautions.push(`Baja población residente dentro de 300m (${Math.round(lifePop300).toLocaleString()} personas)`);
+    } else {
+      cautions.push('300m 반경 내 생활인구가 부족합니다 (' + Math.round(lifePop300).toLocaleString() + '명)');
+    }
   }
   
   // 직장인구 분석
   const workingPop300 = result.working_pop_300m || 0;
   if (workingPop300 > 3000) {
-    strengths.push('300m 반경 내 직장인구가 많아 점심/저녁 수요가 기대됩니다');
+    if (currentLang === 'en') {
+      strengths.push('Large working population within 300m radius - good for lunch/dinner demand');
+    } else if (currentLang === 'es') {
+      strengths.push('Gran población trabajadora dentro de un radio de 300m: buena para la demanda de almuerzo/cena');
+    } else {
+      strengths.push('300m 반경 내 직장인구가 많아 점심/저녁 수요가 기대됩니다');
+    }
   } else if (workingPop300 < 1000) {
-    cautions.push('300m 반경 내 직장인구가 적어 평일 수요가 제한적일 수 있습니다');
+    if (currentLang === 'en') {
+      cautions.push('Low working population within 300m radius - limited weekday demand expected');
+    } else if (currentLang === 'es') {
+      cautions.push('Baja población trabajadora dentro de un radio de 300m: demanda limitada entre semana');
+    } else {
+      cautions.push('300m 반경 내 직장인구가 적어 평일 수요가 제한적일 수 있습니다');
+    }
   }
   
   // 경쟁업체 분석
   const competitor300 = result.competitor_300m || 0;
   if (competitor300 < 3) {
-    strengths.push('300m 반경 내 경쟁업체가 적어 시장 선점 기회가 있습니다');
+    if (currentLang === 'en') {
+      strengths.push('Few competitors within 300m radius - good market entry opportunity');
+    } else if (currentLang === 'es') {
+      strengths.push('Pocos competidores dentro de un radio de 300m: buena oportunidad de entrada al mercado');
+    } else {
+      strengths.push('300m 반경 내 경쟁업체가 적어 시장 선점 기회가 있습니다');
+    }
   } else if (competitor300 > 10) {
-    cautions.push('300m 반경 내 경쟁업체가 많아 치열한 경쟁이 예상됩니다 (' + competitor300 + '개)');
+    if (currentLang === 'en') {
+      cautions.push(`Many competitors within 300m radius - intense competition expected (${competitor300} stores)`);
+    } else if (currentLang === 'es') {
+      cautions.push(`Muchos competidores dentro de un radio de 300m: se espera competencia intensa (${competitor300} tiendas)`);
+    } else {
+      cautions.push('300m 반경 내 경쟁업체가 많아 치열한 경쟁이 예상됩니다 (' + competitor300 + '개)');
+    }
   }
   
   // 경쟁강도 분석 (새로 추가)
   const competitorRatio = result.competitor_ratio_300m || 0;
   if (competitorRatio < 20) {
-    strengths.push('경쟁강도가 낮아 시장 진입이 유리합니다 (' + competitorRatio.toFixed(1) + '%)');
+    if (currentLang === 'en') {
+      strengths.push(`Low competition intensity - favorable for market entry (${competitorRatio.toFixed(1)}%)`);
+    } else if (currentLang === 'es') {
+      strengths.push(`Baja intensidad de competencia: favorable para la entrada al mercado (${competitorRatio.toFixed(1)}%)`);
+    } else {
+      strengths.push('경쟁강도가 낮아 시장 진입이 유리합니다 (' + competitorRatio.toFixed(1) + '%)');
+    }
   } else if (competitorRatio > 60) {
-    cautions.push('경쟁강도가 높아 치열한 경쟁이 예상됩니다 (' + competitorRatio.toFixed(1) + '%)');
+    if (currentLang === 'en') {
+      cautions.push(`High competition intensity - intense competition expected (${competitorRatio.toFixed(1)}%)`);
+    } else if (currentLang === 'es') {
+      cautions.push(`Alta intensidad de competencia: se espera competencia intensa (${competitorRatio.toFixed(1)}%)`);
+    } else {
+      cautions.push('경쟁강도가 높아 치열한 경쟁이 예상됩니다 (' + competitorRatio.toFixed(1) + '%)');
+    }
   }
   
   // 업종 다양성 분석 (새로 추가)
   const businessDiversity = result.business_diversity_300m || 0;
   if (businessDiversity > 15) {
-    strengths.push('주변 업종이 다양해 상권이 활성화되어 있습니다');
+    if (currentLang === 'en') {
+      strengths.push('High business diversity indicates an active commercial area');
+    } else if (currentLang === 'es') {
+      strengths.push('Alta diversidad de negocios indica un área comercial activa');
+    } else {
+      strengths.push('주변 업종이 다양해 상권이 활성화되어 있습니다');
+    }
   } else if (businessDiversity < 5) {
-    cautions.push('주변 업종 다양성이 부족해 상권 활력이 제한적일 수 있습니다');
+    if (currentLang === 'en') {
+      cautions.push('Low business diversity may limit commercial area vitality');
+    } else if (currentLang === 'es') {
+      cautions.push('Baja diversidad de negocios puede limitar la vitalidad del área comercial');
+    } else {
+      cautions.push('주변 업종 다양성이 부족해 상권 활력이 제한적일 수 있습니다');
+    }
   }
   
   // 공시지가 분석
   const landValue = result.total_land_value || 0;
   if (landValue < 50000000) { // 5천만원 미만
-    strengths.push('상대적으로 낮은 공시지가로 임대료 부담이 적을 것으로 예상됩니다');
+    if (currentLang === 'en') {
+      strengths.push('Relatively low public land price - expected lower rental burden');
+    } else if (currentLang === 'es') {
+      strengths.push('Precio del terreno público relativamente bajo: se espera menor carga de alquiler');
+    } else {
+      strengths.push('상대적으로 낮은 공시지가로 임대료 부담이 적을 것으로 예상됩니다');
+    }
   } else if (landValue > 200000000) { // 2억 초과
-    cautions.push('높은 공시지가로 인한 임대료 부담이 클 수 있습니다');
+    if (currentLang === 'en') {
+      cautions.push('High public land price may result in significant rental burden');
+    } else if (currentLang === 'es') {
+      cautions.push('Alto precio del terreno público puede resultar en una carga de alquiler significativa');
+    } else {
+      cautions.push('높은 공시지가로 인한 임대료 부담이 클 수 있습니다');
+    }
   }
   
   // 외국인 고객층 분석 (새로 추가)
@@ -1075,7 +1235,13 @@ function populateStrengthsAndCautions(result) {
   const longForeign300 = result['1A_Long_Total'] || result.long_foreign_300m || 0;
   
   if (tempForeign1000 > 3000 || longForeign300 > 1000) {
-    strengths.push('외국인 고객층이 풍부해 다양한 고객 확보 가능');
+    if (currentLang === 'en') {
+      strengths.push('Rich foreign customer base - diverse customer acquisition possible');
+    } else if (currentLang === 'es') {
+      strengths.push('Rica base de clientes extranjeros: posible adquisición de clientes diversos');
+    } else {
+      strengths.push('외국인 고객층이 풍부해 다양한 고객 확보 가능');
+    }
   }
   
   // 연령대별 인구 분석 (새로 추가)
@@ -1084,32 +1250,74 @@ function populateStrengthsAndCautions(result) {
   const age40 = result['2A_40'] || result.life_pop_40_1000m || 0;
   
   if (age20 > 25 || age30 > 25) {
-    strengths.push('젊은 연령층 비율이 높아 트렌디한 업종에 유리');
+    if (currentLang === 'en') {
+      strengths.push('High proportion of young age groups - favorable for trendy businesses');
+    } else if (currentLang === 'es') {
+      strengths.push('Alta proporción de grupos de edad jóvenes: favorable para negocios de moda');
+    } else {
+      strengths.push('젊은 연령층 비율이 높아 트렌디한 업종에 유리');
+    }
   } else if (age40 > 30) {
-    strengths.push('중장년층 비율이 높아 안정적인 소비 패턴 기대');
+    if (currentLang === 'en') {
+      strengths.push('High proportion of middle-aged groups - stable consumption patterns expected');
+    } else if (currentLang === 'es') {
+      strengths.push('Alta proporción de grupos de mediana edad: se esperan patrones de consumo estables');
+    } else {
+      strengths.push('중장년층 비율이 높아 안정적인 소비 패턴 기대');
+    }
   }
   
   // 유동인구 유발시설 분석
   const publicBuilding = result.public_building_250m || 0;
   const school = result.school_250m || 0;
   if (publicBuilding > 0 || school > 0) {
-    strengths.push('주변 유동인구 유발시설이 있어 고객 유입에 유리');
+    if (currentLang === 'en') {
+      strengths.push('Nearby foot traffic generating facilities - favorable for customer influx');
+    } else if (currentLang === 'es') {
+      strengths.push('Instalaciones cercanas que generan tráfico peatonal: favorable para la afluencia de clientes');
+    } else {
+      strengths.push('주변 유동인구 유발시설이 있어 고객 유입에 유리');
+    }
   }
   
   // 생존 확률 분석
   const survivalRate = result.survival_percentage || 0;
   if (survivalRate >= 80) {
-    strengths.push('AI 예측 생존 확률이 매우 높아 안정적인 사업 운영이 기대됩니다');
+    if (currentLang === 'en') {
+      strengths.push('Very high AI predicted survival rate - stable business operation expected');
+    } else if (currentLang === 'es') {
+      strengths.push('Muy alta tasa de supervivencia predicha por IA: se espera operación comercial estable');
+    } else {
+      strengths.push('AI 예측 생존 확률이 매우 높아 안정적인 사업 운영이 기대됩니다');
+    }
   } else if (survivalRate < 50) {
-    cautions.push('AI 예측 생존 확률이 낮아 신중한 사업 계획이 필요합니다');
+    if (currentLang === 'en') {
+      cautions.push('Low AI predicted survival rate - careful business planning required');
+    } else if (currentLang === 'es') {
+      cautions.push('Baja tasa de supervivencia predicha por IA: se requiere planificación comercial cuidadosa');
+    } else {
+      cautions.push('AI 예측 생존 확률이 낮아 신중한 사업 계획이 필요합니다');
+    }
   }
   
   // 기본 메시지 추가
   if (strengths.length === 0) {
-    strengths.push('현재 상권 조건이 평균적인 수준입니다');
+    if (currentLang === 'en') {
+      strengths.push('Current commercial area conditions are at average level');
+    } else if (currentLang === 'es') {
+      strengths.push('Las condiciones actuales del área comercial están en nivel promedio');
+    } else {
+      strengths.push('현재 상권 조건이 평균적인 수준입니다');
+    }
   }
   if (cautions.length === 0) {
-    cautions.push('현재 상권 조건이 양호합니다');
+    if (currentLang === 'en') {
+      cautions.push('Current commercial area conditions are favorable');
+    } else if (currentLang === 'es') {
+      cautions.push('Las condiciones actuales del área comercial son favorables');
+    } else {
+      cautions.push('현재 상권 조건이 양호합니다');
+    }
   }
   
   // HTML 생성
@@ -1129,12 +1337,263 @@ function populateStrengthsAndCautions(result) {
   }
 }
 
+// PDF 미리보기 섹션 제목들 다국어화 함수 (강화된 버전)
+function updatePdfPreviewSectionTitles(currentLanguage) {
+  try {
+    console.log('🔄 PDF 미리보기 완전 다국어화 적용:', currentLanguage);
+    
+    // 🎯 하드코딩된 섹션 제목들 직접 업데이트
+    
+    // 1. 연령대별 인구 분석 섹션 - 더 정확한 선택자 사용
+    const ageAnalysisTitles = document.querySelectorAll('#previewContent h5');
+    ageAnalysisTitles.forEach(title => {
+      if (title.textContent.includes('연령대별 인구 분석') || 
+          title.textContent.includes('Population Analysis by Age Group') ||
+          title.textContent.includes('Análisis de Población por Grupo de Edad')) {
+        if (currentLanguage === 'en') {
+          title.innerHTML = '<i class="bi bi-people me-2"></i>Population Analysis by Age Group (1000m radius)';
+        } else if (currentLanguage === 'es') {
+          title.innerHTML = '<i class="bi bi-people me-2"></i>Análisis de Población por Grupo de Edad (radio de 1000m)';
+        } else {
+          title.innerHTML = '<i class="bi bi-people me-2"></i>연령대별 인구 분석 (1000m 반경)';
+        }
+      }
+    });
+    
+    // 2. AI 추천 업종 섹션
+    const businessRecommendationsTitle = document.querySelector('#previewBusinessRecommendations h5');
+    if (businessRecommendationsTitle && businessRecommendationsTitle.textContent.includes('AI 추천 업종')) {
+      if (currentLanguage === 'en') {
+        businessRecommendationsTitle.innerHTML = '<i class="bi bi-star me-2"></i>AI Recommended Business Types (Members Only)';
+      } else if (currentLanguage === 'es') {
+        businessRecommendationsTitle.innerHTML = '<i class="bi bi-star me-2"></i>Tipos de Negocio Recomendados por IA (Solo Miembros)';
+      } else {
+        businessRecommendationsTitle.innerHTML = '<i class="bi bi-star me-2"></i>AI 추천 업종 (회원 전용)';
+      }
+    }
+    
+    // 3. AI 분석 리포트 섹션
+    const aiReportTitle = document.querySelector('#previewAiReport h5');
+    if (aiReportTitle && aiReportTitle.textContent.includes('AI 분석 리포트')) {
+      if (currentLanguage === 'en') {
+        aiReportTitle.innerHTML = '<i class="bi bi-cpu me-2"></i>AI Analysis Report';
+      } else if (currentLanguage === 'es') {
+        aiReportTitle.innerHTML = '<i class="bi bi-cpu me-2"></i>Informe de Análisis IA';
+      } else {
+        aiReportTitle.innerHTML = '<i class="bi bi-cpu me-2"></i>AI 분석 리포트';
+      }
+    }
+    
+    // 4. 강점/주의사항 제목들
+    const strengthsHeader = document.querySelector('#previewStrengthsList').parentElement.querySelector('.card-header h6');
+    if (strengthsHeader && strengthsHeader.textContent.includes('강점')) {
+      if (currentLanguage === 'en') {
+        strengthsHeader.innerHTML = '<i class="bi bi-check-circle me-2"></i>Strengths';
+      } else if (currentLanguage === 'es') {
+        strengthsHeader.innerHTML = '<i class="bi bi-check-circle me-2"></i>Fortalezas';
+      } else {
+        strengthsHeader.innerHTML = '<i class="bi bi-check-circle me-2"></i>강점';
+      }
+    }
+    
+    const cautionsHeader = document.querySelector('#previewCautionsList').parentElement.querySelector('.card-header h6');
+    if (cautionsHeader && cautionsHeader.textContent.includes('주의사항')) {
+      if (currentLanguage === 'en') {
+        cautionsHeader.innerHTML = '<i class="bi bi-exclamation-triangle me-2"></i>Cautions';
+      } else if (currentLanguage === 'es') {
+        cautionsHeader.innerHTML = '<i class="bi bi-exclamation-triangle me-2"></i>Precauciones';
+      } else {
+        cautionsHeader.innerHTML = '<i class="bi bi-exclamation-triangle me-2"></i>주의사항';
+      }
+    }
+    
+    // 5. 카드 제목들 업데이트
+    const cardTitles = document.querySelectorAll('#previewContent .card-title');
+    cardTitles.forEach(element => {
+      const text = element.textContent.trim();
+      
+      if (text === '연령대별 인구 비율' || text === 'Population by Age Group' || text === 'Población por Grupo de Edad') {
+        if (currentLanguage === 'en') {
+          element.textContent = 'Population by Age Group';
+        } else if (currentLanguage === 'es') {
+          element.textContent = 'Población por Grupo de Edad';
+        } else {
+          element.textContent = '연령대별 인구 비율';
+        }
+      }
+      
+      if (text === '연령대별 상세 정보' || text === 'Detailed Age Information' || text === 'Información Detallada de Edad') {
+        if (currentLanguage === 'en') {
+          element.textContent = 'Detailed Age Information';
+        } else if (currentLanguage === 'es') {
+          element.textContent = 'Información Detallada de Edad';
+        } else {
+          element.textContent = '연령대별 상세 정보';
+        }
+      }
+      
+      if (text === '경쟁업체 현황' || text === 'Competitor Status' || text === 'Estado de la Competencia') {
+        if (currentLanguage === 'en') {
+          element.textContent = 'Competitor Status';
+        } else if (currentLanguage === 'es') {
+          element.textContent = 'Estado de la Competencia';
+        } else {
+          element.textContent = '경쟁업체 현황';
+        }
+      }
+      
+      if (text === '경쟁 강도' || text === 'Competition Intensity' || text === 'Intensidad de Competencia') {
+        if (currentLanguage === 'en') {
+          element.textContent = 'Competition Intensity';
+        } else if (currentLanguage === 'es') {
+          element.textContent = 'Intensidad de Competencia';
+        } else {
+          element.textContent = '경쟁 강도';
+        }
+      }
+    });
+    
+    // 6. 연령대 라벨들 업데이트
+    const ageLabels = document.querySelectorAll('#previewContent small.text-muted');
+    ageLabels.forEach(element => {
+      const text = element.textContent.trim();
+      
+      if (text === '20대' || text === '20s') {
+        element.textContent = currentLanguage === 'en' ? '20s' : 
+                             currentLanguage === 'es' ? '20s' : '20대';
+      } else if (text === '30대' || text === '30s') {
+        element.textContent = currentLanguage === 'en' ? '30s' : 
+                             currentLanguage === 'es' ? '30s' : '30대';
+      } else if (text === '40대' || text === '40s') {
+        element.textContent = currentLanguage === 'en' ? '40s' : 
+                             currentLanguage === 'es' ? '40s' : '40대';
+      } else if (text === '50대' || text === '50s') {
+        element.textContent = currentLanguage === 'en' ? '50s' : 
+                             currentLanguage === 'es' ? '50s' : '50대';
+      } else if (text === '60대 이상' || text === '60+') {
+        element.textContent = currentLanguage === 'en' ? '60+' : 
+                             currentLanguage === 'es' ? '60+' : '60대 이상';
+      } else if (text === '동일업종' || text === 'Same Industry' || text === 'Misma Industria') {
+        if (currentLanguage === 'en') {
+          element.textContent = 'Same Industry';
+        } else if (currentLanguage === 'es') {
+          element.textContent = 'Misma Industria';
+        } else {
+          element.textContent = '동일업종';
+        }
+      } else if (text === '인접업체' || text === 'Adjacent Businesses' || text === 'Negocios Adyacentes') {
+        if (currentLanguage === 'en') {
+          element.textContent = 'Adjacent Businesses';
+        } else if (currentLanguage === 'es') {
+          element.textContent = 'Negocios Adyacentes';
+        } else {
+          element.textContent = '인접업체';
+        }
+      } else if (text.includes('1000m 반경') || text.includes('1000m radius') || text.includes('radio de 1000m')) {
+        if (currentLanguage === 'en') {
+          element.textContent = 'Based on population within 1000m radius';
+        } else if (currentLanguage === 'es') {
+          element.textContent = 'Basado en la población dentro del radio de 1000m';
+        } else {
+          element.textContent = '1000m 반경 내 생활인구 기준';
+        }
+      } else if (text.includes('300m 반경') || text.includes('300m radius') || text.includes('radio de 300m')) {
+        if (currentLanguage === 'en') {
+          element.textContent = '300m radius';
+        } else if (currentLanguage === 'es') {
+          element.textContent = 'radio de 300m';
+        } else {
+          element.textContent = '300m 반경';
+        }
+      } else if (text === 'AI 예측 생존확률' || text === 'AI Predicted Survival Rate' || text === 'Tasa de Supervivencia Predicha por IA') {
+        if (currentLanguage === 'en') {
+          element.textContent = 'AI Predicted Survival Rate';
+        } else if (currentLanguage === 'es') {
+          element.textContent = 'Tasa de Supervivencia Predicha por IA';
+        } else {
+          element.textContent = 'AI 예측 생존확률';
+        }
+      }
+    });
+    
+    // 7. 분석중... 텍스트들 업데이트
+    const analyzingTexts = document.querySelectorAll('#previewContent li, #previewContent .badge, #previewContent span');
+    analyzingTexts.forEach(element => {
+      const text = element.textContent.trim();
+      if (text === '분석 중...' || text === '분석중...' || text === 'Analyzing...' || text === 'Analizando...') {
+        if (currentLanguage === 'en') {
+          element.textContent = 'Analyzing...';
+        } else if (currentLanguage === 'es') {
+          element.textContent = 'Analizando...';
+        } else {
+          element.textContent = '분석 중...';
+        }
+      }
+    });
+    
+    // 8. 순위 표시 텍스트 업데이트 (1위, 2위, 3위, 4위)
+    const rankBadges = document.querySelectorAll('#previewContent .badge');
+    rankBadges.forEach(element => {
+      const text = element.textContent.trim();
+      
+      if (text === '🏆 1위' || text === '🏆 1st' || text === '🏆 1º') {
+        if (currentLanguage === 'en') {
+          element.textContent = '🏆 1st';
+        } else if (currentLanguage === 'es') {
+          element.textContent = '🏆 1º';
+        } else {
+          element.textContent = '🏆 1위';
+        }
+      } else if (text === '2위' || text === '2nd' || text === '2º') {
+        if (currentLanguage === 'en') {
+          element.textContent = '2nd';
+        } else if (currentLanguage === 'es') {
+          element.textContent = '2º';
+        } else {
+          element.textContent = '2위';
+        }
+      } else if (text === '3위' || text === '3rd' || text === '3º') {
+        if (currentLanguage === 'en') {
+          element.textContent = '3rd';
+        } else if (currentLanguage === 'es') {
+          element.textContent = '3º';
+        } else {
+          element.textContent = '3위';
+        }
+      } else if (text === '4위' || text === '4th' || text === '4º') {
+        if (currentLanguage === 'en') {
+          element.textContent = '4th';
+        } else if (currentLanguage === 'es') {
+          element.textContent = '4º';
+        } else {
+          element.textContent = '4위';
+        }
+      }
+    });
+    
+    console.log('✅ PDF 미리보기 완전 다국어화 완료');
+    
+  } catch (error) {
+    console.error('❌ PDF 미리보기 섹션 제목 다국어화 오류:', error);
+  }
+}
+
 // PDF 미리보기용 파이차트 업데이트 함수
 let previewAgeChart = null;
 
 function updatePreviewAgeChart(ageData) {
+  const currentLang = getCurrentLanguage();
+  
+  // 다국어 레이블 설정
+  let labels = ['20대', '30대', '40대', '50대', '60대 이상'];
+  if (currentLang === 'en') {
+    labels = ['20s', '30s', '40s', '50s', '60+'];
+  } else if (currentLang === 'es') {
+    labels = ['20s', '30s', '40s', '50s', '60+'];
+  }
+  
   const chartData = {
-    labels: ['20대', '30대', '40대', '50대', '60대 이상'],
+    labels: labels,
     datasets: [{
       data: ageData,
       backgroundColor: [

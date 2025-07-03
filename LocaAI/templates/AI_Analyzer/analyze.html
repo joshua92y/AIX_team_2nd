@@ -179,7 +179,7 @@
                 <label for="address" class="form-label" data-lang="ESP" style="display: none;">Dirección</label>
                 
                 <div class="input-group">
-                  <input type="text" class="form-control" id="address" name="address" placeholder="서울특별시 내 주소를 검색하세요" readonly onclick="openAddressSearch()" style="cursor: pointer;">
+                  <input type="text" class="form-control" id="address" name="address" placeholder="서울특별시 내 주소를 검색하세요" readonly onclick="openAddressSearch()" style="cursor: pointer;" data-i18n-placeholder="address-search">
                   <button class="btn btn-outline-secondary" type="button" onclick="openAddressSearch()">
                     <i class="bi bi-search me-1"></i>
                     <span data-lang="KOR">검색</span>
@@ -212,7 +212,7 @@
                 <label for="area" class="form-label" data-lang="KOR">점포 면적 (㎡)</label>
                 <label for="area" class="form-label" data-lang="ENG" style="display: none;">Store Area (㎡)</label>
                 <label for="area" class="form-label" data-lang="ESP" style="display: none;">Área del local (㎡)</label>
-                <input type="number" class="form-control" id="area" name="area" placeholder="예: 33.2" required>
+                <input type="number" class="form-control" id="area" name="area" placeholder="예: 33.2" required data-i18n-placeholder="area-example">
               </div>
 
               <!-- 주류 판매 여부 선택 -->
@@ -495,18 +495,34 @@
                   </h5>
                   <div class="row">
                     <div class="col-md-4">
-                      <strong>업종:</strong> <span id="resultBusinessType"></span>
+                      <strong>
+                        <span data-lang="KOR">업종:</span>
+                        <span data-lang="ENG" style="display: none;">Business Type:</span>
+                        <span data-lang="ESP" style="display: none;">Tipo de Negocio:</span>
+                      </strong> <span id="resultBusinessType"></span>
                     </div>
                     <div class="col-md-4">
-                      <strong>면적:</strong> <span id="resultArea"></span>㎡
+                      <strong>
+                        <span data-lang="KOR">면적:</span>
+                        <span data-lang="ENG" style="display: none;">Area:</span>
+                        <span data-lang="ESP" style="display: none;">Área:</span>
+                      </strong> <span id="resultArea"></span>㎡
                     </div>
                     <div class="col-md-4">
-                      <strong>유형:</strong> <span id="resultServiceType"></span>
+                      <strong>
+                        <span data-lang="KOR">유형:</span>
+                        <span data-lang="ENG" style="display: none;">Type:</span>
+                        <span data-lang="ESP" style="display: none;">Tipo:</span>
+                      </strong> <span id="resultServiceType"></span>
                     </div>
                   </div>
                 </div>
                 <div class="col-md-4 text-end">
-                  <small class="text-muted">분석완료</small>
+                  <small class="text-muted">
+                    <span data-lang="KOR">분석완료</span>
+                    <span data-lang="ENG" style="display: none;">Analysis Complete</span>
+                    <span data-lang="ESP" style="display: none;">Análisis Completo</span>
+                  </small>
                 </div>
               </div>
             </div>
@@ -536,7 +552,11 @@
                   <div class="card border text-center" style="background-color: white; border-color: #dee2e6;">
                     <div class="card-body">
                       <h3 id="workingPop300" class="fw-bold" style="color: #1e3a8a;">-</h3>
-                      <small style="color: #1e3a8a;">300m 내 직장인구</small>
+                      <small style="color: #1e3a8a;">
+                        <span data-lang="KOR">300m 내 직장인구</span>
+                        <span data-lang="ENG" style="display: none;">Working Pop. within 300m</span>
+                        <span data-lang="ESP" style="display: none;">Población Trabajadora en 300m</span>
+                      </small>
                     </div>
                   </div>
                 </div>
@@ -544,7 +564,11 @@
                   <div class="card border text-center" style="background-color: white; border-color: #dee2e6;">
                     <div class="card-body">
                       <h3 id="competitor300" class="fw-bold" style="color: #1e3a8a;">-</h3>
-                      <small style="color: #1e3a8a;">동일업종 경쟁업체</small>
+                      <small style="color: #1e3a8a;">
+                        <span data-lang="KOR">동일업종 경쟁업체</span>
+                        <span data-lang="ENG" style="display: none;">Same Business Type Competitors</span>
+                        <span data-lang="ESP" style="display: none;">Competidores del Mismo Tipo de Negocio</span>
+                      </small>
                     </div>
                   </div>
                 </div>
@@ -566,30 +590,47 @@
             <!-- AI 예측 생존 확률 -->
             <div class="mb-4">
               <h5 class="text-primary border-bottom border-primary pb-2 mb-3">
-                <i class="bi bi-cpu me-2"></i>AI 예측 분석
+                <i class="bi bi-cpu me-2"></i>
+                <span data-lang="KOR">AI 예측 분석</span>
+                <span data-lang="ENG" style="display: none;">AI Prediction Analysis</span>
+                <span data-lang="ESP" style="display: none;">Análisis de Predicción IA</span>
               </h5>
               <div class="row align-items-center">
                 <div class="col-md-6">
                   <div class="text-center">
                     <div class="display-1 fw-bold mb-3" id="survivalPercentage">-%</div>
-                    <h4 class="mb-3">장기 생존 확률</h4>
+                    <h4 class="mb-3">
+                      <span data-lang="KOR">장기 생존 확률</span>
+                      <span data-lang="ENG" style="display: none;">Long-term Survival Rate</span>
+                      <span data-lang="ESP" style="display: none;">Probabilidad de Supervivencia a Largo Plazo</span>
+                    </h4>
                     <div class="progress" style="height: 25px;">
                       <div id="survivalBar" class="progress-bar" style="width: 0%; transition: width 0.6s ease;"></div>
                     </div>
                     <div class="mt-2">
-                      <span id="survivalBarText" class="badge fs-6" style="font-size: 1rem; font-weight: 500;">분석중...</span>
+                      <span id="survivalBarText" class="badge fs-6" style="font-size: 1rem; font-weight: 500;">
+                        <span data-lang="KOR">분석중...</span>
+                        <span data-lang="ENG" style="display: none;">Analyzing...</span>
+                        <span data-lang="ESP" style="display: none;">Analizando...</span>
+                      </span>
                     </div>
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="p-3">
-                    <h6 class="mb-3">AI 분석 결과</h6>
+                    <h6 class="mb-3">
+                      <span data-lang="KOR">AI 분석 결과</span>
+                      <span data-lang="ENG" style="display: none;">AI Analysis Result</span>
+                      <span data-lang="ESP" style="display: none;">Resultado del Análisis IA</span>
+                    </h6>
                     <div id="survivalAnalysis" class="alert">
                       <!-- AI 분석 결과가 여기에 표시됩니다 -->
                     </div>
                     <small class="text-muted">
                       <i class="bi bi-info-circle me-1"></i>
-                      AI 모델이 25개 지표를 종합 분석한 결과입니다.
+                      <span data-lang="KOR">AI 모델이 25개 지표를 종합 분석한 결과입니다.</span>
+                      <span data-lang="ENG" style="display: none;">Results from AI model's comprehensive analysis of 25 indicators.</span>
+                      <span data-lang="ESP" style="display: none;">Resultados del análisis integral de 25 indicadores del modelo IA.</span>
                     </small>
                   </div>
                 </div>
@@ -616,7 +657,9 @@
                     <div class="card-header bg-primary text-white text-center">
                       <h6 class="mb-0">
                         <i class="bi bi-trophy me-2"></i>
-                        1위 추천 업종
+                        <span data-lang="KOR">1위 추천 업종</span>
+                        <span data-lang="ENG" style="display: none;">Top Recommended Business</span>
+                        <span data-lang="ESP" style="display: none;">Negocio Más Recomendado</span>
                       </h6>
                     </div>
                     <div class="card-body text-center">
@@ -628,7 +671,9 @@
                       <div class="mt-3" id="topRecommendationBadge" style="display: none;">
                         <span class="badge bg-success">
                           <i class="bi bi-arrow-up me-1"></i>
-                          선택 업종 대비 우수
+                          <span data-lang="KOR">선택 업종 대비 우수</span>
+                          <span data-lang="ENG" style="display: none;">Better than Selected Business</span>
+                          <span data-lang="ESP" style="display: none;">Mejor que el Negocio Seleccionado</span>
                         </span>
                       </div>
                     </div>
@@ -657,37 +702,66 @@
             <!-- 상권 경쟁 분석 -->
             <div class="mb-4">
               <h5 class="text-primary border-bottom border-primary pb-2 mb-3">
-                <i class="bi bi-shop me-2"></i>상권 경쟁 분석 (300m 반경)
+                <i class="bi bi-shop me-2"></i>
+                <span data-lang="KOR">상권 경쟁 분석 (300m 반경)</span>
+                <span data-lang="ENG" style="display: none;">Competition Analysis (300m radius)</span>
+                <span data-lang="ESP" style="display: none;">Análisis de Competencia (radio 300m)</span>
               </h5>
               <div class="row g-3 text-center">
                 <div class="col-md-3">
-                  <h6>경쟁업체 수</h6>
+                  <h6>
+                    <span data-lang="KOR">경쟁업체 수</span>
+                    <span data-lang="ENG" style="display: none;">Competitors</span>
+                    <span data-lang="ESP" style="display: none;">Competidores</span>
+                  </h6>
                   <div class="h4 text-danger" id="competitorCount">-</div>
                 </div>
                 <div class="col-md-3">
-                  <h6>전체 요식업체</h6>
+                  <h6>
+                    <span data-lang="KOR">전체 요식업체</span>
+                    <span data-lang="ENG" style="display: none;">Total Restaurants</span>
+                    <span data-lang="ESP" style="display: none;">Total Restaurantes</span>
+                  </h6>
                   <div class="h4 text-info" id="adjacentBiz">-</div>
                 </div>
                 <div class="col-md-3">
-                  <h6>경쟁업체 비율</h6>
+                  <h6>
+                    <span data-lang="KOR">경쟁업체 비율</span>
+                    <span data-lang="ENG" style="display: none;">Competitor Ratio</span>
+                    <span data-lang="ESP" style="display: none;">Proporción de Competidores</span>
+                  </h6>
                   <div class="h4 text-warning" id="competitorRatio">-%</div>
                 </div>
                 <div class="col-md-3">
-                  <h6>업종 다양성</h6>
+                  <h6>
+                    <span data-lang="KOR">업종 다양성</span>
+                    <span data-lang="ENG" style="display: none;">Business Diversity</span>
+                    <span data-lang="ESP" style="display: none;">Diversidad de Negocios</span>
+                  </h6>
                   <div class="h4 text-success" id="businessDiversity">-</div>
                 </div>
               </div>
               
               <div class="mt-4">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                  <h6 class="mb-0">경쟁 강도 분석</h6>
-                  <span id="competitionLevel" class="badge fs-6" style="font-size: 1.1rem; font-weight: 500;">분석중...</span>
+                  <h6 class="mb-0">
+                    <span data-lang="KOR">경쟁 강도 분석</span>
+                    <span data-lang="ENG" style="display: none;">Competition Intensity</span>
+                    <span data-lang="ESP" style="display: none;">Intensidad de Competencia</span>
+                  </h6>
+                  <span id="competitionLevel" class="badge fs-6" style="font-size: 1.1rem; font-weight: 500;">
+                    <span data-lang="KOR">분석중...</span>
+                    <span data-lang="ENG" style="display: none;">Analyzing...</span>
+                    <span data-lang="ESP" style="display: none;">Analizando...</span>
+                  </span>
                   </div>
                 <div class="progress" style="height: 40px;">
                   <div id="competitionBar" class="progress-bar" style="width: 0%; transition: width 0.6s ease;"></div>
                 </div>
                 <small class="text-muted mt-2 d-block">
-                  경쟁업체 비율이 20% 이하면 낮음, 20-50%는 보통, 50% 이상은 높음으로 분류됩니다.
+                  <span data-lang="KOR">경쟁업체 비율이 20% 이하면 낮음, 20-50%는 보통, 50% 이상은 높음으로 분류됩니다.</span>
+                  <span data-lang="ENG" style="display: none;">Competitor ratio below 20% is low, 20-50% is medium, above 50% is high.</span>
+                  <span data-lang="ESP" style="display: none;">Proporción de competidores por debajo del 20% es baja, 20-50% es media, por encima del 50% es alta.</span>
                 </small>
               </div>
             </div>
@@ -695,13 +769,20 @@
             <!-- 인구 구성 분석 -->
             <div class="mb-4">
               <h5 class="text-primary border-bottom border-primary pb-2 mb-3">
-                <i class="bi bi-people me-2"></i>인구 구성 분석 (1000m 반경)
+                <i class="bi bi-people me-2"></i>
+                <span data-lang="KOR">인구 구성 분석 (1000m 반경)</span>
+                <span data-lang="ENG" style="display: none;">Population Analysis (1000m radius)</span>
+                <span data-lang="ESP" style="display: none;">Análisis de Población (radio 1000m)</span>
               </h5>
               <div class="row">
                 <div class="col-md-6">
                   <div class="card h-100">
                     <div class="card-body text-center">
-                      <h6 class="card-title mb-3">연령대별 인구 비율</h6>
+                      <h6 class="card-title mb-3">
+                        <span data-lang="KOR">연령대별 인구 비율</span>
+                        <span data-lang="ENG" style="display: none;">Population by Age Group</span>
+                        <span data-lang="ESP" style="display: none;">Población por Grupo de Edad</span>
+                      </h6>
                       <div style="position: relative; height: 300px; width: 100%;">
                         <canvas id="ageChart" style="max-height: 300px; max-width: 100%;"></canvas>
                       </div>
@@ -711,43 +792,69 @@
                 <div class="col-md-6">
                   <div class="card h-100">
                     <div class="card-body">
-                      <h6 class="card-title mb-3">연령대별 상세 정보</h6>
+                      <h6 class="card-title mb-3">
+                        <span data-lang="KOR">연령대별 상세 정보</span>
+                        <span data-lang="ENG" style="display: none;">Detailed Age Information</span>
+                        <span data-lang="ESP" style="display: none;">Información Detallada de Edad</span>
+                      </h6>
                       <div class="row g-2">
                         <div class="col-6">
                           <div class="text-center p-2 border rounded">
                             <div class="fw-bold" style="color: #FF6384;" id="age20Percent">-%</div>
-                            <small class="text-muted">20대</small>
+                            <small class="text-muted">
+                              <span data-lang="KOR">20대</span>
+                              <span data-lang="ENG" style="display: none;">20s</span>
+                              <span data-lang="ESP" style="display: none;">20s</span>
+                            </small>
                           </div>
                         </div>
                         <div class="col-6">
                           <div class="text-center p-2 border rounded">
                             <div class="fw-bold" style="color: #36A2EB;" id="age30Percent">-%</div>
-                            <small class="text-muted">30대</small>
+                            <small class="text-muted">
+                              <span data-lang="KOR">30대</span>
+                              <span data-lang="ENG" style="display: none;">30s</span>
+                              <span data-lang="ESP" style="display: none;">30s</span>
+                            </small>
                           </div>
                         </div>
                         <div class="col-6">
                           <div class="text-center p-2 border rounded">
                             <div class="fw-bold" style="color: #FFCE56;" id="age40Percent">-%</div>
-                            <small class="text-muted">40대</small>
+                            <small class="text-muted">
+                              <span data-lang="KOR">40대</span>
+                              <span data-lang="ENG" style="display: none;">40s</span>
+                              <span data-lang="ESP" style="display: none;">40s</span>
+                            </small>
                           </div>
                         </div>
                         <div class="col-6">
                           <div class="text-center p-2 border rounded">
                             <div class="fw-bold" style="color: #4BC0C0;" id="age50Percent">-%</div>
-                            <small class="text-muted">50대</small>
+                            <small class="text-muted">
+                              <span data-lang="KOR">50대</span>
+                              <span data-lang="ENG" style="display: none;">50s</span>
+                              <span data-lang="ESP" style="display: none;">50s</span>
+                            </small>
                           </div>
                         </div>
                         <div class="col-12">
                           <div class="text-center p-2 border rounded">
                             <div class="fw-bold" style="color: #9966FF;" id="age60Percent">-%</div>
-                            <small class="text-muted">60대 이상</small>
+                            <small class="text-muted">
+                              <span data-lang="KOR">60대 이상</span>
+                              <span data-lang="ENG" style="display: none;">60+ years</span>
+                              <span data-lang="ESP" style="display: none;">60+ años</span>
+                            </small>
                           </div>
                         </div>
                       </div>
                       <div class="mt-3 text-center">
                         <small class="text-muted">
                           <i class="bi bi-info-circle me-1"></i>
-                          1000m 반경 내 생활인구 기준
+                          <span data-lang="KOR">1000m 반경 내 생활인구 기준</span>
+                          <span data-lang="ENG" style="display: none;">Based on population within 1000m radius</span>
+                          <span data-lang="ESP" style="display: none;">Basado en la población dentro de un radio de 1000m</span>
                         </small>
                       </div>
                     </div>
@@ -759,16 +866,27 @@
             <!-- 외국인 분석 -->
             <div class="mb-4">
               <h5 class="text-primary border-bottom border-primary pb-2 mb-3">
-                <i class="bi bi-globe me-2"></i>외국인 분석
+                <i class="bi bi-globe me-2"></i>
+                <span data-lang="KOR">외국인 분석</span>
+                <span data-lang="ENG" style="display: none;">Foreign Population Analysis</span>
+                <span data-lang="ESP" style="display: none;">Análisis de Población Extranjera</span>
               </h5>
               <div class="row g-3 text-center">
                 <div class="col-md-4">
                   <div class="card h-100">
                     <div class="card-body">
                       <i class="bi bi-airplane text-primary mb-2" style="font-size: 2rem;"></i>
-                      <h6>단기체류 외국인</h6>
+                      <h6>
+                        <span data-lang="KOR">단기체류 외국인</span>
+                        <span data-lang="ENG" style="display: none;">Short-term Foreign Visitors</span>
+                        <span data-lang="ESP" style="display: none;">Visitantes Extranjeros a Corto Plazo</span>
+                      </h6>
                       <div class="h4 text-primary" id="tempForeign1000">-</div>
-                      <small class="text-muted">1000m 반경</small>
+                      <small class="text-muted">
+                        <span data-lang="KOR">1000m 반경</span>
+                        <span data-lang="ENG" style="display: none;">1000m radius</span>
+                        <span data-lang="ESP" style="display: none;">radio 1000m</span>
+                      </small>
                     </div>
                   </div>
                 </div>
@@ -776,9 +894,17 @@
                   <div class="card h-100">
                     <div class="card-body">
                       <i class="bi bi-house text-success mb-2" style="font-size: 2rem;"></i>
-                      <h6>장기체류 외국인</h6>
+                      <h6>
+                        <span data-lang="KOR">장기체류 외국인</span>
+                        <span data-lang="ENG" style="display: none;">Long-term Foreign Residents</span>
+                        <span data-lang="ESP" style="display: none;">Residentes Extranjeros a Largo Plazo</span>
+                      </h6>
                       <div class="h4 text-success" id="longForeign300">-</div>
-                      <small class="text-muted">300m 반경</small>
+                      <small class="text-muted">
+                        <span data-lang="KOR">300m 반경</span>
+                        <span data-lang="ENG" style="display: none;">300m radius</span>
+                        <span data-lang="ESP" style="display: none;">radio 300m</span>
+                      </small>
                     </div>
                   </div>
                 </div>
@@ -786,9 +912,17 @@
                   <div class="card h-100">
                     <div class="card-body">
                       <i class="bi bi-flag text-warning mb-2" style="font-size: 2rem;"></i>
-                      <h6>장기체류 중국인 비율</h6>
+                      <h6>
+                        <span data-lang="KOR">장기체류 중국인 비율</span>
+                        <span data-lang="ENG" style="display: none;">Long-term Chinese Residents Ratio</span>
+                        <span data-lang="ESP" style="display: none;">Proporción de Residentes Chinos a Largo Plazo</span>
+                      </h6>
                       <div class="h4 text-warning" id="longForeignCNRatio300">-</div>
-                      <small class="text-muted">1000m 반경</small>
+                      <small class="text-muted">
+                        <span data-lang="KOR">1000m 반경</span>
+                        <span data-lang="ENG" style="display: none;">1000m radius</span>
+                        <span data-lang="ESP" style="display: none;">radio 1000m</span>
+                      </small>
                     </div>
                   </div>
                 </div>
@@ -798,12 +932,18 @@
             <!-- 분석 요약 -->
             <div class="mb-4">
               <h5 class="text-primary border-bottom border-primary pb-2 mb-3">
-                <i class="bi bi-lightbulb me-2"></i>AI 분석 요약
+                <i class="bi bi-lightbulb me-2"></i>
+                <span data-lang="KOR">AI 분석 요약</span>
+                <span data-lang="ENG" style="display: none;">AI Analysis Summary</span>
+                <span data-lang="ESP" style="display: none;">Resumen del Análisis IA</span>
               </h5>
               <div class="row">
                 <div class="col-md-6">
                   <h6 class="text-success">
-                    <i class="bi bi-check-circle me-2"></i>강점
+                    <i class="bi bi-check-circle me-2"></i>
+                    <span data-lang="KOR">강점</span>
+                    <span data-lang="ENG" style="display: none;">Strengths</span>
+                    <span data-lang="ESP" style="display: none;">Fortalezas</span>
                   </h6>
                   <ul id="strengthsList">
                     <!-- 강점 목록이 여기에 표시됩니다 -->
@@ -811,7 +951,10 @@
                 </div>
                 <div class="col-md-6">
                   <h6 class="text-warning">
-                    <i class="bi bi-exclamation-triangle me-2"></i>주의사항
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <span data-lang="KOR">주의사항</span>
+                    <span data-lang="ENG" style="display: none;">Cautions</span>
+                    <span data-lang="ESP" style="display: none;">Precauciones</span>
                   </h6>
                   <ul id="cautionsList">
                     <!-- 주의사항 목록이 여기에 표시됩니다 -->
@@ -823,12 +966,26 @@
             <!-- PDF 저장 버튼 -->
             <div class="text-center">
               <button id="pdfSaveBtn" class="btn btn-primary" onclick="generatePDF()">
-                <i class="bi bi-file-earmark-pdf me-2"></i>PDF로 저장
+                <i class="bi bi-file-earmark-pdf me-2"></i>
+                <span data-lang="KOR">PDF로 저장</span>
+                <span data-lang="ENG" style="display: none;">Save as PDF</span>
+                <span data-lang="ESP" style="display: none;">Guardar como PDF</span>
               </button>
               <div id="guestPdfMessage" style="display: none;" class="alert alert-info mt-3">
                 <i class="bi bi-info-circle me-2"></i>
-                <strong>비회원 제한:</strong> PDF 저장 기능은 회원만 사용할 수 있습니다. 
-                <a href="{% url 'custom_auth:login' %}?next={{ request.get_full_path }}" class="btn btn-sm btn-outline-primary ms-2">로그인하기</a>
+                <strong>
+                  <span data-lang="KOR">비회원 제한:</span>
+                  <span data-lang="ENG" style="display: none;">Non-member restriction:</span>
+                  <span data-lang="ESP" style="display: none;">Restricción de no miembro:</span>
+                </strong> 
+                <span data-lang="KOR">PDF 저장 기능은 회원만 사용할 수 있습니다.</span>
+                <span data-lang="ENG" style="display: none;">PDF save function is only available to members.</span>
+                <span data-lang="ESP" style="display: none;">La función de guardar PDF solo está disponible para miembros.</span>
+                <a href="{% url 'custom_auth:login' %}?next={{ request.get_full_path }}" class="btn btn-sm btn-outline-primary ms-2">
+                  <span data-lang="KOR">로그인하기</span>
+                  <span data-lang="ENG" style="display: none;">Login</span>
+                  <span data-lang="ESP" style="display: none;">Iniciar Sesión</span>
+                </a>
               </div>
             </div>
           </div>
@@ -932,27 +1089,53 @@
                   <div class="flex-grow-1">
                     <div class="bg-white rounded-3 p-3 shadow-sm border">
                       <div class="d-flex align-items-center mb-2">
-                        <strong class="text-primary me-2">분석결과 상담 AI</strong>
-                        <span class="badge bg-success-subtle text-success">온라인</span>
+                        <strong class="text-primary me-2">
+                          <span data-lang="KOR">분석결과 상담 AI</span>
+                          <span data-lang="ENG" style="display: none;">Analysis Consultation AI</span>
+                          <span data-lang="ESP" style="display: none;">IA de Consulta de Análisis</span>
+                        </strong>
+                        <span class="badge bg-success-subtle text-success">
+                          <span data-lang="KOR">온라인</span>
+                          <span data-lang="ENG" style="display: none;">Online</span>
+                          <span data-lang="ESP" style="display: none;">En línea</span>
+                        </span>
                       </div>
-                      <p class="mb-0">안녕하세요! 🎯 방금 완료된 상권 분석 결과에 대해 궁금한 점이 있으시면 언제든 물어보세요.<br><br>
-                      <strong>상담 가능한 내용:</strong><br>
-                      • 📊 AI 생존 확률 해석<br>
-                      • 👥 인구 및 고객층 분석<br>
-                      • 🏪 경쟁업체 현황<br>
-                      • 💰 수익성 전망<br>
-                      • 🚀 창업 전략 조언</p>
+                      <p class="mb-0">
+                        <span data-lang="KOR">안녕하세요! 🎯 방금 완료된 상권 분석 결과에 대해 궁금한 점이 있으시면 언제든 물어보세요.<br><br>
+                        <strong>상담 가능한 내용:</strong><br>
+                        • 📊 AI 생존 확률 해석<br>
+                        • 👥 인구 및 고객층 분석<br>
+                        • 🏪 경쟁업체 현황<br>
+                        • 💰 수익성 전망<br>
+                        • 🚀 창업 전략 조언</span>
+                        <span data-lang="ENG" style="display: none;">Hello! 🎯 If you have any questions about the commercial analysis results just completed, please feel free to ask anytime.<br><br>
+                        <strong>Available consultation topics:</strong><br>
+                        • 📊 AI survival probability interpretation<br>
+                        • 👥 Population and customer analysis<br>
+                        • 🏪 Competitor status<br>
+                        • 💰 Profitability outlook<br>
+                        • 🚀 Business strategy advice</span>
+                        <span data-lang="ESP" style="display: none;">¡Hola! 🎯 Si tiene alguna pregunta sobre los resultados del análisis comercial recién completado, no dude en preguntar en cualquier momento.<br><br>
+                        <strong>Temas de consulta disponibles:</strong><br>
+                        • 📊 Interpretación de probabilidad de supervivencia IA<br>
+                        • 👥 Análisis de población y clientes<br>
+                        • 🏪 Estado de competidores<br>
+                        • 💰 Perspectiva de rentabilidad<br>
+                        • 🚀 Consejos de estrategia empresarial</span>
+                      </p>
                     </div>
                   </div>
                 </div>
               </div>
 
               <!-- 입력 영역 -->
-              <div class="mt-auto">
+                              <div class="mt-auto">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                   <small class="text-muted">
                     <i class="bi bi-shield-check me-1"></i>
-                    현재 분석 세션 결과를 기반으로 답변
+                    <span data-lang="KOR">현재 분석 세션 결과를 기반으로 답변</span>
+                    <span data-lang="ENG" style="display: none;">Answers based on current analysis session results</span>
+                    <span data-lang="ESP" style="display: none;">Respuestas basadas en resultados de la sesión de análisis actual</span>
                   </small>
                   <button class="btn btn-sm btn-outline-secondary" onclick="openChatbotPIP()" title="확대 보기">
                     <i class="bi bi-arrows-fullscreen"></i>
@@ -977,7 +1160,7 @@
                 </div>
                 
                 <div class="input-group">
-                  <input type="text" id="chatInput" class="form-control" placeholder="분석 결과에 대해 궁금한 점을 물어보세요..." disabled>
+                  <input type="text" id="chatInput" class="form-control" disabled>
                   <button class="btn btn-primary" id="chatSendBtn" type="button" disabled>
                     <i class="bi bi-send-fill"></i>
                   </button>
@@ -985,7 +1168,9 @@
                 <div id="chatConnectionStatus" class="mt-2" style="display: none;">
                   <small class="text-primary">
                     <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-                    AI 연결 중...
+                    <span data-lang="KOR">AI 연결 중...</span>
+                    <span data-lang="ENG" style="display: none;">Connecting to AI...</span>
+                    <span data-lang="ESP" style="display: none;">Conectando a IA...</span>
                   </small>
                 </div>
               </div>
@@ -1040,46 +1225,97 @@
           <div id="previewContent" style="display: none; background: white; padding: 30px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: 'Nanum Gothic', Arial, sans-serif;">
             <!-- 헤더 -->
             <div class="text-center mb-4" style="border-bottom: 3px solid #1e3a8a; padding-bottom: 20px;">
-              <h2 class="text-primary mb-1" style="font-weight: 800; font-size: 24px;" id="previewReportTitle">AI 상권분석 보고서</h2>
-              <p class="text-muted mb-0" style="font-size: 14px;" id="previewReportSubtitle">인공지능 기반 상업지구 분석 결과</p>
+              <h2 class="text-primary mb-1" style="font-weight: 800; font-size: 24px;" id="previewReportTitle">
+                <span data-lang="KOR">AI 상권분석 보고서</span>
+                <span data-lang="ENG" style="display: none;">AI Commercial Area Analysis Report</span>
+                <span data-lang="ESP" style="display: none;">Informe de Análisis de Área Comercial IA</span>
+              </h2>
+              <p class="text-muted mb-0" style="font-size: 14px;" id="previewReportSubtitle">
+                <span data-lang="KOR">인공지능 기반 상업지구 분석 결과</span>
+                <span data-lang="ENG" style="display: none;">AI-Based Commercial Area Analysis Results</span>
+                <span data-lang="ESP" style="display: none;">Resultados del Análisis de Área Comercial Basado en IA</span>
+              </p>
             </div>
             
             <!-- 기본 정보 -->
             <div class="mb-4" style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #1e3a8a;">
-              <h5 class="text-primary mb-3"><i class="bi bi-geo-alt me-2"></i>분석 대상 정보</h5>
+              <h5 class="text-primary mb-3">
+                <i class="bi bi-geo-alt me-2"></i>
+                <span data-lang="KOR">분석 대상 정보</span>
+                <span data-lang="ENG" style="display: none;">Analysis Target Information</span>
+                <span data-lang="ESP" style="display: none;">Información del Objetivo de Análisis</span>
+              </h5>
               <div class="row">
                 <div class="col-md-6">
-                  <p><strong>주소:</strong> <span id="previewAddr">-</span></p>
-                  <p><strong>업종:</strong> <span id="previewBizType">-</span></p>
+                  <p><strong>
+                    <span data-lang="KOR">주소:</span>
+                    <span data-lang="ENG" style="display: none;">Address:</span>
+                    <span data-lang="ESP" style="display: none;">Dirección:</span>
+                  </strong> <span id="previewAddr">-</span></p>
+                  <p><strong>
+                    <span data-lang="KOR">업종:</span>
+                    <span data-lang="ENG" style="display: none;">Business Type:</span>
+                    <span data-lang="ESP" style="display: none;">Tipo de Negocio:</span>
+                  </strong> <span id="previewBizType">-</span></p>
                 </div>
                 <div class="col-md-6">
-                  <p><strong>면적:</strong> <span id="previewAreaSize">-</span>㎡</p>
-                  <p><strong>분석일시:</strong> <span id="previewAnalysisDate">-</span></p>
+                  <p><strong>
+                    <span data-lang="KOR">면적:</span>
+                    <span data-lang="ENG" style="display: none;">Area:</span>
+                    <span data-lang="ESP" style="display: none;">Área:</span>
+                  </strong> <span id="previewAreaSize">-</span>㎡</p>
+                  <p><strong>
+                    <span data-lang="KOR">분석일시:</span>
+                    <span data-lang="ENG" style="display: none;">Analysis Date:</span>
+                    <span data-lang="ESP" style="display: none;">Fecha de Análisis:</span>
+                  </strong> <span id="previewAnalysisDate">-</span></p>
                 </div>
               </div>
             </div>
             
             <!-- AI 생존 확률 -->
             <div class="mb-4" style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;">
-              <h5 class="text-success mb-3"><i class="bi bi-robot me-2"></i>AI 생존 확률</h5>
+              <h5 class="text-success mb-3">
+                <i class="bi bi-robot me-2"></i>
+                <span data-lang="KOR">AI 생존 확률</span>
+                <span data-lang="ENG" style="display: none;">AI Survival Probability</span>
+                <span data-lang="ESP" style="display: none;">Probabilidad de Supervivencia IA</span>
+              </h5>
               <div class="display-4 mb-3 text-primary" id="previewSurvivalRate" style="font-weight: 800;">-%</div>
               <div class="progress mb-3" style="height: 20px;">
                 <div class="progress-bar" id="previewSurvivalProgressBar" role="progressbar" style="width: 0%"></div>
               </div>
-              <p class="text-muted mb-0" id="previewSurvivalComment">분석 중...</p>
+              <p class="text-muted mb-0" id="previewSurvivalComment">
+                <span data-lang="KOR">분석 중...</span>
+                <span data-lang="ENG" style="display: none;">Analyzing...</span>
+                <span data-lang="ESP" style="display: none;">Analizando...</span>
+              </p>
             </div>
             
             <!-- 핵심 지표 -->
             <div class="mb-4">
-              <h5 class="text-primary border-bottom border-primary pb-2 mb-3"><i class="bi bi-speedometer me-2"></i>핵심 지표</h5>
+              <h5 class="text-primary border-bottom border-primary pb-2 mb-3">
+                <i class="bi bi-speedometer me-2"></i>
+                <span data-lang="KOR">핵심 지표</span>
+                <span data-lang="ENG" style="display: none;">Key Indicators</span>
+                <span data-lang="ESP" style="display: none;">Indicadores Clave</span>
+              </h5>
               <div class="row">
                 <div class="col-md-3">
                   <div class="card border-info h-100 text-center">
                     <div class="card-body">
                       <i class="bi bi-people text-info mb-2" style="font-size: 2rem;"></i>
-                      <h6 class="card-title">생활인구</h6>
+                      <h6 class="card-title">
+                        <span data-lang="KOR">생활인구</span>
+                        <span data-lang="ENG" style="display: none;">Residential Pop.</span>
+                        <span data-lang="ESP" style="display: none;">Pob. Residente</span>
+                      </h6>
                       <p class="card-text fw-bold text-primary" id="previewLifePopulation">-</p>
-                      <small class="text-muted">300m 반경</small>
+                      <small class="text-muted">
+                        <span data-lang="KOR">300m 반경</span>
+                        <span data-lang="ENG" style="display: none;">300m radius</span>
+                        <span data-lang="ESP" style="display: none;">radio 300m</span>
+                      </small>
                     </div>
                   </div>
                 </div>
@@ -1087,9 +1323,17 @@
                   <div class="card border-warning h-100 text-center">
                     <div class="card-body">
                       <i class="bi bi-briefcase text-warning mb-2" style="font-size: 2rem;"></i>
-                      <h6 class="card-title">직장인구</h6>
+                      <h6 class="card-title">
+                        <span data-lang="KOR">직장인구</span>
+                        <span data-lang="ENG" style="display: none;">Working Pop.</span>
+                        <span data-lang="ESP" style="display: none;">Pob. Trabajadora</span>
+                      </h6>
                       <p class="card-text fw-bold text-primary" id="previewWorkingPopulation">-</p>
-                      <small class="text-muted">300m 반경</small>
+                      <small class="text-muted">
+                        <span data-lang="KOR">300m 반경</span>
+                        <span data-lang="ENG" style="display: none;">300m radius</span>
+                        <span data-lang="ESP" style="display: none;">radio 300m</span>
+                      </small>
                     </div>
                   </div>
                 </div>
@@ -1097,9 +1341,17 @@
                   <div class="card border-danger h-100 text-center">
                     <div class="card-body">
                       <i class="bi bi-shop text-danger mb-2" style="font-size: 2rem;"></i>
-                      <h6 class="card-title">경쟁업체</h6>
+                      <h6 class="card-title">
+                        <span data-lang="KOR">경쟁업체</span>
+                        <span data-lang="ENG" style="display: none;">Competitors</span>
+                        <span data-lang="ESP" style="display: none;">Competidores</span>
+                      </h6>
                       <p class="card-text fw-bold text-primary" id="previewCompetitors">-</p>
-                      <small class="text-muted">300m 반경</small>
+                      <small class="text-muted">
+                        <span data-lang="KOR">300m 반경</span>
+                        <span data-lang="ENG" style="display: none;">300m radius</span>
+                        <span data-lang="ESP" style="display: none;">radio 300m</span>
+                      </small>
                     </div>
                   </div>
                 </div>
@@ -1107,9 +1359,17 @@
                   <div class="card border-secondary h-100 text-center">
                     <div class="card-body">
                       <i class="bi bi-currency-dollar text-secondary mb-2" style="font-size: 2rem;"></i>
-                      <h6 class="card-title">공시지가</h6>
+                      <h6 class="card-title">
+                        <span data-lang="KOR">공시지가</span>
+                        <span data-lang="ENG" style="display: none;">Land Price</span>
+                        <span data-lang="ESP" style="display: none;">Precio del Terreno</span>
+                      </h6>
                       <p class="card-text fw-bold text-primary" id="previewLandPrice">-</p>
-                      <small class="text-muted">총 공시지가</small>
+                      <small class="text-muted">
+                        <span data-lang="KOR">총 공시지가</span>
+                        <span data-lang="ENG" style="display: none;">Total Public Land Price</span>
+                        <span data-lang="ESP" style="display: none;">Precio Total del Terreno Público</span>
+                      </small>
                     </div>
                   </div>
                 </div>
@@ -1118,23 +1378,40 @@
             
             <!-- 경쟁강도 분석 -->
             <div class="mb-4">
-              <h5 class="text-primary border-bottom border-primary pb-2 mb-3"><i class="bi bi-shop me-2"></i>경쟁강도 분석</h5>
+              <h5 class="text-primary border-bottom border-primary pb-2 mb-3">
+                <i class="bi bi-shop me-2"></i>
+                <span data-lang="KOR">경쟁강도 분석</span>
+                <span data-lang="ENG" style="display: none;">Competition Analysis</span>
+                <span data-lang="ESP" style="display: none;">Análisis de Competencia</span>
+              </h5>
               <div class="row">
                 <div class="col-md-6">
                   <div class="card h-100">
                     <div class="card-body">
-                      <h6 class="card-title">경쟁업체 현황</h6>
+                      <h6 class="card-title">
+                        <span data-lang="KOR">경쟁업체 현황</span>
+                        <span data-lang="ENG" style="display: none;">Competitor Status</span>
+                        <span data-lang="ESP" style="display: none;">Estado de la Competencia</span>
+                      </h6>
                       <div class="row g-2 text-center">
                         <div class="col-6">
                           <div class="p-2 border rounded">
                             <div class="h5 text-danger" id="previewCompetitorCount">-</div>
-                            <small class="text-muted">동일업종</small>
+                            <small class="text-muted">
+                              <span data-lang="KOR">동일업종</span>
+                              <span data-lang="ENG" style="display: none;">Same Industry</span>
+                              <span data-lang="ESP" style="display: none;">Misma Industria</span>
+                            </small>
                           </div>
                         </div>
                         <div class="col-6">
                           <div class="p-2 border rounded">
                             <div class="h5 text-warning" id="previewAdjacentBiz">-</div>
-                            <small class="text-muted">인접업체</small>
+                            <small class="text-muted">
+                              <span data-lang="KOR">인접업체</span>
+                              <span data-lang="ENG" style="display: none;">Adjacent Businesses</span>
+                              <span data-lang="ESP" style="display: none;">Negocios Adyacentes</span>
+                            </small>
                           </div>
                         </div>
                       </div>
@@ -1144,12 +1421,20 @@
                 <div class="col-md-6">
                   <div class="card h-100">
                     <div class="card-body">
-                      <h6 class="card-title">경쟁 강도</h6>
+                      <h6 class="card-title">
+                        <span data-lang="KOR">경쟁 강도</span>
+                        <span data-lang="ENG" style="display: none;">Competition Intensity</span>
+                        <span data-lang="ESP" style="display: none;">Intensidad de Competencia</span>
+                      </h6>
                       <div class="progress mb-2" style="height: 30px;">
-                                                 <div id="previewCompetitionBar" class="progress-bar" style="width: 0%;"></div>
+                        <div id="previewCompetitionBar" class="progress-bar" style="width: 0%;"></div>
                       </div>
                       <div class="text-center">
-                        <span id="previewCompetitionLevel" class="badge fs-6">분석중...</span>
+                        <span id="previewCompetitionLevel" class="badge fs-6">
+                          <span data-lang="KOR">분석중...</span>
+                          <span data-lang="ENG" style="display: none;">Analyzing...</span>
+                          <span data-lang="ESP" style="display: none;">Analizando...</span>
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -1159,15 +1444,28 @@
 
             <!-- 외국인 분석 -->
             <div class="mb-4">
-              <h5 class="text-primary border-bottom border-primary pb-2 mb-3"><i class="bi bi-globe me-2"></i>외국인 분석</h5>
+              <h5 class="text-primary border-bottom border-primary pb-2 mb-3">
+                <i class="bi bi-globe me-2"></i>
+                <span data-lang="KOR">외국인 분석</span>
+                <span data-lang="ENG" style="display: none;">Foreigner Analysis</span>
+                <span data-lang="ESP" style="display: none;">Análisis de Extranjeros</span>
+              </h5>
               <div class="row g-3 text-center">
                 <div class="col-md-4">
                   <div class="card h-100">
                     <div class="card-body">
                       <i class="bi bi-airplane text-primary mb-2" style="font-size: 1.5rem;"></i>
-                      <h6>단기체류 외국인</h6>
+                      <h6>
+                        <span data-lang="KOR">단기체류 외국인</span>
+                        <span data-lang="ENG" style="display: none;">Short-term Foreigners</span>
+                        <span data-lang="ESP" style="display: none;">Extranjeros de Corta Estancia</span>
+                      </h6>
                       <div class="h5 text-primary" id="previewTempForeign">-</div>
-                      <small class="text-muted">1000m 반경</small>
+                      <small class="text-muted">
+                        <span data-lang="KOR">1000m 반경</span>
+                        <span data-lang="ENG" style="display: none;">1000m radius</span>
+                        <span data-lang="ESP" style="display: none;">radio de 1000m</span>
+                      </small>
                     </div>
                   </div>
                 </div>
@@ -1175,9 +1473,17 @@
                   <div class="card h-100">
                     <div class="card-body">
                       <i class="bi bi-house text-success mb-2" style="font-size: 1.5rem;"></i>
-                      <h6>장기체류 외국인</h6>
+                      <h6>
+                        <span data-lang="KOR">장기체류 외국인</span>
+                        <span data-lang="ENG" style="display: none;">Long-term Foreigners</span>
+                        <span data-lang="ESP" style="display: none;">Extranjeros de Larga Estancia</span>
+                      </h6>
                       <div class="h5 text-success" id="previewLongForeign">-</div>
-                      <small class="text-muted">300m 반경</small>
+                      <small class="text-muted">
+                        <span data-lang="KOR">300m 반경</span>
+                        <span data-lang="ENG" style="display: none;">300m radius</span>
+                        <span data-lang="ESP" style="display: none;">radio de 300m</span>
+                      </small>
                     </div>
                   </div>
                 </div>
@@ -1185,9 +1491,17 @@
                   <div class="card h-100">
                     <div class="card-body">
                       <i class="bi bi-flag text-warning mb-2" style="font-size: 1.5rem;"></i>
-                      <h6>중국인 비율</h6>
+                      <h6>
+                        <span data-lang="KOR">중국인 비율</span>
+                        <span data-lang="ENG" style="display: none;">Chinese Ratio</span>
+                        <span data-lang="ESP" style="display: none;">Proporción China</span>
+                      </h6>
                       <div class="h5 text-warning" id="previewChinaRatio">-</div>
-                      <small class="text-muted">1000m 반경</small>
+                      <small class="text-muted">
+                        <span data-lang="KOR">1000m 반경</span>
+                        <span data-lang="ENG" style="display: none;">1000m radius</span>
+                        <span data-lang="ESP" style="display: none;">radio de 1000m</span>
+                      </small>
                     </div>
                   </div>
                 </div>
@@ -1353,20 +1667,35 @@
             <!-- 보고서 하단 -->
             <div class="text-center text-muted" style="border-top: 1px solid #dee2e6; padding-top: 20px;">
               <small>
-                본 보고서는 AI 기반 상권분석 시스템에 의해 생성되었습니다.<br>
-                분석 기준일: <span id="previewReportGeneratedDate"></span>
+                <span data-lang="KOR">본 보고서는 AI 기반 상권분석 시스템에 의해 생성되었습니다.<br>
+                분석 기준일:</span>
+                <span data-lang="ENG" style="display: none;">This report was generated by an AI-based commercial area analysis system.<br>
+                Analysis Date:</span>
+                <span data-lang="ESP" style="display: none;">Este informe fue generado por un sistema de análisis de área comercial basado en IA.<br>
+                Fecha de Análisis:</span>
+                <span id="previewReportGeneratedDate"></span>
               </small>
             </div>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <span data-lang="KOR">닫기</span>
+            <span data-lang="ENG" style="display: none;">Close</span>
+            <span data-lang="ESP" style="display: none;">Cerrar</span>
+          </button>
           <div class="btn-group">
             <button type="button" class="btn btn-primary" id="previewDownloadPdfBtn" onclick="downloadPreviewPDF()" style="display: none;">
-              <i class="bi bi-download me-2"></i>고품질 PDF (이미지)
+              <i class="bi bi-download me-2"></i>
+              <span data-lang="KOR">고품질 PDF (이미지)</span>
+              <span data-lang="ENG" style="display: none;">High Quality PDF (Image)</span>
+              <span data-lang="ESP" style="display: none;">PDF de Alta Calidad (Imagen)</span>
             </button>
             <button type="button" class="btn btn-outline-primary" id="previewDownloadLightPdfBtn" onclick="downloadPreviewLightweightPDF()" style="display: none;">
-              <i class="bi bi-file-text me-2"></i>경량 PDF (텍스트)
+              <i class="bi bi-file-text me-2"></i>
+              <span data-lang="KOR">경량 PDF (텍스트)</span>
+              <span data-lang="ENG" style="display: none;">Lightweight PDF (Text)</span>
+              <span data-lang="ESP" style="display: none;">PDF Ligero (Texto)</span>
             </button>
           </div>
         </div>

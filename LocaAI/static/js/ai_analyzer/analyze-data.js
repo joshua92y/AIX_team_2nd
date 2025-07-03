@@ -62,7 +62,7 @@ const i18nTexts = {
   }
 };
 
-// 현재 언어는 analyze-i18n.js에서 관리
+// 현재 언어는 analyze-i18n.js의 AI_ANALYZER_I18N에서 통합 관리
 
 // 업종 이름 가져오기 (ID 기반)
 function getBusinessTypeName(id, lang = 'kor') {
@@ -72,8 +72,11 @@ function getBusinessTypeName(id, lang = 'kor') {
 
 // 업종 이름 번역 (한국어명 기반) - 강화된 버전
 function translateBusinessType(koreanName, lang = 'kor') {
+  console.log(`🔄 [analyze-data.js] 업종명 번역 시도: "${koreanName}" → ${lang}`);
+  
   // 언어가 한국어이거나 지정되지 않은 경우 원본 반환
   if (!lang || lang === 'ko' || lang === 'kor') {
+    console.log(`✅ [analyze-data.js] 한국어 요청, 원본 반환: ${koreanName}`);
     return koreanName;
   }
   
@@ -84,7 +87,7 @@ function translateBusinessType(koreanName, lang = 'kor') {
   );
   
   if (isAlreadyTranslated) {
-
+    console.log(`⚠️ 이미 번역된 텍스트, 그대로 반환: ${koreanName}`);
     return koreanName;
   }
   
@@ -115,10 +118,12 @@ function translateBusinessType(koreanName, lang = 'kor') {
     for (const variation of nameVariations) {
       const businessType = businessTypes.find(type => type.kor === variation);
       if (businessType) {
+        console.log(`✅ 영어 번역 성공: "${koreanName}" → "${businessType.eng}"`);
         return businessType.eng;
       }
     }
     
+    console.log(`❌ 영어 번역 실패: "${koreanName}" (매칭되는 업종 없음)`);
     return koreanName;
   }
   
@@ -127,102 +132,22 @@ function translateBusinessType(koreanName, lang = 'kor') {
     for (const variation of nameVariations) {
       const businessType = businessTypes.find(type => type.kor === variation);
       if (businessType) {
+        console.log(`✅ 스페인어 번역 성공: "${koreanName}" → "${businessType.esp}"`);
         return businessType.esp;
       }
     }
     
+    console.log(`❌ 스페인어 번역 실패: "${koreanName}" (매칭되는 업종 없음)`);
     return koreanName;
   }
   
   // 매칭되지 않는 언어의 경우 원본 반환
+  console.log(`⚠️ 지원하지 않는 언어: ${lang}, 원본 반환: ${koreanName}`);
   return koreanName;
 }
 
-// 현재 언어 감지 함수 (안전한 버전)
-  function getCurrentAILanguage() {
-  
-  // 1. data-lang 속성 확인 (최우선 - 가장 정확)
-  const visibleLangElements = document.querySelectorAll('[data-lang]:not([style*="display: none"])');
-  if (visibleLangElements.length > 0) {
-    const langCode = visibleLangElements[0].getAttribute('data-lang');
-    const langMap = { 'KOR': 'ko', 'ENG': 'en', 'ESP': 'es' };
-    const detectedLang = langMap[langCode] || 'ko';
-          return detectedLang;
-  }
-  
-  // 2. URL 기반 언어 감지 시도
-  const currentUrl1 = window.location.href;
-  if (currentUrl1.includes('/es/') || currentUrl1.includes('lang=es')) {
-    return 'es';
-  }
-  if (currentUrl1.includes('/en/') || currentUrl1.includes('lang=en')) {
-    return 'en';
-  }
-  
-  // 3. 보이는 요소의 텍스트만 검사 (숨겨진 요소 제외)
-  const visibleElements = Array.from(document.querySelectorAll('*')).filter(el => {
-    const style = window.getComputedStyle(el);
-    return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
-  });
-  
-  const visibleText = visibleElements.map(el => {
-    // 자식 노드가 아닌 직접 텍스트만 가져오기
-    return Array.from(el.childNodes)
-      .filter(node => node.nodeType === Node.TEXT_NODE)
-      .map(node => node.textContent.trim())
-      .join(' ');
-  }).join(' ');
-  
-
-  
-  // 스페인어 키워드 확인 (보이는 텍스트만)
-  const spanishKeywords1 = ['Tipos de Negocio', 'Recomendados por IA', 'Solo Miembros', 'Supervivencia', 'Ranking de Supervivencia'];
-  const foundSpanish1 = spanishKeywords1.some(keyword => visibleText.includes(keyword));
-  if (foundSpanish1) {
-    return 'es';
-  }
-  
-  // 영어 키워드 확인 (보이는 텍스트만)
-  const englishKeywords1 = ['Business Type', 'AI Recommended', 'Members Only', 'Survival Rate', 'Ranking'];
-  const foundEnglish1 = englishKeywords1.some(keyword => visibleText.includes(keyword));
-  if (foundEnglish1) {
-    return 'en';
-  }
-  
-  // 4. 네비게이션의 언어 설정 확인 (main.js의 전역 함수 사용)
-  if (typeof window.getCurrentLanguage === 'function') {
-    const navLang = window.getCurrentLanguage();
-    if (navLang) {
-      return navLang;
-    }
-  }
-  
-  // 5. 전역 currentLanguage 변수 확인
-  if (typeof currentLanguage !== 'undefined') {
-    return currentLanguage;
-  }
-  
-  // 6. 로컬스토리지에서 확인
-  const savedLang = localStorage.getItem('preferred_language');
-  if (savedLang) {
-    return savedLang;
-  }
-  
-  // 7. HTML lang 속성에서 확인
-  const htmlLang = document.documentElement.lang;
-  if (htmlLang) {
-    const langMap2 = {
-      'ko': 'ko', 'ko-kr': 'ko',
-      'en': 'en', 'en-us': 'en',
-      'es': 'es', 'es-es': 'es'
-    };
-    const mappedLang = langMap2[htmlLang.toLowerCase()] || 'ko';
-    return mappedLang;
-  }
-  
-  // 8. 기본값
-  return 'ko';
-}
+// getCurrentAILanguage 함수 제거됨 - AI_ANALYZER_I18N에서 통합 관리
+// 이 함수는 더 이상 여기서 정의하지 않고 analyze-i18n.js에서 전역으로 노출됨
 
 // 업종 select 옵션 생성 (언어별)
 function generateBusinessOptions(lang = 'kor') {
@@ -259,7 +184,7 @@ function initializeBusinessSelect() {
 window.businessTypes = businessTypes;
 window.getBusinessTypeName = getBusinessTypeName;
 window.translateBusinessType = translateBusinessType;
-window.getCurrentAILanguage = getCurrentAILanguage;
+// getCurrentAILanguage는 analyze-i18n.js에서 노출됨
 window.generateBusinessOptions = generateBusinessOptions;
 window.updateBusinessSelect = updateBusinessSelect;
 window.initializeBusinessSelect = initializeBusinessSelect;

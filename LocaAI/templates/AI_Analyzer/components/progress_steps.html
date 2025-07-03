@@ -2,12 +2,18 @@
 <div id="analysisProgress" class="analysis-progress" style="display: none;">
   <h5 class="text-center mb-4">
     <i class="bi bi-cpu me-2"></i>
-    AI가 상권을 분석하고 있습니다...
+    <span data-lang="KOR">AI가 상권을 분석하고 있습니다...</span>
+    <span data-lang="ENG" style="display: none;">AI is analyzing the commercial area...</span>
+    <span data-lang="ESP" style="display: none;">La IA está analizando el área comercial...</span>
   </h5>
   
   <div class="overall-progress">
     <div class="d-flex justify-content-between mb-2">
-      <span class="text-muted">전체 진행률</span>
+      <span class="text-muted">
+        <span data-lang="KOR">전체 진행률</span>
+        <span data-lang="ENG" style="display: none;">Overall Progress</span>
+        <span data-lang="ESP" style="display: none;">Progreso General</span>
+      </span>
       <span id="overallPercent">0%</span>
     </div>
     <div class="progress">
@@ -21,8 +27,16 @@
         <i class="bi bi-people"></i>
       </div>
       <div class="progress-text">
-        <div class="progress-title">생활인구 분석</div>
-        <div class="progress-detail">300m/1000m 반경 내 생활인구 및 연령대 분석</div>
+        <div class="progress-title">
+          <span data-lang="KOR">생활인구 분석</span>
+          <span data-lang="ENG" style="display: none;">Resident Population Analysis</span>
+          <span data-lang="ESP" style="display: none;">Análisis de Población Residente</span>
+        </div>
+        <div class="progress-detail">
+          <span data-lang="KOR">300m/1000m 반경 내 생활인구 및 연령대 분석</span>
+          <span data-lang="ENG" style="display: none;">Analysis of residential population and age groups within 300m/1000m radius</span>
+          <span data-lang="ESP" style="display: none;">Análisis de población residente y grupos de edad dentro del radio de 300m/1000m</span>
+        </div>
       </div>
     </div>
     
@@ -31,8 +45,16 @@
         <i class="bi bi-briefcase"></i>
       </div>
       <div class="progress-text">
-        <div class="progress-title">직장인구 분석</div>
-        <div class="progress-detail">300m 반경 내 직장인구 분포 분석</div>
+        <div class="progress-title">
+          <span data-lang="KOR">직장인구 분석</span>
+          <span data-lang="ENG" style="display: none;">Working Population Analysis</span>
+          <span data-lang="ESP" style="display: none;">Análisis de Población Trabajadora</span>
+        </div>
+        <div class="progress-detail">
+          <span data-lang="KOR">300m 반경 내 직장인구 분포 분석</span>
+          <span data-lang="ENG" style="display: none;">Analysis of working population distribution within 300m radius</span>
+          <span data-lang="ESP" style="display: none;">Análisis de distribución de población trabajadora dentro del radio de 300m</span>
+        </div>
       </div>
     </div>
     
@@ -41,8 +63,16 @@
         <i class="bi bi-globe"></i>
       </div>
       <div class="progress-text">
-        <div class="progress-title">외국인 분석</div>
-        <div class="progress-detail">단기/장기체류외국인 분포 분석</div>
+        <div class="progress-title">
+          <span data-lang="KOR">외국인 분석</span>
+          <span data-lang="ENG" style="display: none;">Foreigner Analysis</span>
+          <span data-lang="ESP" style="display: none;">Análisis de Extranjeros</span>
+        </div>
+        <div class="progress-detail">
+          <span data-lang="KOR">단기/장기체류외국인 분포 분석</span>
+          <span data-lang="ENG" style="display: none;">Analysis of short-term/long-term foreign resident distribution</span>
+          <span data-lang="ESP" style="display: none;">Análisis de distribución de residentes extranjeros de corta/larga duración</span>
+        </div>
       </div>
     </div>
     
@@ -51,8 +81,16 @@
         <i class="bi bi-building"></i>
       </div>
       <div class="progress-text">
-        <div class="progress-title">주변시설 분석</div>
-        <div class="progress-detail">학교, 공공건물 등 유동인구 시설 분석</div>
+        <div class="progress-title">
+          <span data-lang="KOR">주변시설 분석</span>
+          <span data-lang="ENG" style="display: none;">Surrounding Facilities Analysis</span>
+          <span data-lang="ESP" style="display: none;">Análisis de Instalaciones Circundantes</span>
+        </div>
+        <div class="progress-detail">
+          <span data-lang="KOR">학교, 공공건물 등 유동인구 시설 분석</span>
+          <span data-lang="ENG" style="display: none;">Analysis of foot traffic facilities such as schools and public buildings</span>
+          <span data-lang="ESP" style="display: none;">Análisis de instalaciones de tráfico peatonal como escuelas y edificios públicos</span>
+        </div>
       </div>
     </div>
     
@@ -61,8 +99,16 @@
         <i class="bi bi-shop"></i>
       </div>
       <div class="progress-text">
-        <div class="progress-title">경쟁업체 분석</div>
-        <div class="progress-detail">동일업종 및 요식업체 경쟁강도 분석</div>
+        <div class="progress-title">
+          <span data-lang="KOR">경쟁업체 분석</span>
+          <span data-lang="ENG" style="display: none;">Competitor Analysis</span>
+          <span data-lang="ESP" style="display: none;">Análisis de Competidores</span>
+        </div>
+        <div class="progress-detail">
+          <span data-lang="KOR">동일업종 및 요식업체 경쟁강도 분석</span>
+          <span data-lang="ENG" style="display: none;">Competition intensity analysis of same industry and restaurants</span>
+          <span data-lang="ESP" style="display: none;">Análisis de intensidad de competencia de la misma industria y restaurantes</span>
+        </div>
       </div>
     </div>
     
@@ -71,8 +117,16 @@
         <i class="bi bi-currency-dollar"></i>
       </div>
       <div class="progress-text">
-        <div class="progress-title">공시지가 분석</div>
-        <div class="progress-detail">토지가치 및 임대료 추정</div>
+        <div class="progress-title">
+          <span data-lang="KOR">공시지가 분석</span>
+          <span data-lang="ENG" style="display: none;">Public Land Price Analysis</span>
+          <span data-lang="ESP" style="display: none;">Análisis de Precio de Terreno Público</span>
+        </div>
+        <div class="progress-detail">
+          <span data-lang="KOR">토지가치 및 임대료 추정</span>
+          <span data-lang="ENG" style="display: none;">Land value and rental estimation</span>
+          <span data-lang="ESP" style="display: none;">Valor del terreno y estimación de alquiler</span>
+        </div>
       </div>
     </div>
     
@@ -81,8 +135,16 @@
         <i class="bi bi-cpu"></i>
       </div>
       <div class="progress-text">
-        <div class="progress-title">AI 예측 분석</div>
-        <div class="progress-detail">머신러닝 모델을 통한 생존확률 예측</div>
+        <div class="progress-title">
+          <span data-lang="KOR">AI 예측 분석</span>
+          <span data-lang="ENG" style="display: none;">AI Prediction Analysis</span>
+          <span data-lang="ESP" style="display: none;">Análisis de Predicción de IA</span>
+        </div>
+        <div class="progress-detail">
+          <span data-lang="KOR">머신러닝 모델을 통한 생존확률 예측</span>
+          <span data-lang="ENG" style="display: none;">Survival probability prediction through machine learning model</span>
+          <span data-lang="ESP" style="display: none;">Predicción de probabilidad de supervivencia a través del modelo de aprendizaje automático</span>
+        </div>
       </div>
     </div>
     
@@ -91,8 +153,16 @@
         <i class="bi bi-check-lg"></i>
       </div>
       <div class="progress-text">
-        <div class="progress-title">분석 완료</div>
-        <div class="progress-detail">결과를 표시하고 있습니다...</div>
+        <div class="progress-title">
+          <span data-lang="KOR">분석 완료</span>
+          <span data-lang="ENG" style="display: none;">Analysis Complete</span>
+          <span data-lang="ESP" style="display: none;">Análisis Completo</span>
+        </div>
+        <div class="progress-detail">
+          <span data-lang="KOR">결과를 표시하고 있습니다...</span>
+          <span data-lang="ENG" style="display: none;">Displaying results...</span>
+          <span data-lang="ESP" style="display: none;">Mostrando resultados...</span>
+        </div>
       </div>
     </div>
   </div>

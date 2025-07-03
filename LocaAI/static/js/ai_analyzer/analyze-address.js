@@ -5,79 +5,129 @@
 
 // Daum 우편번호 서비스 PIP 팝업 열기
 function openAddressSearch() {
-  // 현재 언어 확인
-  const currentLang = typeof currentLanguage !== 'undefined' ? currentLanguage : 'ko';
+  // 현재 언어 확인 (AI_ANALYZER_I18N 시스템 사용)
+  const currentLang = window.getCurrentAILanguage ? window.getCurrentAILanguage() : 
+                      (typeof currentLanguage !== 'undefined' ? currentLanguage : 'ko');
   const useEnglish = currentLang === 'en' || currentLang === 'es';
   
+  console.log(`🔍 주소 검색 언어 설정: ${currentLang}, 영문 사용: ${useEnglish}`);
+  
   new daum.Postcode({
-    // 언어 설정: 영어/스페인어일 때 영문 주소 우선 제공
-    language: useEnglish ? 'en' : 'ko',
+    // 🌐 언어별 검색 최적화 설정
+    ...(useEnglish && {
+      // 영어/스페인어 환경에서는 영문 주소 우선 검색
+      // Daum API가 지원하는 경우 언어 설정 추가
+      language: 'en'
+    }),
     oncomplete: function(data) {
       // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드
-      
-      // 디버깅: 전달받은 데이터 구조 확인
-      
+      console.log('📍 Daum 주소 API 응답 데이터:', data);
       
       // 서울특별시 지역 검증
       const isSeoulAddress = isSeoulArea(data);
       
-      
       if (!isSeoulAddress) {
         // 서울 이외 지역 선택 시 경고 메시지 표시
-        
         showNonSeoulWarning(data);
         return; // 주소 설정을 차단
       }
       
-      
-      
-      // 기본 주소 정보
+      // 🎯 언어에 따른 주소 형식 처리 (Daum API 최신 속성 활용)
       let fullAddr = '';
       let extraAddr = '';
       
-      // 언어에 따라 주소 형식 결정
       if (useEnglish) {
-        // 영어/스페인어: 영문 주소 사용
-        if (data.userSelectedType === 'R') { // 도로명 주소
-          fullAddr = data.roadAddressEnglish || data.roadAddress;
-        } else { // 지번 주소
-          fullAddr = data.jibunAddressEnglish || data.jibunAddress;
+        // === 영어/스페인어: 영문 주소 우선 사용 ===
+        console.log('🌐 영문 주소 처리 시작');
+        
+        if (data.userSelectedType === 'R') {
+          // 도로명 주소: 영문 도로명 주소 우선
+          fullAddr = data.roadAddressEnglish || data.addressEnglish || data.roadAddress;
+          console.log(`📍 영문 도로명 주소: ${fullAddr}`);
+        } else {
+          // 지번 주소: 영문 지번 주소 우선  
+          fullAddr = data.jibunAddressEnglish || data.addressEnglish || data.jibunAddress;
+          console.log(`📍 영문 지번 주소: ${fullAddr}`);
         }
         
-        // 영문 건물명이 있고, 공동주택일 경우 추가
-        if(data.buildingNameEnglish && data.apartment === 'Y'){
-          extraAddr += (extraAddr !== '' ? ', ' + data.buildingNameEnglish : data.buildingNameEnglish);
-        } else if(data.buildingName !== '' && data.apartment === 'Y'){
-          extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+        // 🏢 영문 건물명 및 참고항목 처리
+        let englishExtra = '';
+        
+        // 1. 영문 건물명 (공동주택)
+        if (data.buildingNameEnglish && data.apartment === 'Y') {
+          englishExtra += data.buildingNameEnglish;
+        } else if (data.buildingName && data.apartment === 'Y') {
+          // 영문 건물명이 없으면 한글 건물명 사용
+          englishExtra += data.buildingName;
         }
+        
+        // 2. 영문 참고항목 (법정동, 공동주택명 등)
+        if (data.extraAddressEnglish) {
+          englishExtra += (englishExtra !== '' ? ', ' + data.extraAddressEnglish : data.extraAddressEnglish);
+        } else if (data.extraAddress) {
+          // 영문 참고항목이 없으면 한글 참고항목 사용
+          englishExtra += (englishExtra !== '' ? ', ' + data.extraAddress : data.extraAddress);
+        }
+        
+        // 3. 영문 법정동명
+        if (data.bname && !englishExtra.includes(data.bname)) {
+          englishExtra += (englishExtra !== '' ? ', ' + data.bname : data.bname);
+        }
+        
+        extraAddr = englishExtra;
+        console.log(`🏢 영문 참고항목: ${extraAddr}`);
+        
       } else {
-        // 한국어: 기본 한글 주소 사용
-        if (data.userSelectedType === 'R') { // 도로명 주소
+        // === 한국어: 기본 한글 주소 사용 ===
+        console.log('🇰🇷 한글 주소 처리 시작');
+        
+        if (data.userSelectedType === 'R') {
+          // 도로명 주소
           fullAddr = data.roadAddress;
-        } else { // 지번 주소
-          fullAddr = data.jibunAddress;
+          console.log(`📍 한글 도로명 주소: ${fullAddr}`);
+        } else {
+          // 지번 주소
+          fullAddr = data.jibunAddress;  
+          console.log(`📍 한글 지번 주소: ${fullAddr}`);
         }
         
-        // 건물명이 있고, 공동주택일 경우 추가한다.
-        if(data.buildingName !== '' && data.apartment === 'Y'){
-          extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+        // 🏢 한글 건물명 및 참고항목 처리
+        let koreanExtra = '';
+        
+        // 1. 건물명 (공동주택)
+        if (data.buildingName && data.apartment === 'Y') {
+          koreanExtra += data.buildingName;
         }
+        
+        // 2. 참고항목 (법정동, 공동주택명 등)
+        if (data.extraAddress) {
+          koreanExtra += (koreanExtra !== '' ? ', ' + data.extraAddress : data.extraAddress);
+        }
+        
+        // 3. 법정동명
+        if (data.bname && !koreanExtra.includes(data.bname)) {
+          koreanExtra += (koreanExtra !== '' ? ', ' + data.bname : data.bname);
+        }
+        
+        extraAddr = koreanExtra;
+        console.log(`🏢 한글 참고항목: ${extraAddr}`);
       }
       
-      // 표시할 참고항목이 있을 경우, 괄호까지 추가한 최종 문자열을 만든다.
-      if(extraAddr !== ''){
-        extraAddr = ' (' + extraAddr + ')';
+      // 🎯 최종 주소 조합
+      let finalAddress = fullAddr;
+      if (extraAddr !== '') {
+        finalAddress += ' (' + extraAddr + ')';
       }
       
-      // 최종 주소
-      const finalAddress = fullAddr + extraAddr;
+      console.log(`✅ 최종 주소: ${finalAddress}`);
       
       // 주소를 입력하고 팝업 즉시 닫기 (UX 개선)
       document.getElementById('address').value = finalAddress;
       closeAddressSearch();
       
-      // 좌표 변환 API 호출 (원본 한글 주소 사용)
+      // 🗺️ 좌표 변환 API 호출 (항상 원본 한글 주소 사용 - 정확한 좌표를 위해)
       const addressForCoords = data.userSelectedType === 'R' ? data.roadAddress : data.jibunAddress;
+      console.log(`🗺️ 좌표 변환용 주소: ${addressForCoords}`);
       convertAddressToCoordinates(addressForCoords);
     },
     onclose: function(state) {
@@ -170,25 +220,54 @@ function convertAddressToCoordinates(address) {
         document.getElementById('x_coord').value = response.x_coord.toFixed(2);
         document.getElementById('y_coord').value = response.y_coord.toFixed(2);
         
-        // 성공 메시지를 다국어로 표시
-        const currentLang = typeof currentLanguage !== 'undefined' ? currentLanguage : 'ko';
-        const texts = typeof LANGUAGE_TEXTS !== 'undefined' ? LANGUAGE_TEXTS[currentLang] : null;
-        const successMsg = texts ? texts.addressAndCoordinatesSet : "주소와 좌표가 설정되었습니다.";
+        console.log(`✅ 좌표 변환 성공:`, {
+          latitude: response.latitude.toFixed(6),
+          longitude: response.longitude.toFixed(6),
+          x_coord: response.x_coord.toFixed(2),
+          y_coord: response.y_coord.toFixed(2)
+        });
+        
+        // 성공 메시지를 다국어로 표시 (AI_ANALYZER_I18N 시스템 사용)
+        const currentLang = window.getCurrentAILanguage ? window.getCurrentAILanguage() : 'ko';
+        let successMsg = "주소와 좌표가 설정되었습니다.";
+        
+        if (currentLang === 'en') {
+          successMsg = "Address and coordinates have been set.";
+        } else if (currentLang === 'es') {
+          successMsg = "La dirección y las coordenadas han sido establecidas.";
+        }
+        
         showSuccessMessage(successMsg); // utils.js의 함수 사용
       } else {
-        console.error("좌표 변환 실패:", response.error);
-        const currentLang = typeof currentLanguage !== 'undefined' ? currentLanguage : 'ko';
-        const texts = typeof LANGUAGE_TEXTS !== 'undefined' ? LANGUAGE_TEXTS[currentLang] : null;
-        const errorMsg = texts ? texts.coordinateConversionFailed : "좌표 변환에 실패했습니다";
+        console.error("❌ 좌표 변환 실패:", response.error);
+        
+        // 오류 메시지를 다국어로 표시 (AI_ANALYZER_I18N 시스템 사용)
+        const currentLang = window.getCurrentAILanguage ? window.getCurrentAILanguage() : 'ko';
+        let errorMsg = "좌표 변환에 실패했습니다";
+        
+        if (currentLang === 'en') {
+          errorMsg = "Failed to convert coordinates";
+        } else if (currentLang === 'es') {
+          errorMsg = "Error al convertir coordenadas";
+        }
+        
         alert(errorMsg + ": " + response.error);
       }
     },
     error: function(xhr, status, error) {
-      console.error("좌표 변환 요청 실패:", error);
-      console.error("응답:", xhr.responseText);
-      const currentLang = typeof currentLanguage !== 'undefined' ? currentLanguage : 'ko';
-      const texts = typeof LANGUAGE_TEXTS !== 'undefined' ? LANGUAGE_TEXTS[currentLang] : null;
-      const errorMsg = texts ? texts.coordinateRequestFailed : "좌표 변환 요청에 실패했습니다.";
+      console.error("❌ 좌표 변환 요청 실패:", error);
+      console.error("📋 응답:", xhr.responseText);
+      
+      // 오류 메시지를 다국어로 표시 (AI_ANALYZER_I18N 시스템 사용)
+      const currentLang = window.getCurrentAILanguage ? window.getCurrentAILanguage() : 'ko';
+      let errorMsg = "좌표 변환 요청에 실패했습니다.";
+      
+      if (currentLang === 'en') {
+        errorMsg = "Failed to request coordinate conversion.";
+      } else if (currentLang === 'es') {
+        errorMsg = "Error en la solicitud de conversión de coordenadas.";
+      }
+      
       alert(errorMsg);
     }
   });
@@ -262,12 +341,24 @@ function isSeoulArea(data) {
 
 // 서울 이외 지역 선택 시 경고 메시지 표시
 function showNonSeoulWarning(data) {
-  const currentLang = typeof currentLanguage !== 'undefined' ? currentLanguage : 'ko';
-  const texts = typeof LANGUAGE_TEXTS !== 'undefined' ? LANGUAGE_TEXTS[currentLang] : null;
+  // 현재 언어 확인 (AI_ANALYZER_I18N 시스템 사용)
+  const currentLang = window.getCurrentAILanguage ? window.getCurrentAILanguage() : 
+                      (typeof currentLanguage !== 'undefined' ? currentLanguage : 'ko');
   
-  // 선택된 주소 정보
-  const selectedAddress = data.userSelectedType === 'R' ? data.roadAddress : data.jibunAddress;
-  const sido = data.sido || '';
+  // 선택된 주소 정보 (언어에 맞는 주소 형식 사용)
+  let selectedAddress, sido;
+  
+  if (currentLang === 'en' || currentLang === 'es') {
+    // 영문 주소 우선 사용
+    selectedAddress = (data.userSelectedType === 'R') ? 
+      (data.roadAddressEnglish || data.addressEnglish || data.roadAddress) : 
+      (data.jibunAddressEnglish || data.addressEnglish || data.jibunAddress);
+    sido = data.sido || '';
+  } else {
+    // 한글 주소 사용
+    selectedAddress = data.userSelectedType === 'R' ? data.roadAddress : data.jibunAddress;
+    sido = data.sido || '';
+  }
   
   // 다국어 메시지
   let title, message, confirmText;
@@ -285,6 +376,8 @@ function showNonSeoulWarning(data) {
     message = `죄송합니다. 이 서비스는 서울특별시 지역만 이용 가능합니다.\n\n선택하신 지역: ${sido}\n주소: ${selectedAddress}\n\n서울특별시 내 주소를 검색해 주세요.`;
     confirmText = '확인';
   }
+  
+  console.log(`⚠️ 서울 지역 제한 경고 (${currentLang}):`, { sido, selectedAddress });
   
   // 경고창을 닫은 후 다시 주소 검색 모달을 여는 콜백 함수
   const reopenAddressSearch = () => {
@@ -403,5 +496,45 @@ window.openAddressSearch = openAddressSearch;
 window.closeAddressSearch = closeAddressSearch;
 window.closeCustomAlert = closeCustomAlert;
 
+// 주소 입력 placeholder 다국어화
+function updateAddressPlaceholder() {
+  if (!window.AI_ANALYZER_I18N) return;
+  
+  const addressInput = document.getElementById('address');
+  const areaInput = document.getElementById('area');
+  
+  if (addressInput) {
+    const placeholderText = AI_ANALYZER_I18N.translate('주소를 검색하세요');
+    addressInput.placeholder = placeholderText;
+  }
+  
+  if (areaInput) {
+    const placeholderText = AI_ANALYZER_I18N.translate('면적을 입력해주세요 (㎡)');
+    areaInput.placeholder = placeholderText;
+  }
+}
+
 // DOM 로드 시 초기화
-document.addEventListener('DOMContentLoaded', initializeAddressSearch); 
+document.addEventListener('DOMContentLoaded', function() {
+  initializeAddressSearch();
+  updateAddressPlaceholder(); // placeholder 초기 설정
+  
+  // 언어 변경 감지 시 placeholder 업데이트
+  if (window.AI_ANALYZER_I18N) {
+    const originalHandleLanguageChange = window.AI_ANALYZER_I18N.handleLanguageChange.bind(window.AI_ANALYZER_I18N);
+    window.AI_ANALYZER_I18N.handleLanguageChange = function(newLanguage) {
+      originalHandleLanguageChange(newLanguage);
+      updateAddressPlaceholder(); // 언어 변경 시 placeholder 업데이트
+    };
+  }
+});
+
+// ===========================================
+// 🎯 주요 개선사항 (v2.0)
+// ===========================================
+// ✅ 다국어 지원: 영어/스페인어 환경에서 영문 주소 자동 제공
+// ✅ Daum API 최신 속성 활용: addressEnglish, extraAddressEnglish 등
+// ✅ AI_ANALYZER_I18N 시스템과 완전 연동
+// ✅ 정확한 좌표 변환: 항상 한글 주소로 좌표 변환 (정확성 보장)
+// ✅ 개선된 로깅: 디버깅 및 모니터링 강화
+// ✅ 사용자 경험 개선: 언어별 맞춤형 오류 메시지 
