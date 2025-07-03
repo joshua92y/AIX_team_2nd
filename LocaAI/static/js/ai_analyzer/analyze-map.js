@@ -9,6 +9,13 @@ let kakaoGeocoder = null;
 let currentMarker = null;
 let isMapInitialized = false;
 
+// 🔧 요청 관리 변수 추가
+let isProcessingClick = false;
+let currentAbortController = null;
+let clickDebounceTimeout = null;
+let lastClickTime = 0;
+const CLICK_DEBOUNCE_DELAY = 300; // 300ms 디바운스
+
 // 기본 좌표 (서울 시청)
 const DEFAULT_LAT = 37.5665;
 const DEFAULT_LNG = 126.9780;
@@ -74,17 +81,128 @@ function initializeKakaoMap() {
 }
 
 /**
- * 지도 클릭 이벤트 처리
+ * 지도 클릭 이벤트 처리 (개선된 버전)
  */
 function onMapClick(mouseEvent) {
   const latlng = mouseEvent.latLng;
+  const clickTime = Date.now();
+  
   console.log('🎯 지도 클릭:', latlng.getLat(), latlng.getLng());
+  
+  // 🔧 클릭 디바운싱 처리
+  if (clickTime - lastClickTime < CLICK_DEBOUNCE_DELAY) {
+    console.log('⚡ 클릭 디바운스 적용 - 무시됨');
+    return;
+  }
+  
+  lastClickTime = clickTime;
+  
+  // 🔧 진행 중인 요청이 있으면 취소
+  if (isProcessingClick) {
+    console.log('🔄 이전 요청 취소 중...');
+    cancelCurrentRequest();
+  }
+  
+  // 🔧 클릭 디바운스 타이머 설정
+  if (clickDebounceTimeout) {
+    clearTimeout(clickDebounceTimeout);
+  }
+  
+  clickDebounceTimeout = setTimeout(() => {
+    processMapClick(latlng);
+  }, CLICK_DEBOUNCE_DELAY);
+}
 
-  // 마커 추가/이동
+/**
+ * 지도 클릭 처리 실행
+ */
+function processMapClick(latlng) {
+  // 🔧 처리 상태 설정
+  isProcessingClick = true;
+  
+  // 로딩 인디케이터 표시
+  showLoadingIndicator();
+  
+  // 마커 추가/이동 (즉시 실행)
   addOrMoveMarker(latlng);
-
+  
   // 좌표를 주소로 변환
   convertCoordsToAddress(latlng);
+}
+
+/**
+ * 현재 진행 중인 요청 취소
+ */
+function cancelCurrentRequest() {
+  if (currentAbortController) {
+    currentAbortController.abort();
+    currentAbortController = null;
+  }
+  
+  if (clickDebounceTimeout) {
+    clearTimeout(clickDebounceTimeout);
+    clickDebounceTimeout = null;
+  }
+  
+  isProcessingClick = false;
+  hideLoadingIndicator();
+}
+
+/**
+ * 로딩 인디케이터 표시
+ */
+function showLoadingIndicator() {
+  // 기존 로딩 인디케이터 제거
+  const existingIndicator = document.querySelector('.map-loading-indicator');
+  if (existingIndicator) {
+    existingIndicator.remove();
+  }
+  
+  const indicator = document.createElement('div');
+  indicator.className = 'map-loading-indicator';
+  indicator.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 15px 25px;
+    border-radius: 8px;
+    z-index: 10000;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  `;
+  
+  const currentLang = window.getCurrentAILanguage ? window.getCurrentAILanguage() : 'ko';
+  let loadingText = '좌표 정보 처리 중...';
+  
+  if (currentLang === 'en') {
+    loadingText = 'Processing coordinates...';
+  } else if (currentLang === 'es') {
+    loadingText = 'Procesando coordenadas...';
+  }
+  
+  indicator.innerHTML = `
+    <div class="spinner-border spinner-border-sm" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    ${loadingText}
+  `;
+  
+  document.body.appendChild(indicator);
+}
+
+/**
+ * 로딩 인디케이터 숨김
+ */
+function hideLoadingIndicator() {
+  const indicator = document.querySelector('.map-loading-indicator');
+  if (indicator) {
+    indicator.remove();
+  }
 }
 
 /**
@@ -112,7 +230,7 @@ function addOrMoveMarker(latlng) {
 }
 
 /**
- * 좌표를 주소로 변환 (REST API 직접 호출)
+ * 좌표를 주소로 변환 (개선된 버전 - 중복 요청 방지)
  */
 function convertCoordsToAddress(latlng) {
   const lat = latlng.getLat();
@@ -125,17 +243,22 @@ function convertCoordsToAddress(latlng) {
   if (!restApiKey) {
     console.error('❌ KAKAO_REST_API_KEY가 설정되지 않았습니다.');
     showMapError('API 키 설정 오류');
+    finishProcessing();
     return;
   }
 
   const url = `https://dapi.kakao.com/v2/local/geo/coord2address.json?x=${lng}&y=${lat}`;
+  
+  // 🔧 AbortController로 요청 취소 가능하도록 설정
+  currentAbortController = new AbortController();
   
   fetch(url, {
     method: 'GET',
     headers: {
       'Authorization': `KakaoAK ${restApiKey}`,
       'Content-Type': 'application/json'
-    }
+    },
+    signal: currentAbortController.signal
   })
   .then(response => {
     if (!response.ok) {
@@ -163,17 +286,28 @@ function convertCoordsToAddress(latlng) {
         console.warn('⚠️ 서울시 외 지역이 선택되었습니다:', displayAddress);
         showSeoulAreaWarning();
         resetMapToSeoul();
+        finishProcessing();
         return;
       }
 
       // 주소 필드 업데이트
       updateAddressField(displayAddress, lat, lng);
+      
+      // 🔧 성공 시 처리 완료
+      finishProcessing();
     } else {
       console.warn('⚠️ 주소 정보를 찾을 수 없습니다.');
       showMapError('해당 위치의 주소를 찾을 수 없습니다.');
+      finishProcessing();
     }
   })
   .catch(error => {
+    // 🔧 요청이 취소된 경우는 오류로 처리하지 않음
+    if (error.name === 'AbortError') {
+      console.log('🔄 요청이 취소되었습니다.');
+      return;
+    }
+    
     console.error('❌ 좌표 → 주소 변환 실패:', error);
     
     // 에러 메시지 분석
@@ -186,7 +320,19 @@ function convertCoordsToAddress(latlng) {
     } else {
       showMapError('주소 변환 중 오류 발생');
     }
+    
+    finishProcessing();
   });
+}
+
+/**
+ * 처리 완료 시 상태 초기화
+ */
+function finishProcessing() {
+  isProcessingClick = false;
+  currentAbortController = null;
+  hideLoadingIndicator();
+  console.log('✅ 지도 클릭 처리 완료');
 }
 
 /**
@@ -279,9 +425,15 @@ function isSeoulAreaForMap(addressOrData, lat = null, lng = null) {
 }
 
 /**
- * 서울 외 지역 선택 시 경고 메시지 표시
+ * 서울 외 지역 선택 시 경고 메시지 표시 (개선된 버전)
  */
 function showSeoulAreaWarning() {
+  // 🔧 기존 경고 메시지 제거 (중복 방지)
+  const existingWarning = document.querySelector('.seoul-area-warning');
+  if (existingWarning) {
+    existingWarning.remove();
+  }
+  
   const currentLang = window.getCurrentAILanguage ? window.getCurrentAILanguage() : 'ko';
   
   let title, message;
@@ -297,21 +449,29 @@ function showSeoulAreaWarning() {
     message = '서울특별시만 지원됩니다. 지도가 서울 중심으로 이동합니다.';
   }
   
-  // 토스트 알림 표시 (Bootstrap Toast 사용)
-  showToastNotification(title, message, 'warning');
+  // 토스트 알림 표시 (개선된 버전)
+  showToastNotification(title, message, 'warning', 'seoul-area-warning');
   
   // 콘솔에도 출력
   console.warn(`${title}: ${message}`);
 }
 
 /**
- * 토스트 알림 표시
+ * 토스트 알림 표시 (개선된 버전 - 중복 방지)
  */
-function showToastNotification(title, message, type = 'info') {
-  // 기존 토스트 제거
+function showToastNotification(title, message, type = 'info', customClass = '') {
+  // 🔧 기존 토스트 제거 (중복 방지)
   const existingToast = document.querySelector('.map-toast');
   if (existingToast) {
     existingToast.remove();
+  }
+  
+  // 같은 타입의 토스트 제거
+  if (customClass) {
+    const existingCustomToast = document.querySelector(`.${customClass}`);
+    if (existingCustomToast) {
+      existingCustomToast.remove();
+    }
   }
   
   // 토스트 타입별 스타일
@@ -323,10 +483,11 @@ function showToastNotification(title, message, type = 'info') {
   };
   
   const toastClass = typeClasses[type] || typeClasses.info;
+  const additionalClass = customClass ? ` ${customClass}` : '';
   
   // 토스트 HTML 생성
   const toastHtml = `
-    <div class="toast map-toast position-fixed ${toastClass}" 
+    <div class="toast map-toast${additionalClass} position-fixed ${toastClass}" 
          style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;" 
          role="alert" aria-live="assertive" aria-atomic="true">
       <div class="toast-header">
@@ -484,29 +645,44 @@ function convertToEPSG5186AndUpdate(lat, lng) {
 }
 
 /**
- * 주소 검색 후 지도 업데이트 (REST API 사용)
+ * 주소 검색 후 지도 업데이트 (개선된 버전 - 중복 요청 방지)
  */
 function searchAddressAndUpdateMap(address) {
   if (!address) return;
 
   console.log('🔍 주소 검색:', address);
+  
+  // 🔧 진행 중인 요청이 있으면 취소
+  if (isProcessingClick) {
+    console.log('🔄 진행 중인 요청 취소 후 주소 검색 시작');
+    cancelCurrentRequest();
+  }
+  
+  // 처리 상태 설정
+  isProcessingClick = true;
+  showLoadingIndicator();
 
   // REST API 직접 호출
   const restApiKey = window.KAKAO_REST_API_KEY;
   if (!restApiKey) {
     console.error('❌ KAKAO_REST_API_KEY가 설정되지 않았습니다.');
     showMapError('API 키 설정 오류');
+    finishProcessing();
     return;
   }
 
   const url = `https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(address)}`;
+  
+  // 🔧 AbortController로 요청 취소 가능하도록 설정
+  currentAbortController = new AbortController();
   
   fetch(url, {
     method: 'GET',
     headers: {
       'Authorization': `KakaoAK ${restApiKey}`,
       'Content-Type': 'application/json'
-    }
+    },
+    signal: currentAbortController.signal
   })
   .then(response => {
     if (!response.ok) {
@@ -543,16 +719,27 @@ function searchAddressAndUpdateMap(address) {
 
         // 좌표 필드 업데이트
         updateCoordinateFields(lat, lng);
+        
+        // 처리 완료
+        finishProcessing();
       } else {
         console.warn('⚠️ 좌표 정보를 찾을 수 없습니다.');
         showMapError('좌표 정보를 찾을 수 없습니다.');
+        finishProcessing();
       }
     } else {
       console.warn('⚠️ 주소 검색 결과가 없습니다.');
       showMapError('주소를 찾을 수 없습니다.');
+      finishProcessing();
     }
   })
   .catch(error => {
+    // 🔧 요청이 취소된 경우는 오류로 처리하지 않음
+    if (error.name === 'AbortError') {
+      console.log('🔄 주소 검색 요청이 취소되었습니다.');
+      return;
+    }
+    
     console.error('❌ 주소 → 좌표 변환 실패:', error);
     
     // 에러 메시지 분석
@@ -565,6 +752,8 @@ function searchAddressAndUpdateMap(address) {
     } else {
       showMapError('주소 검색 중 오류 발생');
     }
+    
+    finishProcessing();
   });
 }
 
@@ -589,7 +778,7 @@ function onAddressSelected(data) {
 }
 
 /**
- * 지도 오류 표시
+ * 지도 오류 표시 (개선된 버전)
  */
 function showMapError(message) {
   const mapContainer = document.getElementById('kakao-map');
@@ -602,20 +791,15 @@ function showMapError(message) {
       es: 'Error al cargar el mapa. Inténtalo de nuevo.'
     };
 
-    mapContainer.innerHTML = `
-      <div class="d-flex align-items-center justify-content-center h-100 bg-light">
-        <div class="text-center">
-          <i class="bi bi-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
-          <p class="mt-2 text-muted">${errorMessages[currentLang] || errorMessages.ko}</p>
-          <button class="btn btn-primary btn-sm" onclick="retryMapInitialization()">
-            ${currentLang === 'en' ? 'Retry' : currentLang === 'es' ? 'Reintentar' : '다시 시도'}
-          </button>
-          <button class="btn btn-secondary btn-sm ms-2" onclick="debugKakaoMap()">
-            ${currentLang === 'en' ? 'Debug Info' : currentLang === 'es' ? 'Info de Debug' : '디버그 정보'}
-          </button>
-        </div>
-      </div>
-    `;
+    // 🔧 오류 메시지를 토스트로 표시 (지도 컨테이너 대신)
+    showToastNotification(
+      currentLang === 'en' ? 'Map Error' : currentLang === 'es' ? 'Error del Mapa' : '지도 오류',
+      errorMessages[currentLang] || errorMessages.ko,
+      'error'
+    );
+    
+    // 콘솔에도 출력
+    console.error(`지도 오류: ${message}`);
   }
 }
 
@@ -993,4 +1177,19 @@ function handleRestAPIError(error) {
 }
 
 console.log('✅ AI_Analyzer 카카오맵 모듈 로드 완료');
-console.log('💡 디버깅: 개발자 도구에서 debugKakaoMap() 함수를 실행하세요.'); 
+console.log('💡 디버깅: 개발자 도구에서 debugKakaoMap() 함수를 실행하세요.');
+
+/**
+ * 페이지 언로드 시 정리
+ */
+window.addEventListener('beforeunload', function() {
+  // 진행 중인 요청 취소
+  if (isProcessingClick) {
+    cancelCurrentRequest();
+  }
+  
+  // 디바운스 타이머 정리
+  if (clickDebounceTimeout) {
+    clearTimeout(clickDebounceTimeout);
+  }
+}); 
