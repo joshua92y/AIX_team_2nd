@@ -980,6 +980,20 @@ const AI_ANALYZER_I18N = {
     
     // Placeholder 업데이트
     this.updatePlaceholders();
+    
+    // 사이드바 채팅 언어 업데이트
+    if (typeof window.updateSidebarChatLanguage === 'function') {
+      setTimeout(() => {
+        window.updateSidebarChatLanguage();
+      }, 100);
+    }
+    
+    // PIP 채팅 언어 업데이트
+    if (typeof window.updatePIPModalLanguage === 'function') {
+      setTimeout(() => {
+        window.updatePIPModalLanguage();
+      }, 100);
+    }
   },
   
   // Placeholder 업데이트

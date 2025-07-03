@@ -227,6 +227,14 @@ function convertAddressToCoordinates(address) {
           y_coord: response.y_coord.toFixed(2)
         });
         
+        // 🗺️ 지도 업데이트 (analyze-map.js와 연동)
+        if (typeof window.searchAddressAndUpdateMap === 'function') {
+          window.searchAddressAndUpdateMap(address);
+          console.log('🗺️ 지도 위치 업데이트 완료');
+        } else {
+          console.log('⚠️ 지도 업데이트 함수를 찾을 수 없음 (지도가 아직 로드되지 않았을 수 있음)');
+        }
+        
         // 성공 메시지를 다국어로 표시 (AI_ANALYZER_I18N 시스템 사용)
         const currentLang = window.getCurrentAILanguage ? window.getCurrentAILanguage() : 'ko';
         let successMsg = "주소와 좌표가 설정되었습니다.";

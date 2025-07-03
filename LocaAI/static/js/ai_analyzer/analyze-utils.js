@@ -132,4 +132,16 @@ function fillPIPExampleQuestion(question) {
     pipChatInput.value = question;
     pipChatInput.focus();
   }
-} 
+}
+
+// ===========================================
+// 윈도우 전역 함수 할당 (다른 모듈에서 사용)
+// ===========================================
+window.escapeHtml = escapeHtml;
+window.formatLandValue = formatLandValue;
+window.getSurvivalBarClass = getSurvivalBarClass;
+window.getCsrfToken = getCsrfToken;
+window.showSuccessMessage = showSuccessMessage;
+window.getBusinessTypeName = getBusinessTypeName;
+window.fillExampleQuestion = fillExampleQuestion;
+window.fillPIPExampleQuestion = fillPIPExampleQuestion; 

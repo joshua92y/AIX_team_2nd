@@ -444,8 +444,11 @@ function prepareBotMessage() {
   // 사이드바에 스트리밍 메시지 생성
   createStreamingBotMessage('chatMessages', 'currentBotMessage', 'botMessageContent', false);
   
-  // PIP에 스트리밍 메시지 생성
-  createStreamingBotMessage('pipChatMessages', 'currentPIPBotMessage', 'pipBotMessageContent', true);
+  // PIP 모달이 열려있을 때만 PIP 스트리밍 메시지 생성
+  const pipModal = document.getElementById('chatbotPIPModal');
+  if (pipModal && pipModal.style.display !== 'none') {
+    createStreamingBotMessage('pipChatMessages', 'currentPIPBotMessage', 'pipBotMessageContent', true);
+  }
 }
 
 // 미완료된 봇 메시지 제거
@@ -461,14 +464,17 @@ function removeIncompleteBotMessages() {
     }
   }
   
-  // PIP의 미완료 메시지 제거
-  const existingPIPBotMessage = document.getElementById('currentPIPBotMessage');
-  if (existingPIPBotMessage) {
-    const pipContentElement = existingPIPBotMessage.querySelector('#pipBotMessageContent');
-    if (pipContentElement && isIncompleteMessage(pipContentElement)) {
-      existingPIPBotMessage.remove();
-    } else {
-      existingPIPBotMessage.removeAttribute('id');
+  // PIP 모달이 열려있을 때만 PIP 미완료 메시지 제거
+  const pipModal = document.getElementById('chatbotPIPModal');
+  if (pipModal && pipModal.style.display !== 'none') {
+    const existingPIPBotMessage = document.getElementById('currentPIPBotMessage');
+    if (existingPIPBotMessage) {
+      const pipContentElement = existingPIPBotMessage.querySelector('#pipBotMessageContent');
+      if (pipContentElement && isIncompleteMessage(pipContentElement)) {
+        existingPIPBotMessage.remove();
+      } else {
+        existingPIPBotMessage.removeAttribute('id');
+      }
     }
   }
 }
@@ -483,7 +489,7 @@ function isIncompleteMessage(contentElement) {
   );
 }
 
-// 스트리밍 봇 메시지 생성
+// 스트리밍 봇 메시지 생성 (data-lang 방식으로 다국어 지원)
 function createStreamingBotMessage(containerId, messageId, contentId, isPIP = false) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -491,26 +497,6 @@ function createStreamingBotMessage(containerId, messageId, contentId, isPIP = fa
   const messageDiv = document.createElement('div');
   messageDiv.className = isPIP ? 'd-flex align-items-start mb-4' : 'd-flex align-items-start mb-3';
   messageDiv.id = messageId;
-  
-  const currentLang = getCurrentLanguage();
-  
-  const titles = {
-    ko: '분석결과 상담 AI',
-    en: 'Analysis Consultation AI', 
-    es: 'IA de Consulta de Análisis'
-  };
-  
-  const status = {
-    ko: '온라인',
-    en: 'Online',
-    es: 'En línea'
-  };
-  
-  const loadingMessages = {
-    ko: '답변을 생성하고 있습니다...',
-    en: 'Generating response...',
-    es: 'Generando respuesta...'
-  };
   
   if (isPIP) {
     messageDiv.innerHTML = `
@@ -520,12 +506,22 @@ function createStreamingBotMessage(containerId, messageId, contentId, isPIP = fa
       <div class="flex-grow-1">
         <div class="bg-white rounded-3 p-4 shadow-sm border">
           <div class="d-flex align-items-center mb-2">
-            <strong class="text-primary me-2">${titles[currentLang] || titles.ko}</strong>
-            <span class="badge bg-success-subtle text-success">${status[currentLang] || status.ko}</span>
+            <strong class="text-primary me-2">
+              <span data-lang="KOR">분석결과 상담 AI</span>
+              <span data-lang="ENG" style="display: none;">Analysis Consultation AI</span>
+              <span data-lang="ESP" style="display: none;">IA de Consulta de Análisis</span>
+            </strong>
+            <span class="badge bg-success-subtle text-success">
+              <span data-lang="KOR">온라인</span>
+              <span data-lang="ENG" style="display: none;">Online</span>
+              <span data-lang="ESP" style="display: none;">En línea</span>
+            </span>
           </div>
           <div id="${contentId}">
             <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-            ${loadingMessages[currentLang] || loadingMessages.ko}
+            <span data-lang="KOR">답변을 생성하고 있습니다...</span>
+            <span data-lang="ENG" style="display: none;">Generating response...</span>
+            <span data-lang="ESP" style="display: none;">Generando respuesta...</span>
           </div>
         </div>
       </div>
@@ -537,10 +533,16 @@ function createStreamingBotMessage(containerId, messageId, contentId, isPIP = fa
       </div>
       <div class="flex-grow-1">
         <div class="bg-white rounded p-2 shadow-sm">
-          <small class="text-muted d-block mb-1">${titles[currentLang] || titles.ko}</small>
+          <small class="text-muted d-block mb-1">
+            <span data-lang="KOR">분석결과 상담 AI</span>
+            <span data-lang="ENG" style="display: none;">Analysis Consultation AI</span>
+            <span data-lang="ESP" style="display: none;">IA de Consulta de Análisis</span>
+          </small>
           <p class="mb-0 small" id="${contentId}">
             <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-            ${loadingMessages[currentLang] || loadingMessages.ko}
+            <span data-lang="KOR">답변을 생성하고 있습니다...</span>
+            <span data-lang="ENG" style="display: none;">Generating response...</span>
+            <span data-lang="ESP" style="display: none;">Generando respuesta...</span>
           </p>
         </div>
       </div>
@@ -549,6 +551,13 @@ function createStreamingBotMessage(containerId, messageId, contentId, isPIP = fa
   
   container.appendChild(messageDiv);
   container.scrollTop = container.scrollHeight;
+  
+  // 새로 생성된 메시지에 언어 업데이트 적용
+  if (isPIP) {
+    updatePIPModalLanguage();
+  } else {
+    updateSidebarChatLanguage();
+  }
 }
 
 // 통합 스트리밍 텍스트 추가 - 두 창 완전 동기화
@@ -573,8 +582,11 @@ function appendToCurrentBotMessage(chunk) {
   // 사이드바 업데이트
   updateStreamingContent('botMessageContent', parsedContent, isFirstChunk, 'chatMessages');
   
-  // PIP 업데이트 (완전히 동일한 내용)
-  updateStreamingContent('pipBotMessageContent', parsedContent, isFirstChunk, 'pipChatMessages');
+  // PIP 모달이 열려있을 때만 PIP 업데이트
+  const pipModal = document.getElementById('chatbotPIPModal');
+  if (pipModal && pipModal.style.display !== 'none') {
+    updateStreamingContent('pipBotMessageContent', parsedContent, isFirstChunk, 'pipChatMessages');
+  }
 }
 
 // 개별 스트리밍 콘텐츠 업데이트
@@ -619,26 +631,33 @@ function finalizeBotMessage() {
   
   // 현재 스트리밍 메시지 정리
   const currentMessage = document.getElementById('currentBotMessage');
-  const currentPIPMessage = document.getElementById('currentPIPBotMessage');
   const mainContentElement = document.getElementById('botMessageContent');
-  const pipContentElement = document.getElementById('pipBotMessageContent');
   
   // 메시지 컨테이너와 콘텐츠 요소의 ID 제거 (히스토리로 남기지만 ID 충돌 방지)
   if (currentMessage) {
     currentMessage.removeAttribute('id');
     currentMessage.classList.add('chat-message'); // 히스토리 메시지로 표시
   }
-  if (currentPIPMessage) {
-    currentPIPMessage.removeAttribute('id');
-    currentPIPMessage.classList.add('chat-message'); // 히스토리 메시지로 표시
-  }
   
   // 콘텐츠 요소 ID도 제거하여 다음 메시지와 충돌 방지
   if (mainContentElement) {
     mainContentElement.removeAttribute('id');
   }
-  if (pipContentElement) {
-    pipContentElement.removeAttribute('id');
+  
+  // PIP 모달이 열려있을 때만 PIP 메시지 정리
+  const pipModal = document.getElementById('chatbotPIPModal');
+  if (pipModal && pipModal.style.display !== 'none') {
+    const currentPIPMessage = document.getElementById('currentPIPBotMessage');
+    const pipContentElement = document.getElementById('pipBotMessageContent');
+    
+    if (currentPIPMessage) {
+      currentPIPMessage.removeAttribute('id');
+      currentPIPMessage.classList.add('chat-message'); // 히스토리 메시지로 표시
+    }
+    
+    if (pipContentElement) {
+      pipContentElement.removeAttribute('id');
+    }
   }
   
   // 스트리밍 상태 초기화
@@ -646,6 +665,17 @@ function finalizeBotMessage() {
   currentBotMessageId = null;
   chatbotCurrentBotMessageText = '';
   pipCurrentBotMessageText = ''; // 호환성을 위해 유지
+  
+  // 메시지 완료 후 언어 업데이트
+  setTimeout(() => {
+    updateSidebarChatLanguage();
+    
+    // PIP 모달이 열려있으면 PIP도 업데이트
+    const pipModal = document.getElementById('chatbotPIPModal');
+    if (pipModal && pipModal.style.display !== 'none') {
+      updatePIPModalLanguage();
+    }
+  }, 50);
   
   // PIP 히스토리 업데이트
   setTimeout(() => {
@@ -655,17 +685,10 @@ function finalizeBotMessage() {
   }, 100);
 }
 
-// 봇 메시지 추가 (오류 등)
+// 봇 메시지 추가 (오류 등) - data-lang 방식으로 다국어 지원
 function addBotMessage(message) {
   const messagesContainer = document.getElementById('chatMessages');
   if (!messagesContainer) return;
-  
-  const currentLang = getCurrentLanguage();
-  const titles = {
-    ko: '분석결과 상담 AI',
-    en: 'Analysis Consultation AI', 
-    es: 'IA de Consulta de Análisis'
-  };
   
   const messageDiv = document.createElement('div');
   messageDiv.className = 'd-flex align-items-start mb-3';
@@ -675,13 +698,20 @@ function addBotMessage(message) {
     </div>
     <div class="flex-grow-1">
       <div class="bg-white rounded p-2 shadow-sm">
-        <small class="text-muted d-block mb-1">${titles[currentLang] || titles.ko}</small>
+        <small class="text-muted d-block mb-1">
+          <span data-lang="KOR">분석결과 상담 AI</span>
+          <span data-lang="ENG" style="display: none;">Analysis Consultation AI</span>
+          <span data-lang="ESP" style="display: none;">IA de Consulta de Análisis</span>
+        </small>
         <div class="mb-0 small">${marked.parse(message)}</div>
       </div>
     </div>
   `;
   messagesContainer.appendChild(messageDiv);
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  
+  // 새로 생성된 메시지에 언어 업데이트 적용
+  updateSidebarChatLanguage();
 }
 
 // PIP 추천 질문 입력 (기본 챗봇용)
@@ -782,46 +812,125 @@ function updatePIPModeDescription() {
     modeDescElement.appendChild(span);
   });
   
-  console.log(`📱 PIP 모드 설명 업데이트: ${mode} (${lang})`);
+  // console.log 제거하여 로그 스팸 방지
 }
 
 // PIP 모달의 다국어 요소 업데이트
 function updatePIPModalLanguage() {
+  // 순환 호출 방지
+  if (window.pipLanguageUpdateInProgress) {
+    return;
+  }
+  window.pipLanguageUpdateInProgress = true;
+  
+  try {
+    const lang = getCurrentLanguage();
+    
+    // 플레이스홀더 업데이트
+    const pipChatInput = document.getElementById('pipChatInput');
+    if (pipChatInput) {
+      const placeholders = {
+        ko: '분석 결과에 대해 궁금한 점을 물어보세요...',
+        en: 'Ask any questions about the analysis results...',
+        es: 'Haga cualquier pregunta sobre los resultados del análisis...'
+      };
+      pipChatInput.placeholder = placeholders[lang] || placeholders.ko;
+    }
+    
+    // PIP 모달과 채팅 메시지 영역의 모든 다국어 스팬 요소 업데이트
+    const modalLangElements = document.querySelectorAll('#chatbotPIPModal [data-lang]');
+    const chatLangElements = document.querySelectorAll('#pipChatMessages [data-lang]');
+    
+    // 모든 요소를 하나의 배열로 합치기
+    const allLangElements = [...modalLangElements, ...chatLangElements];
+    
+    let korCount = 0, engCount = 0, espCount = 0, hiddenCount = 0;
+    
+    allLangElements.forEach(element => {
+      const elementLang = element.getAttribute('data-lang').toLowerCase();
+      if (elementLang === 'kor' && lang === 'ko') {
+        element.style.display = '';
+        korCount++;
+      } else if (elementLang === 'eng' && lang === 'en') {
+        element.style.display = '';
+        engCount++;
+      } else if (elementLang === 'esp' && lang === 'es') {
+        element.style.display = '';
+        espCount++;
+      } else {
+        element.style.display = 'none';
+        hiddenCount++;
+      }
+    });
+    
+    console.log(`📱 언어 업데이트 결과 - 표시: KOR(${korCount}) ENG(${engCount}) ESP(${espCount}), 숨김: ${hiddenCount}`);
+    
+    // 현재 보여야 할 언어 코드로 강제 설정
+    const targetLangCode = lang === 'ko' ? 'KOR' : lang === 'en' ? 'ENG' : 'ESP';
+    const targetElements = document.querySelectorAll(`#chatbotPIPModal [data-lang="${targetLangCode}"], #pipChatMessages [data-lang="${targetLangCode}"]`);
+    targetElements.forEach(el => {
+      el.style.display = '';
+    });
+    
+    // 다른 언어들 숨기기
+    const otherLangCodes = ['KOR', 'ENG', 'ESP'].filter(code => code !== targetLangCode);
+    otherLangCodes.forEach(code => {
+      const elements = document.querySelectorAll(`#chatbotPIPModal [data-lang="${code}"], #pipChatMessages [data-lang="${code}"]`);
+      elements.forEach(el => {
+        el.style.display = 'none';
+      });
+    });
+    
+    console.log(`📱 PIP 모달 언어 업데이트 완료: ${lang} (${allLangElements.length}개 요소)`);
+  } finally {
+    // 플래그 해제
+    window.pipLanguageUpdateInProgress = false;
+  }
+}
+
+// 사이드바 채팅 언어 업데이트
+function updateSidebarChatLanguage() {
   const lang = getCurrentLanguage();
   
-  // 플레이스홀더 업데이트
-  const pipChatInput = document.getElementById('pipChatInput');
-  if (pipChatInput) {
-    const placeholders = {
-      ko: '분석 결과에 대해 궁금한 점을 물어보세요...',
-      en: 'Ask any questions about the analysis results...',
-      es: 'Haga cualquier pregunta sobre los resultados del análisis...'
-    };
-    pipChatInput.placeholder = placeholders[lang] || placeholders.ko;
-  }
+  // 사이드바 채팅 메시지 영역의 모든 다국어 스팬 요소 업데이트
+  const sidebarLangElements = document.querySelectorAll('#chatMessages [data-lang]');
   
-  // 모든 다국어 스팬 요소 업데이트
-  const langElements = document.querySelectorAll('#chatbotPIPModal [data-lang]');
-  langElements.forEach(element => {
+  let korCount = 0, engCount = 0, espCount = 0, hiddenCount = 0;
+  
+  sidebarLangElements.forEach(element => {
     const elementLang = element.getAttribute('data-lang').toLowerCase();
     if (elementLang === 'kor' && lang === 'ko') {
       element.style.display = '';
+      korCount++;
     } else if (elementLang === 'eng' && lang === 'en') {
       element.style.display = '';
+      engCount++;
     } else if (elementLang === 'esp' && lang === 'es') {
       element.style.display = '';
+      espCount++;
     } else {
       element.style.display = 'none';
+      hiddenCount++;
     }
   });
   
-  // 모드 설명 업데이트
-  updatePIPModeDescription();
+  console.log(`🎯 사이드바 언어 업데이트 - 표시: KOR(${korCount}) ENG(${engCount}) ESP(${espCount}), 숨김: ${hiddenCount}`);
   
-  // 분석 요약 업데이트 (다국어화 반영)
-  updatePIPAnalysisSummary();
+  // 현재 보여야 할 언어 코드로 강제 설정
+  const targetLangCode = lang === 'ko' ? 'KOR' : lang === 'en' ? 'ENG' : 'ESP';
+  const targetElements = document.querySelectorAll(`#chatMessages [data-lang="${targetLangCode}"]`);
+  targetElements.forEach(el => {
+    el.style.display = '';
+  });
   
-  console.log(`📱 PIP 모달 언어 업데이트 완료: ${lang}`);
+  // 다른 언어들 숨기기
+  const otherLangCodes = ['KOR', 'ENG', 'ESP'].filter(code => code !== targetLangCode);
+  otherLangCodes.forEach(code => {
+    const elements = document.querySelectorAll(`#chatMessages [data-lang="${code}"]`);
+    elements.forEach(el => {
+      el.style.display = 'none';
+    });
+  });
 }
 
 // ===========================================
@@ -856,12 +965,24 @@ function openChatbotPIP() {
   // DOM에 추가
   document.body.appendChild(pipModal);
   
-  // 기존 채팅 메시지 복사
+  // 기존 채팅 메시지 복사 또는 환영 메시지 생성
   const chatMessages = document.getElementById('chatMessages');
   const pipChatMessages = document.getElementById('pipChatMessages');
   if (chatMessages && pipChatMessages) {
-    pipChatMessages.innerHTML = chatMessages.innerHTML;
+    if (chatMessages.innerHTML.trim() === '') {
+      // 메시지가 없으면 환영 메시지 생성
+      pipChatMessages.innerHTML = createWelcomeMessageHTML();
+    } else {
+      // 기존 메시지 복사
+      pipChatMessages.innerHTML = chatMessages.innerHTML;
+    }
   }
+  
+  // 먼저 다국어 언어 업데이트
+  updatePIPModalLanguage();
+  
+  // 모드 설명 업데이트
+  updatePIPModeDescription();
   
   // 채팅 히스토리 업데이트
   updatePIPChatHistory();
@@ -872,11 +993,65 @@ function openChatbotPIP() {
   // PIP 입력 필드 상태 동기화
   syncPIPInputFields();
   
-  // 이벤트 리스너 추가
-  setupPIPEventListeners();
+  // 환영 메시지와 히스토리에도 언어 업데이트 적용
+  setTimeout(() => {
+    console.log('🌐 PIP 언어 강제 업데이트 시작:', getCurrentLanguage());
+    updatePIPModalLanguage();
+  }, 200);
   
-  // 다국어 언어 업데이트
-  updatePIPModalLanguage();
+  // 추가 언어 업데이트 (더 강력하게)
+  setTimeout(() => {
+    console.log('🌐 PIP 언어 재업데이트:', getCurrentLanguage());
+    updatePIPModalLanguage();
+  }, 500);
+  
+  // 이벤트 리스너 추가 (analyze-pip.js에서 처리)
+  if (typeof window.setupPIPEventListeners === 'function') {
+    window.setupPIPEventListeners();
+  }
+  
+  // PIP 모달 전용 이벤트 리스너 추가
+  const pipChatInput = document.getElementById('pipChatInput');
+  const pipChatSendBtn = document.getElementById('pipChatSendBtn');
+  const pipLlmMode = document.getElementById('pipLlmMode');
+  const pipRagMode = document.getElementById('pipRagMode');
+  
+  if (pipChatInput && !pipChatInput.hasAttribute('data-pip-listener')) {
+    pipChatInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        sendPIPMessage();
+      }
+    });
+    pipChatInput.setAttribute('data-pip-listener', 'true');
+  }
+  
+  if (pipChatSendBtn && !pipChatSendBtn.hasAttribute('data-pip-listener')) {
+    pipChatSendBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      sendPIPMessage();
+    });
+    pipChatSendBtn.setAttribute('data-pip-listener', 'true');
+  }
+  
+  // PIP 모드 변경 이벤트 리스너
+  if (pipLlmMode && !pipLlmMode.hasAttribute('data-pip-listener')) {
+    pipLlmMode.addEventListener('change', function() {
+      if (this.checked) {
+        updatePIPModeDescription();
+      }
+    });
+    pipLlmMode.setAttribute('data-pip-listener', 'true');
+  }
+  
+  if (pipRagMode && !pipRagMode.hasAttribute('data-pip-listener')) {
+    pipRagMode.addEventListener('change', function() {
+      if (this.checked) {
+        updatePIPModeDescription();
+      }
+    });
+    pipRagMode.setAttribute('data-pip-listener', 'true');
+  }
   
   // 스크롤을 맨 아래로
   setTimeout(() => {
@@ -1090,46 +1265,7 @@ function syncPIPInputFields() {
   }
 }
 
-// PIP 이벤트 리스너 설정
-function setupPIPEventListeners() {
-  const pipChatInput = document.getElementById('pipChatInput');
-  const pipChatSendBtn = document.getElementById('pipChatSendBtn');
-  const pipLlmMode = document.getElementById('pipLlmMode');
-  const pipRagMode = document.getElementById('pipRagMode');
-  
-  // 채팅 입력 이벤트
-  if (pipChatInput) {
-    pipChatInput.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        sendPIPMessage();
-      }
-    });
-  }
-  
-  // 채팅 전송 버튼 이벤트
-  if (pipChatSendBtn) {
-    pipChatSendBtn.addEventListener('click', sendPIPMessage);
-  }
-  
-  // PIP 모드 변경 이벤트
-  if (pipLlmMode) {
-    pipLlmMode.addEventListener('change', function() {
-      if (this.checked) {
-        updatePIPModeDescription();
-        console.log('📱 PIP 모드 변경: LLM');
-      }
-    });
-  }
-  
-  if (pipRagMode) {
-    pipRagMode.addEventListener('change', function() {
-      if (this.checked) {
-        updatePIPModeDescription();
-        console.log('📱 PIP 모드 변경: RAG');
-      }
-    });
-  }
-}
+// PIP 이벤트 리스너 설정은 analyze-pip.js에서 처리됩니다.
 
 // 챗봇 PIP 닫기
 function closeChatbotPIP() {
@@ -1192,7 +1328,11 @@ async function updatePIPChatHistory() {
       historyDiv.innerHTML = `
         <div class="text-center text-muted py-4">
           <i class="bi bi-person-x text-secondary" style="font-size: 2rem;"></i>
-          <p class="small mt-2 mb-0">${AI_ANALYZER_I18N.getTranslation('로그인이 필요합니다.')}</p>
+          <p class="small mt-2 mb-0">
+            <span data-lang="KOR">로그인이 필요합니다.</span>
+            <span data-lang="ENG" style="display: none;">Login required.</span>
+            <span data-lang="ESP" style="display: none;">Inicio de sesión requerido.</span>
+          </p>
         </div>
       `;
       return;
@@ -1202,7 +1342,11 @@ async function updatePIPChatHistory() {
     historyDiv.innerHTML = `
       <div class="text-center text-muted py-4">
         <div class="spinner-border spinner-border-sm mb-2" role="status"></div>
-        <p class="small mb-0">${AI_ANALYZER_I18N.getTranslation('채팅 기록을 불러오는 중...')}</p>
+        <p class="small mb-0">
+          <span data-lang="KOR">채팅 기록을 불러오는 중...</span>
+          <span data-lang="ENG" style="display: none;">Loading chat history...</span>
+          <span data-lang="ESP" style="display: none;">Cargando historial de chat...</span>
+        </p>
       </div>
     `;
 
@@ -1217,7 +1361,11 @@ async function updatePIPChatHistory() {
       historyDiv.innerHTML = `
         <div class="text-center text-muted py-4">
           <i class="bi bi-chat-square-dots" style="font-size: 2rem;"></i>
-          <p class="small mt-2 mb-0">${AI_ANALYZER_I18N.getTranslation('아직 대화 기록이 없습니다.')}<br>${AI_ANALYZER_I18N.getTranslation('AI와 대화를 시작해보세요!')}</p>
+          <p class="small mt-2 mb-0">
+            <span data-lang="KOR">아직 대화 기록이 없습니다.<br>AI와 대화를 시작해보세요!</span>
+            <span data-lang="ENG" style="display: none;">No conversation history yet.<br>Start chatting with AI!</span>
+            <span data-lang="ESP" style="display: none;">Aún no hay historial de conversación.<br>¡Comience a chatear con la IA!</span>
+          </p>
         </div>
       `;
       return;
@@ -1265,13 +1413,22 @@ async function updatePIPChatHistory() {
     if (activeItem) {
       activeItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+    
+    // 히스토리가 로드된 후 언어 업데이트
+    setTimeout(() => {
+      updatePIPModalLanguage();
+    }, 100);
 
   } catch (error) {
     console.error('채팅 히스토리 로드 실패:', error);
     historyDiv.innerHTML = `
       <div class="text-center text-muted py-4">
         <i class="bi bi-exclamation-triangle text-warning" style="font-size: 2rem;"></i>
-        <p class="small mt-2 mb-0">${AI_ANALYZER_I18N.getTranslation('채팅 기록을 불러올 수 없습니다.')}<br>${AI_ANALYZER_I18N.getTranslation('잠시 후 다시 시도해주세요.')}</p>
+        <p class="small mt-2 mb-0">
+          <span data-lang="KOR">채팅 기록을 불러올 수 없습니다.<br>잠시 후 다시 시도해주세요.</span>
+          <span data-lang="ENG" style="display: none;">Unable to load chat history.<br>Please try again later.</span>
+          <span data-lang="ESP" style="display: none;">No se puede cargar el historial de chat.<br>Inténtelo de nuevo más tarde.</span>
+        </p>
       </div>
     `;
   }
@@ -1291,7 +1448,11 @@ async function loadChatSession(sessionId) {
       pipChatMessages.innerHTML = `
         <div class="text-center py-4">
           <div class="spinner-border text-primary mb-3" role="status"></div>
-          <p class="text-muted">${AI_ANALYZER_I18N.getTranslation('대화 기록을 불러오는 중...')}</p>
+          <p class="text-muted">
+            <span data-lang="KOR">대화 기록을 불러오는 중...</span>
+            <span data-lang="ENG" style="display: none;">Loading conversation history...</span>
+            <span data-lang="ESP" style="display: none;">Cargando historial de conversación...</span>
+          </p>
         </div>
       `;
     }
@@ -1338,6 +1499,11 @@ async function loadChatSession(sessionId) {
 
     // 히스토리 업데이트 (활성 세션 표시)
     updatePIPChatHistory();
+    
+    // 새로 생성된 메시지들에 언어 업데이트 적용
+    setTimeout(() => {
+      updatePIPModalLanguage();
+    }, 150);
 
     // 메인 채팅도 동기화
     const mainChatMessages = document.getElementById('chatMessages');
@@ -1355,8 +1521,16 @@ async function loadChatSession(sessionId) {
       pipChatMessages.innerHTML = `
         <div class="text-center py-4">
           <i class="bi bi-exclamation-triangle text-warning mb-3" style="font-size: 3rem;"></i>
-          <h6>${AI_ANALYZER_I18N.getTranslation('대화 기록을 불러올 수 없습니다')}</h6>
-          <p class="text-muted">${AI_ANALYZER_I18N.getTranslation('잠시 후 다시 시도해주세요.')}</p>
+          <h6>
+            <span data-lang="KOR">대화 기록을 불러올 수 없습니다</span>
+            <span data-lang="ENG" style="display: none;">Unable to load conversation history</span>
+            <span data-lang="ESP" style="display: none;">No se puede cargar el historial de conversación</span>
+          </h6>
+          <p class="text-muted">
+            <span data-lang="KOR">잠시 후 다시 시도해주세요.</span>
+            <span data-lang="ENG" style="display: none;">Please try again later.</span>
+            <span data-lang="ESP" style="display: none;">Por favor, inténtelo de nuevo más tarde.</span>
+          </p>
         </div>
       `;
     }
@@ -1405,18 +1579,8 @@ function createUserMessageHTML(content) {
   `;
 }
 
-// 봇 메시지 HTML 생성
+// 봇 메시지 HTML 생성 (data-lang 방식으로 다국어 지원)
 function createBotMessageHTML(content) {
-  const currentLanguage = getCurrentLanguage();
-  
-  const labels = {
-    ko: { title: '분석결과 상담 AI', status: '온라인' },
-    en: { title: 'Analysis Consultation AI', status: 'Online' },
-    es: { title: 'IA de Consulta de Análisis', status: 'En línea' }
-  };
-  
-  const label = labels[currentLanguage] || labels.ko;
-  
   // 마크다운 처리
   const processedContent = typeof marked !== 'undefined' ? marked.parse(content) : content;
   
@@ -1428,8 +1592,16 @@ function createBotMessageHTML(content) {
       <div class="flex-grow-1">
         <div class="bg-white rounded-3 p-3 shadow-sm border" style="max-width: 85%;">
           <div class="d-flex align-items-center mb-2">
-            <strong class="text-primary me-2">${label.title}</strong>
-            <span class="badge bg-success-subtle text-success">${label.status}</span>
+            <strong class="text-primary me-2">
+              <span data-lang="KOR">분석결과 상담 AI</span>
+              <span data-lang="ENG" style="display: none;">Analysis Consultation AI</span>
+              <span data-lang="ESP" style="display: none;">IA de Consulta de Análisis</span>
+            </strong>
+            <span class="badge bg-success-subtle text-success">
+              <span data-lang="KOR">온라인</span>
+              <span data-lang="ENG" style="display: none;">Online</span>
+              <span data-lang="ESP" style="display: none;">En línea</span>
+            </span>
           </div>
           <div class="message-content">${processedContent}</div>
         </div>
@@ -1438,55 +1610,8 @@ function createBotMessageHTML(content) {
   `;
 }
 
-// 환영 메시지 HTML 생성 (다국어 지원)
+// 환영 메시지 HTML 생성 (data-lang 방식으로 다국어 지원)
 function createWelcomeMessageHTML() {
-  const currentLanguage = getCurrentLanguage();
-  
-  const messages = {
-    ko: {
-      title: '분석결과 상담 AI',
-      status: '온라인',
-      greeting: '안녕하세요! 🎯 방금 완료된 상권 분석 결과에 대해 궁금한 점이 있으시면 언제든 물어보세요.',
-      consultationTitle: '상담 가능한 내용:',
-      items: [
-        '📊 AI 생존 확률 해석',
-        '👥 인구 및 고객층 분석', 
-        '🏪 경쟁업체 현황',
-        '💰 수익성 전망',
-        '🚀 창업 전략 조언'
-      ]
-    },
-    en: {
-      title: 'Analysis Consultation AI',
-      status: 'Online',
-      greeting: 'Hello! 🎯 If you have any questions about the commercial area analysis results just completed, feel free to ask anytime.',
-      consultationTitle: 'Available Consultation Topics:',
-      items: [
-        '📊 AI Survival Probability Interpretation',
-        '👥 Population and Customer Analysis',
-        '🏪 Competitor Status',
-        '💰 Profitability Outlook',
-        '🚀 Startup Strategy Advice'
-      ]
-    },
-    es: {
-      title: 'IA de Consulta de Análisis',
-      status: 'En línea',
-      greeting: '¡Hola! 🎯 Si tiene alguna pregunta sobre los resultados del análisis de zona comercial recién completado, no dude en preguntar en cualquier momento.',
-      consultationTitle: 'Temas de Consulta Disponibles:',
-      items: [
-        '📊 Interpretación de Probabilidad de Supervivencia IA',
-        '👥 Análisis de Población y Clientes',
-        '🏪 Estado de Competidores',
-        '💰 Perspectiva de Rentabilidad',
-        '🚀 Consejos de Estrategia de Startup'
-      ]
-    }
-  };
-  
-  const msg = messages[currentLanguage] || messages.ko;
-  const itemsHTML = msg.items.map(item => `• ${item}`).join('<br>');
-  
   return `
     <div class="d-flex align-items-start mb-3">
       <div class="bg-gradient bg-primary rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; min-width: 36px;">
@@ -1495,12 +1620,40 @@ function createWelcomeMessageHTML() {
       <div class="flex-grow-1">
         <div class="bg-white rounded-3 p-3 shadow-sm border">
           <div class="d-flex align-items-center mb-2">
-            <strong class="text-primary me-2">${msg.title}</strong>
-            <span class="badge bg-success-subtle text-success">${msg.status}</span>
+            <strong class="text-primary me-2">
+              <span data-lang="KOR">분석결과 상담 AI</span>
+              <span data-lang="ENG" style="display: none;">Analysis Consultation AI</span>
+              <span data-lang="ESP" style="display: none;">IA de Consulta de Análisis</span>
+            </strong>
+            <span class="badge bg-success-subtle text-success">
+              <span data-lang="KOR">온라인</span>
+              <span data-lang="ENG" style="display: none;">Online</span>
+              <span data-lang="ESP" style="display: none;">En línea</span>
+            </span>
           </div>
-          <p class="mb-0">${msg.greeting}<br><br>
-          <strong>${msg.consultationTitle}</strong><br>
-          ${itemsHTML}</p>
+          <p class="mb-0">
+            <span data-lang="KOR">안녕하세요! 🎯 방금 완료된 상권 분석 결과에 대해 궁금한 점이 있으시면 언제든 물어보세요.<br><br>
+            <strong>상담 가능한 내용:</strong><br>
+            • 📊 AI 생존 확률 해석<br>
+            • 👥 인구 및 고객층 분석<br>
+            • 🏪 경쟁업체 현황<br>
+            • 💰 수익성 전망<br>
+            • 🚀 창업 전략 조언</span>
+            <span data-lang="ENG" style="display: none;">Hello! 🎯 If you have any questions about the commercial area analysis results just completed, feel free to ask anytime.<br><br>
+            <strong>Available Consultation Topics:</strong><br>
+            • 📊 AI Survival Probability Interpretation<br>
+            • 👥 Population and Customer Analysis<br>
+            • 🏪 Competitor Status<br>
+            • 💰 Profitability Outlook<br>
+            • 🚀 Startup Strategy Advice</span>
+            <span data-lang="ESP" style="display: none;">¡Hola! 🎯 Si tiene alguna pregunta sobre los resultados del análisis de zona comercial recién completado, no dude en preguntar en cualquier momento.<br><br>
+            <strong>Temas de Consulta Disponibles:</strong><br>
+            • 📊 Interpretación de Probabilidad de Supervivencia IA<br>
+            • 👥 Análisis de Población y Clientes<br>
+            • 🏪 Estado de Competidores<br>
+            • 💰 Perspectiva de Rentabilidad<br>
+            • 🚀 Consejos de Estrategia de Startup</span>
+          </p>
         </div>
       </div>
     </div>
@@ -1523,19 +1676,35 @@ function updatePIPAnalysisSummary() {
 
   summaryDiv.innerHTML = `
     <div class="mb-3">
-      <h6 class="text-primary mb-2">📍 ${AI_ANALYZER_I18N.getTranslation('기본 정보')}</h6>
+      <h6 class="text-primary mb-2">📍 
+        <span data-lang="KOR">기본 정보</span>
+        <span data-lang="ENG" style="display: none;">Basic Information</span>
+        <span data-lang="ESP" style="display: none;">Información Básica</span>
+      </h6>
       <div class="small">
         <div class="mb-1">
-          <strong>${AI_ANALYZER_I18N.getTranslation('주소:')}</strong> ${address}
+          <strong>
+            <span data-lang="KOR">주소:</span>
+            <span data-lang="ENG" style="display: none;">Address:</span>
+            <span data-lang="ESP" style="display: none;">Dirección:</span>
+          </strong> ${address}
         </div>
         <div class="mb-1">
-          <strong>${AI_ANALYZER_I18N.getTranslation('업종:')}</strong> ${businessType}
+          <strong>
+            <span data-lang="KOR">업종:</span>
+            <span data-lang="ENG" style="display: none;">Business Type:</span>
+            <span data-lang="ESP" style="display: none;">Tipo de Negocio:</span>
+          </strong> ${businessType}
         </div>
       </div>
     </div>
 
     <div class="mb-3">
-      <h6 class="text-success mb-2">🎯 ${AI_ANALYZER_I18N.getTranslation('AI 생존 확률')}</h6>
+      <h6 class="text-success mb-2">🎯 
+        <span data-lang="KOR">AI 생존 확률</span>
+        <span data-lang="ENG" style="display: none;">AI Survival Probability</span>
+        <span data-lang="ESP" style="display: none;">Probabilidad de Supervivencia IA</span>
+      </h6>
       <div class="text-center">
         <div class="h4 text-primary mb-1">${survivalRate}</div>
         <div class="progress mb-2" style="height: 8px;">
@@ -1545,30 +1714,50 @@ function updatePIPAnalysisSummary() {
     </div>
 
     <div class="mb-3">
-      <h6 class="text-info mb-2">📊 ${AI_ANALYZER_I18N.getTranslation('핵심 지표')}</h6>
+      <h6 class="text-info mb-2">📊 
+        <span data-lang="KOR">핵심 지표</span>
+        <span data-lang="ENG" style="display: none;">Key Indicators</span>
+        <span data-lang="ESP" style="display: none;">Indicadores Clave</span>
+      </h6>
       <div class="row g-2 small">
         <div class="col-6">
           <div class="bg-light rounded p-2 text-center">
             <div class="fw-bold text-primary">${lifePop}</div>
-            <div class="text-muted" style="font-size: 0.75rem;">${AI_ANALYZER_I18N.getTranslation('생활인구')}</div>
+            <div class="text-muted" style="font-size: 0.75rem;">
+              <span data-lang="KOR">생활인구</span>
+              <span data-lang="ENG" style="display: none;">Residential Pop.</span>
+              <span data-lang="ESP" style="display: none;">Pob. Residencial</span>
+            </div>
           </div>
         </div>
         <div class="col-6">
           <div class="bg-light rounded p-2 text-center">
             <div class="fw-bold text-warning">${workingPop}</div>
-            <div class="text-muted" style="font-size: 0.75rem;">${AI_ANALYZER_I18N.getTranslation('직장인구')}</div>
+            <div class="text-muted" style="font-size: 0.75rem;">
+              <span data-lang="KOR">직장인구</span>
+              <span data-lang="ENG" style="display: none;">Working Pop.</span>
+              <span data-lang="ESP" style="display: none;">Pob. Laboral</span>
+            </div>
           </div>
         </div>
         <div class="col-6">
           <div class="bg-light rounded p-2 text-center">
             <div class="fw-bold text-danger">${competitor}</div>
-            <div class="text-muted" style="font-size: 0.75rem;">${AI_ANALYZER_I18N.getTranslation('경쟁업체')}</div>
+            <div class="text-muted" style="font-size: 0.75rem;">
+              <span data-lang="KOR">경쟁업체</span>
+              <span data-lang="ENG" style="display: none;">Competitors</span>
+              <span data-lang="ESP" style="display: none;">Competidores</span>
+            </div>
           </div>
         </div>
         <div class="col-6">
           <div class="bg-light rounded p-2 text-center">
             <div class="fw-bold text-secondary">${landValue}</div>
-            <div class="text-muted" style="font-size: 0.75rem;">${AI_ANALYZER_I18N.getTranslation('공시지가')}</div>
+            <div class="text-muted" style="font-size: 0.75rem;">
+              <span data-lang="KOR">공시지가</span>
+              <span data-lang="ENG" style="display: none;">Land Value</span>
+              <span data-lang="ESP" style="display: none;">Valor del Terreno</span>
+            </div>
           </div>
         </div>
       </div>
@@ -1577,10 +1766,15 @@ function updatePIPAnalysisSummary() {
     <div class="alert alert-info py-2 px-3">
       <small>
         <i class="bi bi-info-circle me-1"></i>
-        ${AI_ANALYZER_I18N.getTranslation('좌측 채팅에서 분석 결과에 대해 자세히 문의하실 수 있습니다.')}
+        <span data-lang="KOR">좌측 채팅에서 분석 결과에 대해 자세히 문의하실 수 있습니다.</span>
+        <span data-lang="ENG" style="display: none;">You can inquire in detail about the analysis results in the left chat.</span>
+        <span data-lang="ESP" style="display: none;">Puede consultar en detalle sobre los resultados del análisis en el chat izquierdo.</span>
       </small>
     </div>
   `;
+  
+  // 순환 호출 방지를 위해 updatePIPModalLanguage() 호출 제거
+  // 대신 PIP 모달이 열릴 때만 직접 언어 업데이트 수행
 }
 
 // 생존 확률에 따른 진행바 클래스 반환
@@ -1603,9 +1797,34 @@ function getSurvivalBarClass(survivalRate) {
 function getCurrentLanguage() {
   // 새로운 통합 시스템 사용
   if (window.getCurrentAILanguage) {
-    return window.getCurrentAILanguage();
+    const lang = window.getCurrentAILanguage();
+    console.log('🌐 현재 감지된 언어:', lang);
+    return lang;
   }
-  return 'ko'; // 백업
+  
+  // 백업 시스템들
+  if (typeof window.getCurrentAILanguage !== 'function') {
+    // data-lang 요소를 직접 감지
+    const visibleKorElement = document.querySelector('[data-lang="KOR"]:not([style*="display: none"])');
+    const visibleEngElement = document.querySelector('[data-lang="ENG"]:not([style*="display: none"])');
+    const visibleEspElement = document.querySelector('[data-lang="ESP"]:not([style*="display: none"])');
+    
+    if (visibleEngElement) {
+      console.log('🌐 백업 언어 감지: en (ENG 요소가 보임)');
+      return 'en';
+    }
+    if (visibleEspElement) {
+      console.log('🌐 백업 언어 감지: es (ESP 요소가 보임)');
+      return 'es';
+    }
+    if (visibleKorElement) {
+      console.log('🌐 백업 언어 감지: ko (KOR 요소가 보임)');
+      return 'ko';
+    }
+  }
+  
+  console.log('🌐 기본 언어 사용: ko');
+  return 'ko'; // 기본값
 }
 
 // 현재 선택된 챗봇 모드 가져오기
@@ -1669,26 +1888,9 @@ function setupModeChangeListeners() {
 document.addEventListener('DOMContentLoaded', function() {
   setupModeChangeListeners();
   
-  // 언어 변경 감지를 위한 MutationObserver 설정
-  const observer = new MutationObserver(function(mutations) {
-    mutations.forEach(function(mutation) {
-      if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-        const pipModal = document.getElementById('chatbotPIPModal');
-        if (pipModal && pipModal.style.display !== 'none') {
-          // PIP 모달이 열려있으면 다국어화 업데이트
-          setTimeout(() => {
-            updatePIPModalLanguage();
-          }, 100);
-        }
-      }
-    });
-  });
-
-  // 언어 요소들 감시
-  const langElements = document.querySelectorAll('[data-lang]');
-  langElements.forEach(element => {
-    observer.observe(element, { attributes: true, attributeFilter: ['style'] });
-  });
+  // MutationObserver 제거하여 무한 루프 방지
+  // 언어 변경은 PIP 모달이 열릴 때와 사용자가 수동으로 언어 변경할 때만 처리
+  console.log('🎯 Chatbot PIP 모듈 초기화 완료');
 });
 
 // ===========================================
@@ -1712,6 +1914,9 @@ window.updatePIPModeDescription = updatePIPModeDescription;
 window.fillPIPExampleQuestionWithLang = fillPIPExampleQuestionWithLang;
 window.updatePIPChatHistory = updatePIPChatHistory;
 window.updatePIPAnalysisSummary = updatePIPAnalysisSummary;
+
+// 사이드바 채팅 관련 함수들
+window.updateSidebarChatLanguage = updateSidebarChatLanguage;
 
 // 언어 및 모드 유틸리티 함수들
 window.getCurrentLanguage = getCurrentLanguage;
