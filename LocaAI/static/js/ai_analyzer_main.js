@@ -387,6 +387,25 @@ class AnalyzerMain {
     const messagesContainer = document.getElementById('chatMessages');
     if (!messagesContainer) return;
     
+    const currentLang = window.getCurrentAILanguage ? window.getCurrentAILanguage() : 'ko';
+    const titles = {
+      ko: '분석결과 상담 AI',
+      en: 'Analysis Consultation AI', 
+      es: 'IA de Consulta de Análisis'
+    };
+    
+    const status = {
+      ko: '온라인',
+      en: 'Online',
+      es: 'En línea'
+    };
+    
+    const loadingMessages = {
+      ko: '답변을 생성하고 있습니다...',
+      en: 'Generating response...',
+      es: 'Generando respuesta...'
+    };
+    
     const messageDiv = document.createElement('div');
     messageDiv.className = 'd-flex align-items-start mb-4';
     messageDiv.id = 'currentBotMessage';
@@ -397,22 +416,12 @@ class AnalyzerMain {
       <div class="flex-grow-1">
         <div class="bg-white rounded-3 p-4 shadow-sm border">
           <div class="d-flex align-items-center mb-2">
-            <strong class="text-primary me-2">
-              <span data-lang="KOR">분석결과 상담 AI</span>
-              <span data-lang="ENG" style="display: none;">Analysis Consultation AI</span>
-              <span data-lang="ESP" style="display: none;">IA de Consulta de Análisis</span>
-            </strong>
-            <span class="badge bg-success-subtle text-success">
-              <span data-lang="KOR">온라인</span>
-              <span data-lang="ENG" style="display: none;">Online</span>
-              <span data-lang="ESP" style="display: none;">En línea</span>
-            </span>
+            <strong class="text-primary me-2">${titles[currentLang] || titles.ko}</strong>
+            <span class="badge bg-success-subtle text-success">${status[currentLang] || status.ko}</span>
           </div>
           <div id="botMessageContent">
             <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-            <span data-lang="KOR">답변을 생성하고 있습니다...</span>
-            <span data-lang="ENG" style="display: none;">Generating response...</span>
-            <span data-lang="ESP" style="display: none;">Generando respuesta...</span>
+            ${loadingMessages[currentLang] || loadingMessages.ko}
           </div>
         </div>
       </div>
@@ -473,6 +482,19 @@ class AnalyzerMain {
     const messagesContainer = document.getElementById('chatMessages');
     if (!messagesContainer) return;
     
+    const currentLang = window.getCurrentAILanguage ? window.getCurrentAILanguage() : 'ko';
+    const titles = {
+      ko: '분석결과 상담 AI',
+      en: 'Analysis Consultation AI', 
+      es: 'IA de Consulta de Análisis'
+    };
+    
+    const status = {
+      ko: '온라인',
+      en: 'Online',
+      es: 'En línea'
+    };
+    
     const messageDiv = document.createElement('div');
     messageDiv.className = 'd-flex align-items-start mb-4';
     messageDiv.innerHTML = `
@@ -482,16 +504,8 @@ class AnalyzerMain {
       <div class="flex-grow-1">
         <div class="bg-white rounded-3 p-4 shadow-sm border">
           <div class="d-flex align-items-center mb-2">
-            <strong class="text-primary me-2">
-              <span data-lang="KOR">분석결과 상담 AI</span>
-              <span data-lang="ENG" style="display: none;">Analysis Consultation AI</span>
-              <span data-lang="ESP" style="display: none;">IA de Consulta de Análisis</span>
-            </strong>
-            <span class="badge bg-success-subtle text-success">
-              <span data-lang="KOR">온라인</span>
-              <span data-lang="ENG" style="display: none;">Online</span>
-              <span data-lang="ESP" style="display: none;">En línea</span>
-            </span>
+            <strong class="text-primary me-2">${titles[currentLang] || titles.ko}</strong>
+            <span class="badge bg-success-subtle text-success">${status[currentLang] || status.ko}</span>
           </div>
           <div>
             ${this.escapeHtml(message)}

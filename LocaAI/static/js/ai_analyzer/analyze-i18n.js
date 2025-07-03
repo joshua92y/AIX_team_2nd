@@ -90,7 +90,7 @@ const AI_ANALYZER_I18N = {
     this.updateDropdowns();
     
     // 재분석 트리거 (분석 결과가 있을 때만)
-    setTimeout(() => {
+  setTimeout(() => {
       this.triggerReanalysisIfNeeded(oldLanguage);
     }, 500);
   },
@@ -514,7 +514,7 @@ const AI_ANALYZER_I18N = {
      '분석결과 상담 AI': { en: 'Analysis Consultation AI', es: 'IA de Consulta de Análisis' },
      '상권 분석 결과에 대해 AI와 상담하려면 로그인이 필요합니다.': { en: 'Login is required to consult with AI about analysis results.', es: 'Se requiere iniciar sesión para consultar con IA sobre los resultados del análisis.' },
      '상권 분석을 완료하면 AI 상담 서비스를 이용할 수 있습니다.': { en: 'Once commercial analysis is complete, you can use AI consultation service.', es: 'Una vez completado el análisis comercial, puede usar el servicio de consulta IA.' },
-     '분석 완료 후 자동 활성화': { en: 'Auto-activated after analysis', es: 'Activación automática después del análisis' },
+    '분석 완료 후 자동 활성화': { en: 'Auto-activated after analysis', es: 'Activación automática después del análisis' },
      '안녕하세요! 🎯 방금 완료된 상권 분석 결과에 대해 궁금한 점이 있으시면 언제든 물어보세요.': { 
        en: 'Hello! 🎯 If you have any questions about the commercial area analysis results just completed, feel free to ask anytime.', 
        es: '¡Hola! 🎯 Si tiene alguna pregunta sobre los resultados del análisis del área comercial recién completado, no dude en preguntar en cualquier momento.' 
@@ -596,6 +596,18 @@ const AI_ANALYZER_I18N = {
      // 입력 placeholder 관련
      '주소를 검색하세요': { en: 'Search for an address', es: 'Buscar una dirección' },
      '면적을 입력해주세요 (㎡)': { en: 'Enter area (㎡)', es: 'Ingrese área (㎡)' },
+     
+     // 챗봇 로딩 및 오류 메시지
+     '로그인이 필요합니다.': { en: 'Login required.', es: 'Se requiere iniciar sesión.' },
+     '채팅 기록을 불러오는 중...': { en: 'Loading chat history...', es: 'Cargando historial de chat...' },
+     '아직 대화 기록이 없습니다.': { en: 'No conversation history yet.', es: 'Aún no hay historial de conversación.' },
+     'AI와 대화를 시작해보세요!': { en: 'Start chatting with AI!', es: '¡Comience a chatear con la IA!' },
+     '채팅 기록을 불러올 수 없습니다.': { en: 'Unable to load chat history.', es: 'No se puede cargar el historial de chat.' },
+     '잠시 후 다시 시도해주세요.': { en: 'Please try again later.', es: 'Por favor, inténtelo de nuevo más tarde.' },
+     '대화 기록을 불러오는 중...': { en: 'Loading conversation history...', es: 'Cargando historial de conversación...' },
+     '대화 기록을 불러올 수 없습니다': { en: 'Unable to load conversation history', es: 'No se puede cargar el historial de conversación' },
+     '공시지가': { en: 'Land Value', es: 'Valor del Terreno' },
+     '좌측 채팅에서 분석 결과에 대해 자세히 문의하실 수 있습니다.': { en: 'You can inquire in detail about the analysis results in the left chat.', es: 'Puede consultar en detalle sobre los resultados del análisis en el chat izquierdo.' },
      
      // 인구 분석 관련
      '인구 구성 분석 (1000m 반경)': 'Population Analysis (1000m radius)',
