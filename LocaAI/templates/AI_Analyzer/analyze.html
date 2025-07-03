@@ -16,6 +16,9 @@
   <!-- Daum 우편번호 서비스 -->
   <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
   
+  <!-- 카카오맵 API -->
+  <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey={{ KAKAO_JS_API_KEY }}&libraries=services"></script>
+  
   <!-- jsPDF 라이브러리 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <!-- 한국어 폰트 지원 -->
@@ -36,6 +39,9 @@
   
   <!-- AI Analyzer Address 로드 -->
   <script src="{% static 'js/ai_analyzer/analyze-address.js' %}"></script>
+  
+  <!-- AI Analyzer Map 로드 -->
+  <script src="{% static 'js/ai_analyzer/analyze-map.js' %}"></script>
   
   <!-- AI Analyzer PIP 로드 -->
   <script src="{% static 'js/ai_analyzer/analyze-pip.js' %}"></script>
@@ -60,6 +66,10 @@
     const USER_AUTHENTICATED = {% if user.is_authenticated %}true{% else %}false{% endif %};
     const USER_ID = {% if user.is_authenticated %}'{{ user.id }}'{% else %}null{% endif %};
     const CSRF_TOKEN = '{{ csrf_token }}';
+    
+    // 카카오맵 API 키 (analyze-map.js에서 사용)
+    window.KAKAO_JS_API_KEY = '{{ KAKAO_JS_API_KEY }}';
+    window.KAKAO_REST_API_KEY = '{{ KAKAO_REST_API_KEY }}';
   </script>
 
   <script>
@@ -187,24 +197,6 @@
                     <span data-lang="ESP" style="display: none;">Buscar</span>
                   </button>
                 </div>
-                
-                <!-- 주소 입력 도움말 -->
-                <div class="mt-2">
-                  <div class="alert alert-info d-flex align-items-center" style="padding: 8px 12px; font-size: 0.85rem; margin-bottom: 0;">
-                    <i class="bi bi-info-circle me-2 text-primary"></i>
-                    <div>
-                      <span class="lang-text" data-lang="KOR">
-                        <strong>서비스 지역:</strong> 서울특별시 25개 구만 지원됩니다 (경기도, 인천 등 제외)
-                      </span>
-                      <span class="lang-text" data-lang="ENG" style="display: none;">
-                        <strong>Service Area:</strong> Only Seoul Metropolitan City (25 districts) is supported
-                      </span>
-                      <span class="lang-text" data-lang="ESP" style="display: none;">
-                        <strong>Área de Servicio:</strong> Solo se admite la Ciudad Metropolitana de Seúl (25 distritos)
-                      </span>
-                    </div>
-                  </div>
-                </div>
               </div>
 
               <!-- 점포 면적 입력 -->
@@ -226,6 +218,70 @@
                   <option selected disabled>선택</option>
                   <!-- 옵션들은 JavaScript에서 동적으로 생성됩니다 -->
                 </select>
+              </div>
+
+              <!-- 카카오맵 지도 영역 -->
+              <div class="col-md-12 mt-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <label class="form-label mb-0">
+                    <span data-lang="KOR">위치 지도</span>
+                    <span data-lang="ENG" style="display: none;">Location Map</span>
+                    <span data-lang="ESP" style="display: none;">Mapa de Ubicación</span>
+                  </label>
+                  <small class="text-muted">
+                    <span data-lang="KOR">지도를 클릭하면 주소가 자동으로 입력됩니다</span>
+                    <span data-lang="ENG" style="display: none;">Click on the map to automatically enter address</span>
+                    <span data-lang="ESP" style="display: none;">Haga clic en el mapa para ingresar la dirección automáticamente</span>
+                  </small>
+                </div>
+                <div id="kakao-map" style="width: 100%; height: 400px; border: 1px solid #ddd; border-radius: 8px;"></div>
+                
+                <!-- 지도 사용 안내 -->
+                <div class="mt-3">
+                  <div class="alert alert-info" style="margin-bottom: 0;">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <h6 class="alert-heading mb-2">
+                          <i class="bi bi-info-circle me-2"></i>
+                          <span data-lang="KOR">📍 지도 사용 방법</span>
+                          <span data-lang="ENG" style="display: none;">📍 How to Use Map</span>
+                          <span data-lang="ESP" style="display: none;">📍 Cómo usar el mapa</span>
+                        </h6>
+                        <ul class="mb-0" style="font-size: 0.85rem;">
+                          <li data-lang="KOR">주소 검색 버튼을 클릭하여 정확한 주소 검색</li>
+                          <li data-lang="ENG" style="display: none;">Click address search button for precise address</li>
+                          <li data-lang="ESP" style="display: none;">Haga clic en el botón de búsqueda para buscar dirección</li>
+                          
+                          <li data-lang="KOR">지도를 직접 클릭하여 위치 선택 가능</li>
+                          <li data-lang="ENG" style="display: none;">Click directly on map to select location</li>
+                          <li data-lang="ESP" style="display: none;">Haga clic directamente en el mapa para seleccionar ubicación</li>
+                        </ul>
+                      </div>
+                      <div class="col-md-6">
+                        <h6 class="alert-heading mb-2">
+                          <i class="bi bi-geo-alt me-2"></i>
+                          <span data-lang="KOR">🔍 서비스 지역 안내</span>
+                          <span data-lang="ENG" style="display: none;">🔍 Service Area Guide</span>
+                          <span data-lang="ESP" style="display: none;">🔍 Guía del área de servicio</span>
+                        </h6>
+                        <div style="font-size: 0.85rem;">
+                          <div class="mb-2">
+                            <span class="badge bg-success me-2">지원</span>
+                            <span data-lang="KOR"><strong>서울특별시 25개 구</strong> 전 지역</span>
+                            <span data-lang="ENG" style="display: none;"><strong>All 25 districts</strong> of Seoul Metropolitan City</span>
+                            <span data-lang="ESP" style="display: none;"><strong>Los 25 distritos</strong> de la Ciudad Metropolitana de Seúl</span>
+                          </div>
+                          <div>
+                            <span class="badge bg-danger me-2">미지원</span>
+                            <span data-lang="KOR">경기도, 인천, 기타 광역시 (서울 외 지역 클릭 시 자동으로 서울 중심으로 이동)</span>
+                            <span data-lang="ENG" style="display: none;">Gyeonggi-do, Incheon, other cities (clicking outside Seoul will auto-center to Seoul)</span>
+                            <span data-lang="ESP" style="display: none;">Gyeonggi-do, Incheon, otras ciudades (hacer clic fuera de Seúl centrará automáticamente en Seúl)</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 

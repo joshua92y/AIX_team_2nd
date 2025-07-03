@@ -344,6 +344,8 @@ function createPIPModalHTML() {
 
 // PIP 모달 초기화
 function initializePIPModal() {
+  console.log('🚀 PIP 모달 초기화 시작');
+  
   // 기존 채팅 메시지 복사
   const chatMessages = document.getElementById('chatMessages');
   const pipChatMessages = document.getElementById('pipChatMessages');
@@ -360,16 +362,22 @@ function initializePIPModal() {
   // PIP 입력 필드 상태 동기화
   synchronizePIPInputs();
   
-  // 이벤트 리스너 추가
-  setupPIPEventListeners();
-  
   // 다국어 언어 업데이트
   updatePIPModalLanguage();
   
+  // 이벤트 리스너 추가 (짧은 지연 후 DOM이 완전히 준비된 후)
+  setTimeout(() => {
+    setupPIPEventListeners();
+  }, 50);
+  
   // 스크롤을 맨 아래로
   setTimeout(() => {
-    pipChatMessages.scrollTop = pipChatMessages.scrollHeight;
+    if (pipChatMessages) {
+      pipChatMessages.scrollTop = pipChatMessages.scrollHeight;
+    }
   }, 100);
+  
+  console.log('✅ PIP 모달 초기화 완료');
 }
 
 // PIP 입력 필드 상태 동기화
@@ -390,6 +398,8 @@ function synchronizePIPInputs() {
 
 // PIP 이벤트 리스너 설정
 function setupPIPEventListeners() {
+  console.log('🔧 PIP 이벤트 리스너 설정 중...');
+  
   const pipChatInput = document.getElementById('pipChatInput');
   const pipChatSendBtn = document.getElementById('pipChatSendBtn');
   const pipLlmMode = document.getElementById('pipLlmMode');
@@ -399,14 +409,25 @@ function setupPIPEventListeners() {
   if (pipChatInput) {
     pipChatInput.addEventListener('keypress', function(e) {
       if (e.key === 'Enter') {
-        sendPIPMessage();
+        console.log('⌨️ PIP Enter 키 감지');
+        window.sendPIPMessage();
       }
     });
+    console.log('✅ PIP 입력 필드 이벤트 연결됨');
+  } else {
+    console.error('❌ PIP 입력 필드를 찾을 수 없음');
   }
   
   // 채팅 전송 버튼 이벤트
   if (pipChatSendBtn) {
-    pipChatSendBtn.addEventListener('click', sendPIPMessage);
+    pipChatSendBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      console.log('🖱️ PIP 전송 버튼 클릭됨');
+      window.sendPIPMessage();
+    });
+    console.log('✅ PIP 전송 버튼 이벤트 연결됨');
+  } else {
+    console.error('❌ PIP 전송 버튼을 찾을 수 없음');
   }
   
   // PIP 모드 변경 이벤트
@@ -427,6 +448,8 @@ function setupPIPEventListeners() {
       }
     });
   }
+  
+  console.log('🎯 PIP 이벤트 리스너 설정 완료');
 }
 
 // 챗봇 PIP 닫기
@@ -460,9 +483,14 @@ async function updatePIPChatHistory() {
       historyDiv.innerHTML = `
         <div class="text-center text-muted py-4">
           <i class="bi bi-person-x" style="font-size: 2rem;"></i>
-          <p class="small mt-2 mb-0">로그인이 필요합니다</p>
+          <p class="small mt-2 mb-0">
+            <span data-lang="KOR">로그인이 필요합니다.</span>
+            <span data-lang="ENG" style="display: none;">Login required.</span>
+            <span data-lang="ESP" style="display: none;">Inicio de sesión requerido.</span>
+          </p>
         </div>
       `;
+      updatePIPModalLanguage();
       return;
     }
 
@@ -470,9 +498,14 @@ async function updatePIPChatHistory() {
     historyDiv.innerHTML = `
       <div class="text-center text-muted py-4">
         <div class="spinner-border spinner-border-sm mb-2" role="status"></div>
-        <p class="small mb-0">채팅 기록을 불러오는 중...</p>
+        <p class="small mb-0">
+          <span data-lang="KOR">채팅 기록을 불러오는 중...</span>
+          <span data-lang="ENG" style="display: none;">Loading chat history...</span>
+          <span data-lang="ESP" style="display: none;">Cargando historial de chat...</span>
+        </p>
       </div>
     `;
+    updatePIPModalLanguage();
 
     // chatbot 앱의 세션 리스트 API 호출
     const response = await fetch(`/chatbot/sessions/${userId}/`);
@@ -485,9 +518,14 @@ async function updatePIPChatHistory() {
       historyDiv.innerHTML = `
         <div class="text-center text-muted py-4">
           <i class="bi bi-chat-square-dots" style="font-size: 2rem;"></i>
-          <p class="small mt-2 mb-0">아직 대화 기록이 없습니다.<br>AI와 대화를 시작해보세요!</p>
+          <p class="small mt-2 mb-0">
+            <span data-lang="KOR">아직 대화 기록이 없습니다.<br>AI와 대화를 시작해보세요!</span>
+            <span data-lang="ENG" style="display: none;">No conversation history yet.<br>Start chatting with AI!</span>
+            <span data-lang="ESP" style="display: none;">Aún no hay historial de conversación.<br>¡Comience a chatear con la IA!</span>
+          </p>
         </div>
       `;
+      updatePIPModalLanguage();
       return;
     }
 
@@ -539,9 +577,14 @@ async function updatePIPChatHistory() {
     historyDiv.innerHTML = `
       <div class="text-center text-muted py-4">
         <i class="bi bi-exclamation-triangle text-warning" style="font-size: 2rem;"></i>
-        <p class="small mt-2 mb-0">채팅 기록을 불러올 수 없습니다.<br>잠시 후 다시 시도해주세요.</p>
+        <p class="small mt-2 mb-0">
+          <span data-lang="KOR">채팅 기록을 불러올 수 없습니다.<br>잠시 후 다시 시도해주세요.</span>
+          <span data-lang="ENG" style="display: none;">Unable to load chat history.<br>Please try again later.</span>
+          <span data-lang="ESP" style="display: none;">No se puede cargar el historial de chat.<br>Inténtelo de nuevo más tarde.</span>
+        </p>
       </div>
     `;
+    updatePIPModalLanguage();
   }
 }
 
@@ -582,9 +625,14 @@ async function loadChatSession(sessionId) {
       pipChatMessages.innerHTML = `
         <div class="text-center py-4">
           <div class="spinner-border text-primary mb-3" role="status"></div>
-          <p class="text-muted">대화 기록을 불러오는 중...</p>
+          <p class="text-muted">
+            <span data-lang="KOR">대화 기록을 불러오는 중...</span>
+            <span data-lang="ENG" style="display: none;">Loading conversation history...</span>
+            <span data-lang="ESP" style="display: none;">Cargando historial de conversación...</span>
+          </p>
         </div>
       `;
+      updatePIPModalLanguage();
     }
 
     // 세션 데이터 로드
@@ -633,8 +681,16 @@ async function loadChatSession(sessionId) {
             <div class="flex-grow-1">
               <div class="bg-white rounded-3 p-3 shadow-sm border" style="max-width: 85%;">
                 <div class="d-flex align-items-center mb-2">
-                  <strong class="text-primary me-2">분석결과 상담 AI</strong>
-                  <span class="badge bg-success-subtle text-success">온라인</span>
+                  <strong class="text-primary me-2">
+                    <span data-lang="KOR">분석결과 상담 AI</span>
+                    <span data-lang="ENG" style="display: none;">Analysis Consultation AI</span>
+                    <span data-lang="ESP" style="display: none;">IA de Consulta de Análisis</span>
+                  </strong>
+                  <span class="badge bg-success-subtle text-success">
+                    <span data-lang="KOR">온라인</span>
+                    <span data-lang="ENG" style="display: none;">Online</span>
+                    <span data-lang="ESP" style="display: none;">En línea</span>
+                  </span>
                 </div>
                 <div class="message-content">${processedContent}</div>
               </div>
@@ -651,6 +707,8 @@ async function loadChatSession(sessionId) {
 
     if (pipChatMessages) {
       pipChatMessages.innerHTML = messagesHTML;
+      // 다국어화 적용
+      updatePIPModalLanguage();
       // 스크롤을 맨 아래로
       setTimeout(() => {
         pipChatMessages.scrollTop = pipChatMessages.scrollHeight;
@@ -675,10 +733,19 @@ async function loadChatSession(sessionId) {
       pipChatMessages.innerHTML = `
         <div class="text-center py-4">
           <i class="bi bi-exclamation-triangle text-warning mb-3" style="font-size: 3rem;"></i>
-          <h6>대화 기록을 불러올 수 없습니다</h6>
-          <p class="text-muted">잠시 후 다시 시도해주세요.</p>
+          <h6>
+            <span data-lang="KOR">대화 기록을 불러올 수 없습니다</span>
+            <span data-lang="ENG" style="display: none;">Unable to load conversation history</span>
+            <span data-lang="ESP" style="display: none;">No se puede cargar el historial de conversación</span>
+          </h6>
+          <p class="text-muted">
+            <span data-lang="KOR">잠시 후 다시 시도해주세요.</span>
+            <span data-lang="ENG" style="display: none;">Please try again later.</span>
+            <span data-lang="ESP" style="display: none;">Inténtelo de nuevo más tarde.</span>
+          </p>
         </div>
       `;
+      updatePIPModalLanguage();
     }
   }
 }
@@ -822,9 +889,9 @@ function updatePIPAnalysisSummary() {
       <h6 class="text-success mb-2">${label.survivalProb}</h6>
       <div class="text-center">
         <div class="h4 text-primary mb-1">${survivalRate}</div>
-        <div class="progress mb-2" style="height: 8px;">
-          <div class="progress-bar ${getSurvivalBarClass(survivalRate)}" style="width: ${survivalRate}"></div>
-        </div>
+                    <div class="progress mb-2" style="height: 8px;">
+              <div class="progress-bar ${window.getSurvivalBarClass ? window.getSurvivalBarClass(survivalRate) : 'bg-primary'}" style="width: ${survivalRate}"></div>
+            </div>
       </div>
     </div>
 
@@ -914,6 +981,7 @@ function getCurrentLanguage() {
 // ===========================================
 window.updatePIPModalLanguage = updatePIPModalLanguage;
 window.updatePIPChatHistory = updatePIPChatHistory;
+window.setupPIPEventListeners = setupPIPEventListeners;
 // appendToPIPBotMessage와 finalizePIPBotMessage는 analyze-chatbot.js에서 처리
 window.getCurrentPIPMode = getCurrentPIPMode;
 window.openChatbotPIP = openChatbotPIP;

@@ -363,25 +363,49 @@ def analyze_page(request):
 @require_http_methods(["POST"])
 def get_coordinates(request):
     """
-    카카오 API를 통해 주소를 좌표로 변환
+    카카오 API를 통해 주소를 좌표로 변환 또는 직접 좌표 변환
 
     Args:
-        request: HTTP 요청 객체 (JSON body에 address 포함)
+        request: HTTP 요청 객체 (JSON body에 address 또는 latitude/longitude 포함)
 
     Returns:
         JsonResponse: 성공 시 좌표 정보, 실패 시 에러 메시지
 
     Raises:
-        400: 주소가 제공되지 않은 경우
+        400: 필수 파라미터가 제공되지 않은 경우
         404: 주소를 찾을 수 없는 경우
         500: API 호출 실패 또는 기타 오류
     """
     try:
         data = json.loads(request.body)
+        
+        # 🎯 직접 좌표 변환 모드 (WGS84 -> EPSG:5186)
+        if 'latitude' in data and 'longitude' in data:
+            latitude = float(data.get('latitude'))
+            longitude = float(data.get('longitude'))
+            from_srid = data.get('from_srid', 4326)
+            to_srid = data.get('to_srid', 5186)
+            
+            # 좌표 변환
+            transformer = Transformer.from_crs(
+                f"EPSG:{from_srid}", f"EPSG:{to_srid}", always_xy=True
+            )
+            x_coord, y_coord = transformer.transform(longitude, latitude)
+            
+            return JsonResponse({
+                "success": True,
+                "latitude": latitude,
+                "longitude": longitude,
+                "x_coord": x_coord,
+                "y_coord": y_coord,
+                "from_srid": from_srid,
+                "to_srid": to_srid
+            })
+        
+        # 🗺️ 주소로 좌표 검색 모드 (기존 기능)
         address = data.get("address")
-
         if not address:
-            return JsonResponse({"error": "주소가 필요합니다."}, status=400)
+            return JsonResponse({"error": "주소 또는 좌표가 필요합니다."}, status=400)
 
         # 카카오맵 API로 좌표 가져오기
         kakao_api_key = "4b3a451741a307fa3db2b9273005146a"
