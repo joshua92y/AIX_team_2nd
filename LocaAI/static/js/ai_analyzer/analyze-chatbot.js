@@ -1184,12 +1184,8 @@ async function updatePIPChatHistory() {
     if (!userId || userId === 'None') {
       historyDiv.innerHTML = `
         <div class="text-center text-muted py-4">
-          <i class="bi bi-person-x" style="font-size: 2rem;"></i>
-          <p class="small mt-2 mb-0">
-            <span data-lang="KOR">로그인이 필요합니다</span>
-            <span data-lang="ENG" style="display: none;">Login required</span>
-            <span data-lang="ESP" style="display: none;">Se requiere iniciar sesión</span>
-          </p>
+          <i class="bi bi-person-x text-secondary" style="font-size: 2rem;"></i>
+          <p class="small mt-2 mb-0">${AI_ANALYZER_I18N.getTranslation('로그인이 필요합니다.')}</p>
         </div>
       `;
       return;
@@ -1199,11 +1195,7 @@ async function updatePIPChatHistory() {
     historyDiv.innerHTML = `
       <div class="text-center text-muted py-4">
         <div class="spinner-border spinner-border-sm mb-2" role="status"></div>
-        <p class="small mb-0">
-          <span data-lang="KOR">채팅 기록을 불러오는 중...</span>
-          <span data-lang="ENG" style="display: none;">Loading chat history...</span>
-          <span data-lang="ESP" style="display: none;">Cargando historial de chat...</span>
-        </p>
+        <p class="small mb-0">${AI_ANALYZER_I18N.getTranslation('채팅 기록을 불러오는 중...')}</p>
       </div>
     `;
 
@@ -1218,11 +1210,7 @@ async function updatePIPChatHistory() {
       historyDiv.innerHTML = `
         <div class="text-center text-muted py-4">
           <i class="bi bi-chat-square-dots" style="font-size: 2rem;"></i>
-          <p class="small mt-2 mb-0">
-            <span data-lang="KOR">아직 대화 기록이 없습니다.<br>AI와 대화를 시작해보세요!</span>
-            <span data-lang="ENG" style="display: none;">No conversation history yet.<br>Start chatting with AI!</span>
-            <span data-lang="ESP" style="display: none;">Aún no hay historial de conversación.<br>¡Comience a chatear con la IA!</span>
-          </p>
+          <p class="small mt-2 mb-0">${AI_ANALYZER_I18N.getTranslation('아직 대화 기록이 없습니다.')}<br>${AI_ANALYZER_I18N.getTranslation('AI와 대화를 시작해보세요!')}</p>
         </div>
       `;
       return;
@@ -1276,7 +1264,7 @@ async function updatePIPChatHistory() {
     historyDiv.innerHTML = `
       <div class="text-center text-muted py-4">
         <i class="bi bi-exclamation-triangle text-warning" style="font-size: 2rem;"></i>
-        <p class="small mt-2 mb-0">채팅 기록을 불러올 수 없습니다.<br>잠시 후 다시 시도해주세요.</p>
+        <p class="small mt-2 mb-0">${AI_ANALYZER_I18N.getTranslation('채팅 기록을 불러올 수 없습니다.')}<br>${AI_ANALYZER_I18N.getTranslation('잠시 후 다시 시도해주세요.')}</p>
       </div>
     `;
   }
@@ -1296,11 +1284,7 @@ async function loadChatSession(sessionId) {
       pipChatMessages.innerHTML = `
         <div class="text-center py-4">
           <div class="spinner-border text-primary mb-3" role="status"></div>
-          <p class="text-muted">
-            <span data-lang="KOR">대화 기록을 불러오는 중...</span>
-            <span data-lang="ENG" style="display: none;">Loading conversation history...</span>
-            <span data-lang="ESP" style="display: none;">Cargando historial de conversación...</span>
-          </p>
+          <p class="text-muted">${AI_ANALYZER_I18N.getTranslation('대화 기록을 불러오는 중...')}</p>
         </div>
       `;
     }
@@ -1364,16 +1348,8 @@ async function loadChatSession(sessionId) {
       pipChatMessages.innerHTML = `
         <div class="text-center py-4">
           <i class="bi bi-exclamation-triangle text-warning mb-3" style="font-size: 3rem;"></i>
-          <h6>
-            <span data-lang="KOR">대화 기록을 불러올 수 없습니다</span>
-            <span data-lang="ENG" style="display: none;">Unable to load conversation history</span>
-            <span data-lang="ESP" style="display: none;">No se puede cargar el historial de conversación</span>
-          </h6>
-          <p class="text-muted">
-            <span data-lang="KOR">잠시 후 다시 시도해주세요.</span>
-            <span data-lang="ENG" style="display: none;">Please try again later.</span>
-            <span data-lang="ESP" style="display: none;">Por favor, inténtelo de nuevo más tarde.</span>
-          </p>
+          <h6>${AI_ANALYZER_I18N.getTranslation('대화 기록을 불러올 수 없습니다')}</h6>
+          <p class="text-muted">${AI_ANALYZER_I18N.getTranslation('잠시 후 다시 시도해주세요.')}</p>
         </div>
       `;
     }
@@ -1540,35 +1516,19 @@ function updatePIPAnalysisSummary() {
 
   summaryDiv.innerHTML = `
     <div class="mb-3">
-      <h6 class="text-primary mb-2">
-        📍 <span data-lang="KOR">기본 정보</span>
-        <span data-lang="ENG" style="display: none;">Basic Information</span>
-        <span data-lang="ESP" style="display: none;">Información Básica</span>
-      </h6>
+      <h6 class="text-primary mb-2">📍 ${AI_ANALYZER_I18N.getTranslation('기본 정보')}</h6>
       <div class="small">
         <div class="mb-1">
-          <strong>
-            <span data-lang="KOR">주소:</span>
-            <span data-lang="ENG" style="display: none;">Address:</span>
-            <span data-lang="ESP" style="display: none;">Dirección:</span>
-          </strong> ${address}
+          <strong>${AI_ANALYZER_I18N.getTranslation('주소:')}</strong> ${address}
         </div>
         <div class="mb-1">
-          <strong>
-            <span data-lang="KOR">업종:</span>
-            <span data-lang="ENG" style="display: none;">Business Type:</span>
-            <span data-lang="ESP" style="display: none;">Tipo de Negocio:</span>
-          </strong> ${businessType}
+          <strong>${AI_ANALYZER_I18N.getTranslation('업종:')}</strong> ${businessType}
         </div>
       </div>
     </div>
 
     <div class="mb-3">
-      <h6 class="text-success mb-2">
-        🎯 <span data-lang="KOR">AI 생존 확률</span>
-        <span data-lang="ENG" style="display: none;">AI Survival Rate</span>
-        <span data-lang="ESP" style="display: none;">Tasa de Supervivencia IA</span>
-      </h6>
+      <h6 class="text-success mb-2">🎯 ${AI_ANALYZER_I18N.getTranslation('AI 생존 확률')}</h6>
       <div class="text-center">
         <div class="h4 text-primary mb-1">${survivalRate}</div>
         <div class="progress mb-2" style="height: 8px;">
@@ -1578,50 +1538,30 @@ function updatePIPAnalysisSummary() {
     </div>
 
     <div class="mb-3">
-      <h6 class="text-info mb-2">
-        📊 <span data-lang="KOR">핵심 지표</span>
-        <span data-lang="ENG" style="display: none;">Key Indicators</span>
-        <span data-lang="ESP" style="display: none;">Indicadores Clave</span>
-      </h6>
+      <h6 class="text-info mb-2">📊 ${AI_ANALYZER_I18N.getTranslation('핵심 지표')}</h6>
       <div class="row g-2 small">
         <div class="col-6">
           <div class="bg-light rounded p-2 text-center">
             <div class="fw-bold text-primary">${lifePop}</div>
-            <div class="text-muted" style="font-size: 0.75rem;">
-              <span data-lang="KOR">생활인구</span>
-              <span data-lang="ENG" style="display: none;">Resident Pop.</span>
-              <span data-lang="ESP" style="display: none;">Pob. Residente</span>
-            </div>
+            <div class="text-muted" style="font-size: 0.75rem;">${AI_ANALYZER_I18N.getTranslation('생활인구')}</div>
           </div>
         </div>
         <div class="col-6">
           <div class="bg-light rounded p-2 text-center">
             <div class="fw-bold text-warning">${workingPop}</div>
-            <div class="text-muted" style="font-size: 0.75rem;">
-              <span data-lang="KOR">직장인구</span>
-              <span data-lang="ENG" style="display: none;">Working Pop.</span>
-              <span data-lang="ESP" style="display: none;">Pob. Laboral</span>
-            </div>
+            <div class="text-muted" style="font-size: 0.75rem;">${AI_ANALYZER_I18N.getTranslation('직장인구')}</div>
           </div>
         </div>
         <div class="col-6">
           <div class="bg-light rounded p-2 text-center">
             <div class="fw-bold text-danger">${competitor}</div>
-            <div class="text-muted" style="font-size: 0.75rem;">
-              <span data-lang="KOR">경쟁업체</span>
-              <span data-lang="ENG" style="display: none;">Competitors</span>
-              <span data-lang="ESP" style="display: none;">Competidores</span>
-            </div>
+            <div class="text-muted" style="font-size: 0.75rem;">${AI_ANALYZER_I18N.getTranslation('경쟁업체')}</div>
           </div>
         </div>
         <div class="col-6">
           <div class="bg-light rounded p-2 text-center">
             <div class="fw-bold text-secondary">${landValue}</div>
-            <div class="text-muted" style="font-size: 0.75rem;">
-              <span data-lang="KOR">공시지가</span>
-              <span data-lang="ENG" style="display: none;">Land Value</span>
-              <span data-lang="ESP" style="display: none;">Valor de Tierra</span>
-            </div>
+            <div class="text-muted" style="font-size: 0.75rem;">${AI_ANALYZER_I18N.getTranslation('공시지가')}</div>
           </div>
         </div>
       </div>
@@ -1630,28 +1570,10 @@ function updatePIPAnalysisSummary() {
     <div class="alert alert-info py-2 px-3">
       <small>
         <i class="bi bi-info-circle me-1"></i>
-        <span data-lang="KOR">좌측 채팅에서 분석 결과에 대해 자세히 문의하실 수 있습니다.</span>
-        <span data-lang="ENG" style="display: none;">You can inquire in detail about the analysis results in the left chat.</span>
-        <span data-lang="ESP" style="display: none;">Puede consultar en detalle sobre los resultados del análisis en el chat izquierdo.</span>
+        ${AI_ANALYZER_I18N.getTranslation('좌측 채팅에서 분석 결과에 대해 자세히 문의하실 수 있습니다.')}
       </small>
     </div>
   `;
-  
-  // HTML 생성 후 현재 언어에 맞게 표시/숨김 처리
-  const currentLang = getCurrentLanguage();
-  const langElements = summaryDiv.querySelectorAll('[data-lang]');
-  langElements.forEach(element => {
-    const elementLang = element.getAttribute('data-lang').toLowerCase();
-    if (elementLang === 'kor' && currentLang === 'ko') {
-      element.style.display = '';
-    } else if (elementLang === 'eng' && currentLang === 'en') {
-      element.style.display = '';
-    } else if (elementLang === 'esp' && currentLang === 'es') {
-      element.style.display = '';
-    } else {
-      element.style.display = 'none';
-    }
-  });
 }
 
 // 생존 확률에 따른 진행바 클래스 반환
