@@ -500,22 +500,12 @@ function createStreamingBotMessage(containerId, messageId, contentId, isPIP = fa
       <div class="flex-grow-1">
         <div class="bg-white rounded-3 p-4 shadow-sm border">
           <div class="d-flex align-items-center mb-2">
-            <strong class="text-primary me-2">
-              <span data-lang="KOR">분석결과 상담 AI</span>
-              <span data-lang="ENG" style="display: none;">Analysis Consultation AI</span>
-              <span data-lang="ESP" style="display: none;">IA de Consulta de Análisis</span>
-            </strong>
-            <span class="badge bg-success-subtle text-success">
-              <span data-lang="KOR">온라인</span>
-              <span data-lang="ENG" style="display: none;">Online</span>
-              <span data-lang="ESP" style="display: none;">En línea</span>
-            </span>
+            <strong class="text-primary me-2">${AI_ANALYZER_I18N.getTranslation('분석결과 상담 AI')}</strong>
+            <span class="badge bg-success-subtle text-success">${AI_ANALYZER_I18N.getTranslation('온라인')}</span>
           </div>
           <div id="${contentId}">
             <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-            <span data-lang="KOR">답변을 생성하고 있습니다...</span>
-            <span data-lang="ENG" style="display: none;">Generating response...</span>
-            <span data-lang="ESP" style="display: none;">Generando respuesta...</span>
+            ${AI_ANALYZER_I18N.getTranslation('답변을 생성하고 있습니다...')}
           </div>
         </div>
       </div>
@@ -527,16 +517,10 @@ function createStreamingBotMessage(containerId, messageId, contentId, isPIP = fa
       </div>
       <div class="flex-grow-1">
         <div class="bg-white rounded p-2 shadow-sm">
-          <small class="text-muted d-block mb-1">
-            <span data-lang="KOR">분석결과 상담 AI</span>
-            <span data-lang="ENG" style="display: none;">Analysis Consultation AI</span>
-            <span data-lang="ESP" style="display: none;">IA de Consulta de Análisis</span>
-          </small>
+          <small class="text-muted d-block mb-1">${AI_ANALYZER_I18N.getTranslation('분석결과 상담 AI')}</small>
           <p class="mb-0 small" id="${contentId}">
             <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-            <span data-lang="KOR">답변을 생성하고 있습니다...</span>
-            <span data-lang="ENG" style="display: none;">Generating response...</span>
-            <span data-lang="ESP" style="display: none;">Generando respuesta...</span>
+            ${AI_ANALYZER_I18N.getTranslation('답변을 생성하고 있습니다...')}
           </p>
         </div>
       </div>
@@ -664,11 +648,7 @@ function addBotMessage(message) {
     </div>
     <div class="flex-grow-1">
       <div class="bg-white rounded p-2 shadow-sm">
-        <small class="text-muted d-block mb-1">
-          <span data-lang="KOR">분석결과 상담 AI</span>
-          <span data-lang="ENG" style="display: none;">Analysis Consultation AI</span>
-          <span data-lang="ESP" style="display: none;">IA de Consulta de Análisis</span>
-        </small>
+        <small class="text-muted d-block mb-1">${AI_ANALYZER_I18N.getTranslation('분석결과 상담 AI')}</small>
         <div class="mb-0 small">${marked.parse(message)}</div>
       </div>
     </div>
