@@ -124,7 +124,10 @@ function initializeChatbotState() {
   
   const chatbotStatus = document.getElementById('chatbotStatus');
   if (chatbotStatus) {
-    chatbotStatus.textContent = '대기중';
+    // AI_ANALYZER_I18N 시스템을 사용하여 다국어화
+    if (window.AI_ANALYZER_I18N) {
+      chatbotStatus.textContent = AI_ANALYZER_I18N.translate('대기중');
+    }
     chatbotStatus.className = 'badge bg-secondary';
   }
 }
@@ -1667,16 +1670,13 @@ function getSurvivalBarClass(survivalRate) {
 // 언어 및 다국어화 유틸리티
 // ===========================================
 
-// 현재 언어 감지
+// getCurrentLanguage 함수 간소화 - AI_ANALYZER_I18N 시스템과 연동
 function getCurrentLanguage() {
-  // analyze-i18n.js의 currentLanguage 변수 사용
-  if (typeof currentLanguage !== 'undefined') {
-    return currentLanguage;
+  // 새로운 통합 시스템 사용
+  if (window.getCurrentAILanguage) {
+    return window.getCurrentAILanguage();
   }
-  
-  // 로컬스토리지에서 언어 설정 확인
-  const savedLanguage = localStorage.getItem('preferred_language') || 'ko';
-  return savedLanguage;
+  return 'ko'; // 백업
 }
 
 // 현재 선택된 챗봇 모드 가져오기
