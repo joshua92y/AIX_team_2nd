@@ -90,7 +90,7 @@ const AI_ANALYZER_I18N = {
     this.updateDropdowns();
     
     // 재분석 트리거 (분석 결과가 있을 때만)
-    setTimeout(() => {
+  setTimeout(() => {
       this.triggerReanalysisIfNeeded(oldLanguage);
     }, 500);
   },
@@ -514,7 +514,7 @@ const AI_ANALYZER_I18N = {
      '분석결과 상담 AI': { en: 'Analysis Consultation AI', es: 'IA de Consulta de Análisis' },
      '상권 분석 결과에 대해 AI와 상담하려면 로그인이 필요합니다.': { en: 'Login is required to consult with AI about analysis results.', es: 'Se requiere iniciar sesión para consultar con IA sobre los resultados del análisis.' },
      '상권 분석을 완료하면 AI 상담 서비스를 이용할 수 있습니다.': { en: 'Once commercial analysis is complete, you can use AI consultation service.', es: 'Una vez completado el análisis comercial, puede usar el servicio de consulta IA.' },
-     '분석 완료 후 자동 활성화': { en: 'Auto-activated after analysis', es: 'Activación automática después del análisis' },
+    '분석 완료 후 자동 활성화': { en: 'Auto-activated after analysis', es: 'Activación automática después del análisis' },
      '안녕하세요! 🎯 방금 완료된 상권 분석 결과에 대해 궁금한 점이 있으시면 언제든 물어보세요.': { 
        en: 'Hello! 🎯 If you have any questions about the commercial area analysis results just completed, feel free to ask anytime.', 
        es: '¡Hola! 🎯 Si tiene alguna pregunta sobre los resultados del análisis del área comercial recién completado, no dude en preguntar en cualquier momento.' 
