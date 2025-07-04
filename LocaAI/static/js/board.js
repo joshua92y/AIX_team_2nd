@@ -57,4 +57,41 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    // 파일명 표시 (썸네일)
+    const thumbnailFileInput = document.getElementById('thumbnail-input');
+    if (thumbnailFileInput) {
+        thumbnailFileInput.addEventListener('change', function () {
+            const fileName = this.files[0]?.name || '';
+            const spans = document.querySelectorAll('#thumbnail-filename span');
+            spans.forEach(span => {
+                const lang = span.getAttribute('data-lang');
+                if (fileName) {
+                    span.innerText = fileName;
+                } else {
+                    if (lang === 'KOR') span.innerText = '선택된 파일 없음';
+                    else if (lang === 'ENG') span.innerText = 'No file chosen';
+                    else if (lang === 'ESP') span.innerText = 'Ningún archivo seleccionado';
+                }
+            });
+        });
+    }
+
+    // 파일명 표시 (첨부파일)
+    const fileInput = document.getElementById('file-input');
+    if (fileInput) {
+        fileInput.addEventListener('change', function () {
+            const fileName = this.files[0]?.name || '';
+            const spans = document.querySelectorAll('#file-filename span');
+            spans.forEach(span => {
+                const lang = span.getAttribute('data-lang');
+                if (fileName) {
+                    span.innerText = fileName;
+                } else {
+                    if (lang === 'KOR') span.innerText = '선택된 파일 없음';
+                    else if (lang === 'ENG') span.innerText = 'No file chosen';
+                    else if (lang === 'ESP') span.innerText = 'Ningún archivo seleccionado';
+                }
+            });
+        });
+    }
 }); 

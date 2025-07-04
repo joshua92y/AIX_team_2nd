@@ -131,7 +131,11 @@
         
         {% if not request.user.is_authenticated %}
         <div class="form-group">
-            <label for="{{ form.guest_name.id_for_label }}" class="form-label">{{ form.guest_name.label }}</label>
+            <label for="{{ form.guest_name.id_for_label }}" class="form-label">
+                <span data-lang="KOR">이름</span>
+                <span data-lang="ENG">name</span>
+                <span data-lang="ESP">nombre</span>
+            </label>
             <input type="text" name="{{ form.guest_name.name }}" id="{{ form.guest_name.id_for_label }}" class="form-control" value="{{ form.guest_name.value|default:'' }}">
             {% if form.guest_name.errors %}
             <div class="text-danger">
@@ -142,7 +146,11 @@
             {% endif %}
         </div>
         <div class="form-group">
-            <label for="{{ form.guest_password.id_for_label }}" class="form-label">{{ form.guest_password.label }}</label>
+            <label for="{{ form.guest_password.id_for_label }}" class="form-label">
+                <span data-lang="KOR">비밀번호</span>
+                <span data-lang="ENG">password</span>
+                <span data-lang="ESP">contraseña</span>
+            </label>
             <input type="password" name="{{ form.guest_password.name }}" id="{{ form.guest_password.id_for_label }}" class="form-control">
             {% if form.guest_password.errors %}
             <div class="text-danger">
@@ -155,7 +163,11 @@
         {% endif %}
 
         <div class="form-group">
-            <label for="{{ form.title.id_for_label }}" class="form-label">{{ form.title.label }}</label>
+            <label for="{{ form.title.id_for_label }}" class="form-label">
+                <span data-lang="KOR">제목</span>
+                <span data-lang="ENG">title</span>
+                <span data-lang="ESP">Título</span>
+            </label>
             <input type="text" name="{{ form.title.name }}" id="{{ form.title.id_for_label }}" class="form-control" value="{{ form.title.value|default:'' }}">
             {% if form.title.errors %}
             <div class="text-danger">
@@ -167,7 +179,11 @@
         </div>
 
         <div class="form-group">
-            <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
+            <label for="{{ form.description.id_for_label }}" class="form-label">
+                <span data-lang="KOR">내용</span>
+                <span data-lang="ENG">description</span>
+                <span data-lang="ESP">Contenido</span>
+            </label>
             <textarea name="{{ form.description.name }}" id="{{ form.description.id_for_label }}" class="form-control" rows="10">{{ form.description.value|default:'' }}</textarea>
             {% if form.description.errors %}
             <div class="text-danger">
@@ -179,34 +195,59 @@
         </div>
 
         <div class="form-group">
-            <label for="{{ form.thumbnail.id_for_label }}" class="form-label">{{ form.thumbnail.label }}</label>
-            <input type="file" name="{{ form.thumbnail.name }}" id="{{ form.thumbnail.id_for_label }}" class="form-control">
-            {% if form.thumbnail.errors %}
-            <div class="text-danger">
-                {% for error in form.thumbnail.errors %}
-                    {{ error }}
-                {% endfor %}
+            <label class="form-label">
+                <span data-lang="KOR">썸네일</span>
+                <span data-lang="ENG" style="display:none">Thumbnail</span>
+                <span data-lang="ESP" style="display:none">Miniatura</span>
+            </label>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <input type="file" name="{{ form.thumbnail.name }}" id="thumbnail-input" style="display:none;">
+                <label for="thumbnail-input" class="btn btn-secondary mb-0">
+                    <span data-lang="KOR">파일 선택</span>
+                    <span data-lang="ENG" style="display:none">Choose File</span>
+                    <span data-lang="ESP" style="display:none">Seleccionar archivo</span>
+                </label>
+                <span id="thumbnail-filename" class="form-text mb-0">
+                    <span data-lang="KOR">선택된 파일 없음</span>
+                    <span data-lang="ENG" style="display:none">No file chosen</span>
+                    <span data-lang="ESP" style="display:none">Ningún archivo seleccionado</span>
+                </span>
+                <div class="post-thumbnail mt-3">
+                    <!-- 썸네일 미리보기 이미지가 여기에 들어옴 -->
+                </div>
             </div>
-            {% endif %}
         </div>
 
         <div class="form-group">
-            <label for="{{ form.file.id_for_label }}" class="form-label">{{ form.file.label }}</label>
-            <input type="file" name="{{ form.file.name }}" id="{{ form.file.id_for_label }}" class="form-control">
-            {% if form.file.errors %}
-            <div class="text-danger">
-                {% for error in form.file.errors %}
-                    {{ error }}
-                {% endfor %}
+            <label class="form-label">
+                <span data-lang="KOR">첨부파일</span>
+                <span data-lang="ENG" style="display:none">Attachment</span>
+                <span data-lang="ESP" style="display:none">Archivo adjunto</span>
+            </label>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <input type="file" name="{{ form.file.name }}" id="file-input" style="display:none;">
+                <label for="file-input" class="btn btn-secondary mb-0">
+                    <span data-lang="KOR">파일 선택</span>
+                    <span data-lang="ENG" style="display:none">Choose File</span>
+                    <span data-lang="ESP" style="display:none">Seleccionar archivo</span>
+                </label>
+                <span id="file-filename" class="form-text mb-0">
+                    <span data-lang="KOR">선택된 파일 없음</span>
+                    <span data-lang="ENG" style="display:none">No file chosen</span>
+                    <span data-lang="ESP" style="display:none">Ningún archivo seleccionado</span>
+                </span>
             </div>
-            {% endif %}
         </div>
 
         {% if board_type == 'inquiry' %}
         <div class="form-group">
             <div class="form-check">
                 <input type="checkbox" name="{{ form.is_private.name }}" id="{{ form.is_private.id_for_label }}" class="form-check-input" {% if form.is_private.value %}checked{% endif %}>
-                <label for="{{ form.is_private.id_for_label }}" class="form-check-label">{{ form.is_private.label }}</label>
+               <label for="{{ form.is_private.id_for_label }}" class="form-check-label">
+                    <span data-lang="KOR">비공개</span>
+                    <span data-lang="ENG" style="display:none">Private</span>
+                    <span data-lang="ESP" style="display:none">Privado</span>
+                </label>
             </div>
             {% if form.is_private.errors %}
             <div class="text-danger">
@@ -245,4 +286,4 @@
 
 {% block js %}
 <script src="{% static 'js/board.js' %}"></script>
-{% endblock %} 
+{% endblock %}
