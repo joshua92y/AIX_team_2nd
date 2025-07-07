@@ -3460,7 +3460,7 @@ def get_population_data(center_point, radius):
                         dl.emd_cd,
                         dl.총생활인구수_sum,
                         ad.geom
-                    FROM dong_life dl
+                    FROM dong_life_5186 dl
                     JOIN "행정동구역" ad ON dl.emd_cd = ad.emd_cd
                     WHERE dl.emd_cd LIKE %s
                         AND dl.총생활인구수_sum > 0
@@ -3544,7 +3544,7 @@ def get_workplace_data(center_point, radius):
                         dw.총_직장_인구_수_sum,
                         dw.남성_직장_인구_수_sum,
                         dw.여성_직장_인구_수_sum
-                    FROM dong_work dw
+                    FROM dong_work_5186 dw
                     WHERE dw.emd_cd LIKE %s
                         AND dw.총_직장_인구_수_sum > 0
                     ORDER BY dw.총_직장_인구_수_sum DESC
@@ -3624,7 +3624,7 @@ def get_shops_data(center_point, radius):
                         ds."X",
                         ds."Y",
                         ds."RESULT"
-                    FROM dong_store ds
+                    FROM dong_store_complete_matched ds
                     WHERE ds."EMD_CD" LIKE %s
                         AND ds."X" IS NOT NULL 
                         AND ds."Y" IS NOT NULL
