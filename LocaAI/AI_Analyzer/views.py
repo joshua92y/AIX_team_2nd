@@ -32,6 +32,9 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from chatbot.models import ChatSession, ChatLog, ChatMemory
 from django.core.serializers.json import DjangoJSONEncoder
+from GeoDB.models import LifePopGrid, WorkGrid, StorePoint, School, PublicBuilding
+from django.contrib.gis.geos import Point
+from django.contrib.gis.db.models.functions import Distance
 
 # PDF 생성은 클라이언트 사이드에서 jsPDF로 처리
 
@@ -3359,3 +3362,185 @@ def result_create_session(request, user_id, result_id):
         return Response({"status": "error", "message": "분석 결과를 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({"status": "error", "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# ===========================================
+# 🗺️ 지도 데이터 API
+# ===========================================
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def get_map_data(request):
+    """
+    지도 데이터 조회 API (거주인구, 직장인구, 주변상점)
+    
+    Args:
+        request: HTTP 요청 객체 (JSON body에 위치 및 옵션 포함)
+        
+    Returns:
+        JsonResponse: 성공 시 데이터 배열, 실패 시 에러 메시지
+        
+    Required JSON fields:
+        - latitude: 위도 (WGS84)
+        - longitude: 경도 (WGS84)  
+        - radius: 반경 (300 또는 1000)
+        - mode: 데이터 타입 ("population", "workplace", "shops")
+    """
+    try:
+        data = json.loads(request.body)
+        
+        # 필수 파라미터 확인
+        latitude = data.get('latitude')
+        longitude = data.get('longitude')
+        radius = data.get('radius', 300)
+        mode = data.get('mode', 'population')
+        
+        if not latitude or not longitude:
+            return JsonResponse({"error": "위도와 경도가 필요합니다."}, status=400)
+        
+        # WGS84 좌표를 EPSG:5186으로 변환
+        transformer = Transformer.from_crs("EPSG:4326", "EPSG:5186", always_xy=True)
+        x_coord, y_coord = transformer.transform(float(longitude), float(latitude))
+        
+        # EPSG:5186 좌표계에서 Point 생성
+        center_point = Point(x_coord, y_coord, srid=5186)
+        
+        print(f"🗺️ 지도 데이터 조회 - 모드: {mode}, 반경: {radius}m, 중심점: ({latitude}, {longitude})")
+        
+        # 모드에 따른 데이터 조회
+        if mode == 'population':
+            result_data = get_population_data(center_point, radius)
+        elif mode == 'workplace':
+            result_data = get_workplace_data(center_point, radius)
+        elif mode == 'shops':
+            result_data = get_shops_data(center_point, radius)
+        else:
+            return JsonResponse({"error": "지원하지 않는 모드입니다."}, status=400)
+        
+        return JsonResponse({
+            "success": True,
+            "mode": mode,
+            "radius": radius,
+            "center": {"lat": latitude, "lng": longitude},
+            "data": result_data,
+            "count": len(result_data)
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "잘못된 JSON 형식입니다."}, status=400)
+    except Exception as e:
+        print(f"❌ 지도 데이터 조회 중 오류 발생: {e}")
+        return JsonResponse({"error": f"데이터 조회 중 오류가 발생했습니다: {str(e)}"}, status=500)
+
+
+def get_population_data(center_point, radius):
+    """거주인구 데이터 조회"""
+    try:
+        # 반경 내 생활인구 그리드 조회
+        population_grids = LifePopGrid.objects.filter(
+            geom__distance_lte=(center_point, radius)
+        ).annotate(
+            distance=Distance('geom', center_point)
+        )[:50]  # 최대 50개로 제한
+        
+        result_data = []
+        for grid in population_grids:
+            if grid.geom and grid.총생활인구수:
+                # 그리드 중심점 좌표 변환 (EPSG:5186 -> WGS84)
+                centroid = grid.geom.centroid
+                if centroid:
+                    transformer = Transformer.from_crs("EPSG:5186", "EPSG:4326", always_xy=True)
+                    lng, lat = transformer.transform(centroid.x, centroid.y)
+                    
+                    result_data.append({
+                        "lat": lat,
+                        "lng": lng,
+                        "population": int(grid.총생활인구수),
+                        "age_20": grid.age_20 or 0,
+                        "age_30": grid.age_30 or 0,
+                        "age_40": grid.age_40 or 0,
+                        "age_50": grid.age_50 or 0,
+                        "age_60": grid.age_60 or 0,
+                        "distance": float(grid.distance.m) if hasattr(grid, 'distance') else 0
+                    })
+        
+        print(f"📊 거주인구 데이터 조회 완료: {len(result_data)}개")
+        return result_data
+        
+    except Exception as e:
+        print(f"❌ 거주인구 데이터 조회 실패: {e}")
+        return []
+
+
+def get_workplace_data(center_point, radius):
+    """직장인구 데이터 조회"""
+    try:
+        # 반경 내 직장인구 그리드 조회
+        work_grids = WorkGrid.objects.filter(
+            geom__distance_lte=(center_point, radius)
+        ).annotate(
+            distance=Distance('geom', center_point)
+        )[:50]  # 최대 50개로 제한
+        
+        result_data = []
+        for grid in work_grids:
+            if grid.geom and grid.총_직장_인구_수:
+                # 그리드 중심점 좌표 변환 (EPSG:5186 -> WGS84)
+                centroid = grid.geom.centroid
+                if centroid:
+                    transformer = Transformer.from_crs("EPSG:5186", "EPSG:4326", always_xy=True)
+                    lng, lat = transformer.transform(centroid.x, centroid.y)
+                    
+                    result_data.append({
+                        "lat": lat,
+                        "lng": lng,
+                        "workers": int(grid.총_직장_인구_수),
+                        "male_workers": grid.남성_직장_인구_수 or 0,
+                        "female_workers": grid.여성_직장_인구_수 or 0,
+                        "distance": float(grid.distance.m) if hasattr(grid, 'distance') else 0
+                    })
+        
+        print(f"🏢 직장인구 데이터 조회 완료: {len(result_data)}개")
+        return result_data
+        
+    except Exception as e:
+        print(f"❌ 직장인구 데이터 조회 실패: {e}")
+        return []
+
+
+def get_shops_data(center_point, radius):
+    """주변상점 데이터 조회"""
+    try:
+        # 반경 내 상점 포인트 조회
+        shops = StorePoint.objects.filter(
+            geom__distance_lte=(center_point, radius)
+        ).annotate(
+            distance=Distance('geom', center_point)
+        )[:100]  # 최대 100개로 제한
+        
+        result_data = []
+        for shop in shops:
+            if shop.geom:
+                # 상점 좌표 변환 (EPSG:5186 -> WGS84)
+                point = shop.geom.centroid if hasattr(shop.geom, 'centroid') else shop.geom
+                if point:
+                    transformer = Transformer.from_crs("EPSG:5186", "EPSG:4326", always_xy=True)
+                    lng, lat = transformer.transform(point.x, point.y)
+                    
+                    result_data.append({
+                        "id": shop.ogc_fid,
+                        "lat": lat,
+                        "lng": lng,
+                        "name": shop.uptaenm or f"상점 {shop.ogc_fid}",
+                        "category": shop.service or shop.uptaenm or "기타",
+                        "address": f"서울시 상점 {shop.ogc_fid}",  # 실제 주소 필드가 없으므로 임시
+                        "phone": None,  # 전화번호 필드가 없음
+                        "rating": round(random.uniform(3.5, 4.8), 1),  # 임시 평점
+                        "distance": float(shop.distance.m) if hasattr(shop, 'distance') else 0
+                    })
+        
+        print(f"🏪 주변상점 데이터 조회 완료: {len(result_data)}개")
+        return result_data
+        
+    except Exception as e:
+        print(f"❌ 주변상점 데이터 조회 실패: {e}")
+        return []

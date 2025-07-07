@@ -19,4 +19,7 @@ urlpatterns = [
     path('analysis-session-log/<str:user_id>/<str:session_id>/', views.AnalysisSessionLogView.as_view(), name='analysis-session-log'),
     path('analysis-sessions/<str:user_id>/<str:session_id>/title/', views.update_analysis_session_title, name='update-analysis-session-title'),
     path('analysis-sessions/<str:user_id>/<str:session_id>/delete/', views.delete_analysis_session, name='delete-analysis-session'),
+    
+    # 지도 데이터 API
+    path('api/map-data/', views.get_map_data, name='get_map_data'),
 ] 

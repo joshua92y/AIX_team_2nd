@@ -473,19 +473,114 @@ function loadMapData() {
 }
 
 /**
+ * 실제 Django API에서 지도 데이터 로드
+ */
+function loadRealMapData(mode) {
+  if (!currentLocation) {
+    console.warn('⚠️ 현재 위치가 설정되지 않았습니다');
+    showMapLoading(false);
+    return;
+  }
+  
+  console.log(`🌐 Django API 호출 시작: ${mode} 데이터, ${currentBufferSize}m 반경`);
+  
+  // API 요청 데이터 준비
+  const requestData = {
+    latitude: currentLocation.lat,
+    longitude: currentLocation.lng,
+    radius: currentBufferSize,
+    mode: mode
+  };
+  
+  // Django API 호출
+  fetch('/ai-analyzer/api/map-data/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    },
+    body: JSON.stringify(requestData)
+  })
+  .then(response => {
+    console.log(`📡 API 응답 상태: ${response.status}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    console.log(`✅ ${mode} 데이터 수신 완료:`, data);
+    
+    if (data.success && data.data) {
+      // 모드에 따른 데이터 표시
+      switch (mode) {
+        case 'population':
+          displayPopulationData(data.data);
+          break;
+        case 'workplace':
+          displayWorkplaceData(data.data);
+          break;
+        case 'shops':
+          displayShopsData(data.data);
+          break;
+      }
+      
+      console.log(`📊 ${mode} 데이터 표시 완료: ${data.count}개`);
+    } else {
+      console.warn(`⚠️ ${mode} 데이터가 없습니다:`, data);
+      // 데이터가 없어도 로딩 상태 해제
+    }
+    
+    showMapLoading(false);
+  })
+  .catch(error => {
+    console.error(`❌ ${mode} 데이터 로드 실패:`, error);
+    showMapLoading(false);
+    
+    // 실패 시 폴백으로 데모 데이터 표시
+    console.log(`🔄 ${mode} 데모 데이터로 폴백...`);
+    setTimeout(() => {
+      switch (mode) {
+        case 'population':
+          displayPopulationData(generateDemoPopulationData());
+          break;
+        case 'workplace':
+          displayWorkplaceData(generateDemoWorkplaceData());
+          break;
+        case 'shops':
+          displayShopsData(generateDemoShopsData());
+          break;
+      }
+    }, 100);
+  });
+}
+
+/**
+ * CSRF 토큰 가져오기
+ */
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+/**
  * 거주인구 데이터 로드
  */
 function loadPopulationData() {
   console.log('👥 거주인구 데이터 로드...');
   
-  // 실제 구현에서는 Django API 호출
-  // 여기서는 데모 데이터 생성
-  setTimeout(() => {
-    const demoData = generateDemoPopulationData();
-    displayPopulationData(demoData);
-    showMapLoading(false);
-    console.log('✅ 거주인구 데이터 로드 완료');
-  }, 300);
+  // 실제 Django API 호출
+  loadRealMapData('population');
 }
 
 /**
@@ -494,13 +589,8 @@ function loadPopulationData() {
 function loadWorkplaceData() {
   console.log('🏢 직장인구 데이터 로드...');
   
-  // 실제 구현에서는 Django API 호출
-  setTimeout(() => {
-    const demoData = generateDemoWorkplaceData();
-    displayWorkplaceData(demoData);
-    showMapLoading(false);
-    console.log('✅ 직장인구 데이터 로드 완료');
-  }, 300);
+  // 실제 Django API 호출
+  loadRealMapData('workplace');
 }
 
 /**
@@ -509,13 +599,8 @@ function loadWorkplaceData() {
 function loadShopsData() {
   console.log('🏪 주변상점 데이터 로드...');
   
-  // 실제 구현에서는 Django API 호출
-  setTimeout(() => {
-    const demoData = generateDemoShopsData();
-    displayShopsData(demoData);
-    showMapLoading(false);
-    console.log('✅ 주변상점 데이터 로드 완료');
-  }, 300);
+  // 실제 Django API 호출
+  loadRealMapData('shops');
 }
 
 // ===========================================
@@ -552,32 +637,37 @@ function displayPopulationData(data) {
  * 직장인구 데이터 표시
  */
 function displayWorkplaceData(data) {
-  console.log('📊 직장인구 데이터 표시');
+  console.log('📊 직장인구 데이터 표시 시작:', data.length, '개');
   
   clearDataMarkers();
   
-  data.forEach(point => {
+  data.forEach((point, index) => {
     const coords = ol.proj.fromLonLat([point.lng, point.lat]);
     const marker = new ol.Feature({
       geometry: new ol.geom.Point(coords),
       type: 'workplace',
       workers: point.workers,
-      info: `직장인구: ${point.workers.toLocaleString()}명`
+      male_workers: point.male_workers || 0,
+      female_workers: point.female_workers || 0,
+      info: `직장인구: ${point.workers.toLocaleString()}명 (남: ${point.male_workers || 0}명, 여: ${point.female_workers || 0}명)`
     });
     
     markerSource.addFeature(marker);
+    console.log(`🏢 직장인구 마커 ${index + 1} 추가:`, point.lat, point.lng, point.workers);
   });
+  
+  console.log('✅ 직장인구 데이터 표시 완료, 총 마커 수:', markerSource.getFeatures().length);
 }
 
 /**
  * 주변상점 데이터 표시
  */
 function displayShopsData(data) {
-  console.log('📊 주변상점 데이터 표시');
+  console.log('📊 주변상점 데이터 표시 시작:', data.length, '개');
   
   clearDataMarkers();
   
-  data.forEach(shop => {
+  data.forEach((shop, index) => {
     const coords = ol.proj.fromLonLat([shop.lng, shop.lat]);
     const marker = new ol.Feature({
       geometry: new ol.geom.Point(coords),
@@ -587,7 +677,10 @@ function displayShopsData(data) {
     });
     
     markerSource.addFeature(marker);
+    console.log(`🏪 주변상점 마커 ${index + 1} 추가:`, shop.lat, shop.lng, shop.name);
   });
+  
+  console.log('✅ 주변상점 데이터 표시 완료, 총 마커 수:', markerSource.getFeatures().length);
 }
 
 /**
