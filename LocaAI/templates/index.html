@@ -953,6 +953,76 @@
       </div><!-- End .container -->
     </section><!-- /Contact Section -->
 
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const form = document.querySelector('#contact-form');
+  if (!form) return;
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const name = form.querySelector('input[name="name"]').value.trim();
+    const email = form.querySelector('input[name="email"]').value.trim();
+    const subject = form.querySelector('input[name="subject"]').value.trim();
+    const message = form.querySelector('textarea[name="message"]').value.trim();
+
+    const loading = form.querySelector('.loading');
+    const errorMsg = form.querySelector('.error-message');
+    const successMsg = form.querySelector('.sent-message');
+
+    loading.style.display = 'block';
+    errorMsg.style.display = 'none';
+    successMsg.style.display = 'none';
+
+    try {
+      const response = await fetch('/api/smtp/contact/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken'),
+        },
+        body: JSON.stringify({
+          subject: subject,
+          message: `📩 문의자: ${name}\n📧 이메일: ${email}\n\n📝 문의 내용:\n${message}`,
+          recipient: 'aix25best@gmail.com',
+          sender: email
+        })
+      });
+
+      const data = await response.json();
+      loading.style.display = 'none';
+
+      if (response.ok) {
+        alert('문의가 정상적으로 접수 되었습니다.');
+        form.reset();
+      } else {
+        errorMsg.style.display = 'block';
+        errorMsg.innerText = data.detail || '문의 전송 중 오류가 발생했습니다.';
+      }
+    } catch (error) {
+      loading.style.display = 'none';
+      errorMsg.style.display = 'block';
+      errorMsg.innerText = '서버 연결에 실패했습니다.';
+    }
+
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+  });
+});
+</script>
+
   </main>
 
 <section id="newsletter" class="newsletter section">
