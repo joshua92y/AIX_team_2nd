@@ -117,11 +117,10 @@ function initializeOpenLayersMap() {
         minZoom: 10,
         maxZoom: 20
       }),
-      controls: ol.control.defaults({
-        zoom: true,
-        attribution: true,
-        rotate: false
-      })
+      controls: [
+        new ol.control.Zoom(),
+        new ol.control.Attribution()
+      ]
     });
 
     // 지도 클릭 이벤트
