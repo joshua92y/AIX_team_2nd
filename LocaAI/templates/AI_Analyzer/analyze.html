@@ -1026,13 +1026,19 @@
               </div>
             </div>
 
-            <!-- 상권 위치 지도 시각화 -->
+            <!-- 상권 위치 지도 시각화 (회원 전용) -->
+            {% if user.is_authenticated %}
             <div class="mb-4" id="analysis-map-section" style="display: none;">
               <h5 class="text-primary border-bottom border-primary pb-2 mb-3">
                 <i class="bi bi-map me-2"></i>
                 <span data-lang="KOR">상권 위치 지도</span>
                 <span data-lang="ENG" style="display: none;">Commercial Area Map</span>
                 <span data-lang="ESP" style="display: none;">Mapa del Área Comercial</span>
+                <small class="text-muted ms-2">
+                  <span data-lang="KOR">(회원 전용)</span>
+                  <span data-lang="ENG" style="display: none;">(Members Only)</span>
+                  <span data-lang="ESP" style="display: none;">(Solo Miembros)</span>
+                </small>
               </h5>
               
               <!-- 지도 컨트롤 UI -->
@@ -1232,6 +1238,36 @@
                 </div>
               </div>
             </div>
+            {% else %}
+            <!-- 비회원용 지도 안내 -->
+            <div class="mb-4">
+              <div class="alert alert-warning">
+                <div class="row align-items-center">
+                  <div class="col-md-8">
+                    <h6 class="mb-2">
+                      <i class="bi bi-map me-2"></i>
+                      <span data-lang="KOR">상권 위치 지도 (회원 전용)</span>
+                      <span data-lang="ENG" style="display: none;">Commercial Area Map (Members Only)</span>
+                      <span data-lang="ESP" style="display: none;">Mapa del Área Comercial (Solo Miembros)</span>
+                    </h6>
+                    <p class="mb-0">
+                      <span data-lang="KOR">인터랙티브 지도로 거주인구, 직장인구, 주변상점 분포를 확인하려면 로그인이 필요합니다.</span>
+                      <span data-lang="ENG" style="display: none;">Login is required to view population, workplace, and nearby shops distribution on interactive map.</span>
+                      <span data-lang="ESP" style="display: none;">Se requiere iniciar sesión para ver la distribución de población, lugares de trabajo y tiendas cercanas en el mapa interactivo.</span>
+                    </p>
+                  </div>
+                  <div class="col-md-4 text-end">
+                    <a href="{% url 'custom_auth:login' %}?next={{ request.get_full_path }}" class="btn btn-warning">
+                      <i class="bi bi-box-arrow-in-right me-1"></i>
+                      <span data-lang="KOR">로그인하기</span>
+                      <span data-lang="ENG" style="display: none;">Login</span>
+                      <span data-lang="ESP" style="display: none;">Iniciar Sesión</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %}
 
             <!-- PDF 저장 버튼 -->
             <div class="text-center">
