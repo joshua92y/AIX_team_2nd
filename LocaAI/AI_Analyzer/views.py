@@ -3600,8 +3600,8 @@ def get_shops_data(center_point, radius):
                         ds."BPLCNM",
                         ds."SITEWHLADDR",
                         ds."result",
-                        ST_X(ST_Transform(ST_SetSRID(ST_MakePoint(ds."X", ds."Y"), 2097), 4326)) as lon,
-                        ST_Y(ST_Transform(ST_SetSRID(ST_MakePoint(ds."X", ds."Y"), 2097), 4326)) as lat
+                        ST_X(ST_Transform(ST_SetSRID(ST_MakePoint(ds."X", ds."Y"), 5186), 4326)) as lon,
+                        ST_Y(ST_Transform(ST_SetSRID(ST_MakePoint(ds."X", ds."Y"), 5186), 4326)) as lat
                     FROM dong_store ds
                     JOIN "행정동구역" ad ON ds."EMD_KOR_NM" = ad.emd_kor_nm
                     WHERE ad.emd_cd LIKE %s
