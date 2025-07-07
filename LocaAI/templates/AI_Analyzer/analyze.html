@@ -992,40 +992,6 @@
               </div>
             </div>
 
-            <!-- 분석 요약 -->
-            <div class="mb-4">
-              <h5 class="text-primary border-bottom border-primary pb-2 mb-3">
-                <i class="bi bi-lightbulb me-2"></i>
-                <span data-lang="KOR">AI 분석 요약</span>
-                <span data-lang="ENG" style="display: none;">AI Analysis Summary</span>
-                <span data-lang="ESP" style="display: none;">Resumen del Análisis IA</span>
-              </h5>
-              <div class="row">
-                <div class="col-md-6">
-                  <h6 class="text-success">
-                    <i class="bi bi-check-circle me-2"></i>
-                    <span data-lang="KOR">강점</span>
-                    <span data-lang="ENG" style="display: none;">Strengths</span>
-                    <span data-lang="ESP" style="display: none;">Fortalezas</span>
-                  </h6>
-                  <ul id="strengthsList">
-                    <!-- 강점 목록이 여기에 표시됩니다 -->
-                  </ul>
-                </div>
-                <div class="col-md-6">
-                  <h6 class="text-warning">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    <span data-lang="KOR">주의사항</span>
-                    <span data-lang="ENG" style="display: none;">Cautions</span>
-                    <span data-lang="ESP" style="display: none;">Precauciones</span>
-                  </h6>
-                  <ul id="cautionsList">
-                    <!-- 주의사항 목록이 여기에 표시됩니다 -->
-                  </ul>
-                </div>
-              </div>
-            </div>
-
             <!-- 상권 위치 지도 시각화 (회원 전용) -->
             {% if user.is_authenticated %}
             <div class="mb-4" id="analysis-map-section" style="display: none;">
@@ -1268,6 +1234,40 @@
               </div>
             </div>
             {% endif %}
+
+            <!-- 분석 요약 -->
+            <div class="mb-4">
+              <h5 class="text-primary border-bottom border-primary pb-2 mb-3">
+                <i class="bi bi-lightbulb me-2"></i>
+                <span data-lang="KOR">AI 분석 요약</span>
+                <span data-lang="ENG" style="display: none;">AI Analysis Summary</span>
+                <span data-lang="ESP" style="display: none;">Resumen del Análisis IA</span>
+              </h5>
+              <div class="row">
+                <div class="col-md-6">
+                  <h6 class="text-success">
+                    <i class="bi bi-check-circle me-2"></i>
+                    <span data-lang="KOR">강점</span>
+                    <span data-lang="ENG" style="display: none;">Strengths</span>
+                    <span data-lang="ESP" style="display: none;">Fortalezas</span>
+                  </h6>
+                  <ul id="strengthsList">
+                    <!-- 강점 목록이 여기에 표시됩니다 -->
+                  </ul>
+                </div>
+                <div class="col-md-6">
+                  <h6 class="text-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <span data-lang="KOR">주의사항</span>
+                    <span data-lang="ENG" style="display: none;">Cautions</span>
+                    <span data-lang="ESP" style="display: none;">Precauciones</span>
+                  </h6>
+                  <ul id="cautionsList">
+                    <!-- 주의사항 목록이 여기에 표시됩니다 -->
+                  </ul>
+                </div>
+              </div>
+            </div>
 
             <!-- PDF 저장 버튼 -->
             <div class="text-center">
