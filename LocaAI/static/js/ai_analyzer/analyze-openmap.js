@@ -59,6 +59,12 @@ const MAP_CONFIG = {
  * OpenLayers 지도 초기화
  */
 function initializeOpenLayersMap() {
+  // 중복 초기화 방지
+  if (isOpenLayersMapInitialized) {
+    console.log('⚠️ OpenLayers 지도가 이미 초기화되었습니다.');
+    return;
+  }
+  
   console.log('🔧 OpenLayers 지도 초기화 시작...');
   
   // OpenLayers 라이브러리 확인
@@ -135,8 +141,15 @@ function initializeOpenLayersMap() {
     isOpenLayersMapInitialized = true;
     console.log('✅ OpenLayers 지도 초기화 완료');
 
-    // 로딩 오버레이 숨기기
+    // 로딩 오버레이 강제 숨기기
     showMapLoading(false);
+    
+    // 지도 컨테이너가 보이도록 설정
+    const mapContainer = document.getElementById('analysis-openmap');
+    if (mapContainer) {
+      mapContainer.style.display = 'block';
+      mapContainer.style.visibility = 'visible';
+    }
 
     // 초기 상태 설정
     updateMapControls();
@@ -391,8 +404,10 @@ function setAnalysisLocation(latitude, longitude, address) {
   // 버퍼 영역 그리기
   drawBufferArea(currentLocation, currentBufferSize);
   
-  // 데이터 로드
-  loadMapData();
+  // 초기 데이터 로드 (약간의 지연 후)
+  setTimeout(() => {
+    loadMapData();
+  }, 200);
 }
 
 /**
@@ -436,7 +451,7 @@ function loadMapData() {
   
   console.log(`📊 지도 데이터 로드 시작: ${currentMapMode}, ${currentBufferSize}m`);
   
-  // 로딩 상태 표시
+  // 로딩 상태 표시 (짧은 시간만)
   showMapLoading(true);
   
   // 모드에 따른 데이터 로드
@@ -452,6 +467,8 @@ function loadMapData() {
       break;
     default:
       console.warn(`⚠️ 알 수 없는 지도 모드: ${currentMapMode}`);
+      // 알 수 없는 모드인 경우 로딩 즉시 해제
+      showMapLoading(false);
   }
 }
 
@@ -467,8 +484,8 @@ function loadPopulationData() {
     const demoData = generateDemoPopulationData();
     displayPopulationData(demoData);
     showMapLoading(false);
-        console.log('✅ 거주인구 데이터 로드 완료');
-  }, 500);
+    console.log('✅ 거주인구 데이터 로드 완료');
+  }, 300);
 }
 
 /**
@@ -483,7 +500,7 @@ function loadWorkplaceData() {
     displayWorkplaceData(demoData);
     showMapLoading(false);
     console.log('✅ 직장인구 데이터 로드 완료');
-  }, 500);
+  }, 300);
 }
 
 /**
@@ -498,7 +515,7 @@ function loadShopsData() {
     displayShopsData(demoData);
     showMapLoading(false);
     console.log('✅ 주변상점 데이터 로드 완료');
-  }, 500);
+  }, 300);
 }
 
 // ===========================================
@@ -829,12 +846,22 @@ function generateDemoShopsData() {
 // ===========================================
 
 /**
- * 지도 로딩 상태 표시
+ * 지도 로딩 상태 표시 (개선된 버전)
  */
 function showMapLoading(show) {
   const loadingElement = document.getElementById('map-loading');
   if (loadingElement) {
-    loadingElement.style.display = show ? 'block' : 'none';
+    if (show) {
+      loadingElement.style.display = 'flex';
+      loadingElement.style.visibility = 'visible';
+      console.log('🔄 지도 로딩 오버레이 표시');
+    } else {
+      loadingElement.style.display = 'none';
+      loadingElement.style.visibility = 'hidden';
+      console.log('✅ 지도 로딩 오버레이 숨김');
+    }
+  } else {
+    console.warn('⚠️ map-loading 요소를 찾을 수 없습니다.');
   }
 }
 
@@ -939,23 +966,15 @@ window.retryMapInitialization = retryMapInitialization;
 document.addEventListener('DOMContentLoaded', function() {
   console.log('📱 analyze-openmap.js 로드됨');
   
-  // OpenLayers 라이브러리 로드 확인 및 자동 초기화
+  // OpenLayers 라이브러리 로드 확인 (자동 초기화는 비활성화)
   setTimeout(() => {
     if (typeof ol !== 'undefined') {
       console.log('✅ OpenLayers 라이브러리 감지됨');
-      
-      // 지도 섹션이 표시되어 있으면 자동 초기화
-      const mapSection = document.getElementById('analysis-map-section');
-      if (mapSection && mapSection.style.display !== 'none') {
-        console.log('🗺️ 지도 섹션이 표시되어 있음, 자동 초기화 시작');
-        initializeOpenLayersMap();
-      } else {
-        console.log('ℹ️ 지도 섹션이 숨겨져 있음, 초기화 대기 중');
-      }
+      console.log('ℹ️ 지도 초기화는 분석 결과 표시 시에만 실행됩니다.');
     } else {
       console.warn('⚠️ OpenLayers 라이브러리가 로드되지 않았습니다');
     }
-  }, 1500); // 다른 라이브러리들도 로드될 시간을 충분히 대기
+  }, 1000);
 });
 
 console.log('✅ AI_Analyzer OpenLayers 지도 시스템 로드 완료'); 
