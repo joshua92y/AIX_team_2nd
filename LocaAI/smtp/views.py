@@ -7,6 +7,7 @@ from .models import EmailMessage
 from .serializers import EmailMessageSerializer, ContactEmailSerializer,NewsletterSubscribeSerializer,NewsletterUnsubscribeSerializer
 from django.shortcuts import render, redirect
 from smtp.utils import send_subscription_email
+from django.core.mail import send_mail
 
 class EmailMessageViewSet(viewsets.ModelViewSet):
     queryset = EmailMessage.objects.all()
@@ -58,6 +59,21 @@ class ContactEmailView(APIView):
                 )
                 # 이메일 전송
                 email.send()
+
+                # 문의자에게도 확인 메일 전송
+                send_mail(
+                    subject=f"[문의 접수 완료] {email.subject}",
+                    message=(
+                        f"안녕하세요.\n\n"
+                        f"문의 내용이 정상적으로 접수되었습니다. 아래는 귀하가 보낸 내용입니다:\n\n"
+                        f"{email.message}\n\n"
+                        f"감사합니다."
+                    ),
+                    from_email=email.recipient,
+                    recipient_list=[email.sender],
+                    fail_silently=False,
+                )
+
                 return Response({
                     'detail': '문의 메일이 성공적으로 전송되었습니다.',
                     'email_id': str(email.id)
