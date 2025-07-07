@@ -17,7 +17,7 @@ let markerSource = null;
 let markerLayer = null;
 let currentLocation = null;
 let currentBuffer = null;
-let isMapInitialized = false;
+let isOpenLayersMapInitialized = false;
 
 // 현재 설정
 let currentMapMode = 'population'; // 'population', 'workplace', 'shops'
@@ -133,7 +133,7 @@ function initializeOpenLayersMap() {
     // 팝업 오버레이 생성
     createPopupOverlay();
 
-    isMapInitialized = true;
+    isOpenLayersMapInitialized = true;
     console.log('✅ OpenLayers 지도 초기화 완료');
 
     // 로딩 오버레이 숨기기
@@ -358,7 +358,7 @@ function getModeText(mode) {
  * 분석 위치 설정 및 표시
  */
 function setAnalysisLocation(latitude, longitude, address) {
-  if (!isMapInitialized) {
+  if (!isOpenLayersMapInitialized) {
     console.warn('⚠️ 지도가 초기화되지 않았습니다');
     return;
   }
@@ -588,7 +588,7 @@ function clearDataMarkers() {
  * 데이터 레이어 업데이트
  */
 function updateDataLayers() {
-  if (!isMapInitialized || !currentLocation) return;
+  if (!isOpenLayersMapInitialized || !currentLocation) return;
   
   loadMapData();
 }
@@ -870,7 +870,7 @@ function retryMapInitialization() {
     openLayersMap = null;
   }
   
-  isMapInitialized = false;
+  isOpenLayersMapInitialized = false;
   
   // 재초기화
   setTimeout(() => {
@@ -910,7 +910,7 @@ function toggleAnalysisMap(show) {
   if (mapSection) {
     mapSection.style.display = show ? 'block' : 'none';
     
-    if (show && isMapInitialized) {
+    if (show && isOpenLayersMapInitialized) {
       // 지도 크기 재계산
       setTimeout(() => {
         resizeOpenMap();
