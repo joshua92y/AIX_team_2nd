@@ -124,10 +124,10 @@ function initializeOpenLayersMap() {
     });
 
     // 지도 클릭 이벤트
-    openLayersMap.on('click', onMapClick);
+    openLayersMap.on('click', onOpenLayersMapClick);
 
     // 마우스 오버 이벤트 (상점 정보 표시용)
-    openLayersMap.on('pointermove', onPointerMove);
+    openLayersMap.on('pointermove', onOpenLayersPointerMove);
 
     // 팝업 오버레이 생성
     createPopupOverlay();
@@ -653,9 +653,9 @@ function getMarkerStyle(feature) {
 }
 
 /**
- * 지도 클릭 이벤트
+ * OpenLayers 지도 클릭 이벤트
  */
-function onMapClick(event) {
+function onOpenLayersMapClick(event) {
   const feature = openLayersMap.forEachFeatureAtPixel(event.pixel, (feature) => {
     return feature;
   });
@@ -667,9 +667,9 @@ function onMapClick(event) {
 }
 
 /**
- * 마우스 오버 이벤트
+ * OpenLayers 마우스 오버 이벤트
  */
-function onPointerMove(event) {
+function onOpenLayersPointerMove(event) {
   const pixel = openLayersMap.getEventPixel(event.originalEvent);
   const hit = openLayersMap.hasFeatureAtPixel(pixel);
   
