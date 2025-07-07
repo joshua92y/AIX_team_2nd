@@ -28,8 +28,8 @@ const MAP_CONFIG = {
   defaultCenter: [126.9780, 37.5665], // 서울 시청 [경도, 위도]
   defaultZoom: 15,
   bufferColors: {
-    300: 'rgba(74, 144, 226, 0.3)',
-    1000: 'rgba(244, 67, 54, 0.2)'
+    300: 'rgba(74, 144, 226, 0.5)',
+    1000: 'rgba(244, 67, 54, 0.4)'
   },
   markerStyles: {
     center: {
@@ -526,13 +526,13 @@ function loadShopsData() {
  * 거주인구 데이터 표시
  */
 function displayPopulationData(data) {
-  console.log('📊 거주인구 데이터 표시');
+  console.log('📊 거주인구 데이터 표시 시작:', data.length, '개');
   
   // 기존 데이터 마커 제거
   clearDataMarkers();
   
   // 인구 밀도 히트맵 스타일로 표시
-  data.forEach(point => {
+  data.forEach((point, index) => {
     const coords = ol.proj.fromLonLat([point.lng, point.lat]);
     const marker = new ol.Feature({
       geometry: new ol.geom.Point(coords),
@@ -542,7 +542,10 @@ function displayPopulationData(data) {
     });
     
     markerSource.addFeature(marker);
+    console.log(`📍 거주인구 마커 ${index + 1} 추가:`, point.lat, point.lng, point.population);
   });
+  
+  console.log('✅ 거주인구 데이터 표시 완료, 총 마커 수:', markerSource.getFeatures().length);
 }
 
 /**
@@ -776,7 +779,9 @@ function hideShopHoverInfo() {
  */
 function generateDemoPopulationData() {
   const data = [];
-  const baseLocation = currentLocation;
+  const baseLocation = currentLocation || { lat: 37.5665, lng: 126.9780 }; // 서울시청 좌표로 폴백
+  
+  console.log('📊 거주인구 데모 데이터 생성 시작:', baseLocation);
   
   for (let i = 0; i < 15; i++) {
     const offsetLat = (Math.random() - 0.5) * 0.01;
@@ -789,6 +794,7 @@ function generateDemoPopulationData() {
     });
   }
   
+  console.log('📊 거주인구 데모 데이터 생성 완료:', data.length, '개');
   return data;
 }
 
@@ -797,7 +803,9 @@ function generateDemoPopulationData() {
  */
 function generateDemoWorkplaceData() {
   const data = [];
-  const baseLocation = currentLocation;
+  const baseLocation = currentLocation || { lat: 37.5665, lng: 126.9780 }; // 서울시청 좌표로 폴백
+  
+  console.log('🏢 직장인구 데모 데이터 생성 시작:', baseLocation);
   
   for (let i = 0; i < 10; i++) {
     const offsetLat = (Math.random() - 0.5) * 0.008;
@@ -810,6 +818,7 @@ function generateDemoWorkplaceData() {
     });
   }
   
+  console.log('🏢 직장인구 데모 데이터 생성 완료:', data.length, '개');
   return data;
 }
 
@@ -818,8 +827,10 @@ function generateDemoWorkplaceData() {
  */
 function generateDemoShopsData() {
   const data = [];
-  const baseLocation = currentLocation;
+  const baseLocation = currentLocation || { lat: 37.5665, lng: 126.9780 }; // 서울시청 좌표로 폴백
   const categories = ['카페', '음식점', '편의점', '패스트푸드', '베이커리', '치킨', '피자', '분식'];
+  
+  console.log('🏪 주변상점 데모 데이터 생성 시작:', baseLocation);
   
   for (let i = 0; i < 20; i++) {
     const offsetLat = (Math.random() - 0.5) * 0.006;
@@ -838,6 +849,7 @@ function generateDemoShopsData() {
     });
   }
   
+  console.log('🏪 주변상점 데모 데이터 생성 완료:', data.length, '개');
   return data;
 }
 
