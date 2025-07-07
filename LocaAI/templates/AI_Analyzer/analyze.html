@@ -992,9 +992,9 @@
               </div>
             </div>
 
-            <!-- 상권 위치 지도 시각화 (회원 전용) -->
-            {% if user.is_authenticated %}
-            <div class="mb-4" id="analysis-map-section" style="display: none;">
+            <!-- 상권 위치 지도 시각화 (모든 사용자) -->
+            <!-- {% if user.is_authenticated %} -->
+            <div class="mb-4" id="analysis-map-section" style="display: block;">
               <h5 class="text-primary border-bottom border-primary pb-2 mb-3">
                 <i class="bi bi-map me-2"></i>
                 <span data-lang="KOR">상권 위치 지도</span>
@@ -1204,9 +1204,9 @@
                 </div>
               </div>
             </div>
-            {% else %}
+            <!-- {% else %}
             <!-- 비회원용 지도 안내 -->
-            <div class="mb-4">
+            <!-- <div class="mb-4">
               <div class="alert alert-warning">
                 <div class="row align-items-center">
                   <div class="col-md-8">
@@ -1232,8 +1232,8 @@
                   </div>
                 </div>
               </div>
-            </div>
-            {% endif %}
+            </div> -->
+            <!-- {% endif %} -->
 
             <!-- 분석 요약 -->
             <div class="mb-4">
