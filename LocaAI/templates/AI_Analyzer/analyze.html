@@ -19,6 +19,10 @@
   <!-- 카카오맵 API -->
   <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey={{ KAKAO_JS_API_KEY }}&libraries=services"></script>
   
+  <!-- OpenLayers 10.6.1 라이브러리 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v10.6.1/ol.css" type="text/css">
+  <script src="https://cdn.jsdelivr.net/npm/ol@v10.6.1/dist/ol.js"></script>
+  
   <!-- jsPDF 라이브러리 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <!-- 한국어 폰트 지원 -->
@@ -42,6 +46,9 @@
   
   <!-- AI Analyzer Map 로드 -->
   <script src="{% static 'js/ai_analyzer/analyze-map.js' %}"></script>
+  
+  <!-- AI Analyzer OpenLayers Map 로드 -->
+  <script src="{% static 'js/ai_analyzer/analyze-openmap.js' %}"></script>
   
   <!-- AI Analyzer PIP 로드 -->
   <script src="{% static 'js/ai_analyzer/analyze-pip.js' %}"></script>
@@ -1015,6 +1022,213 @@
                   <ul id="cautionsList">
                     <!-- 주의사항 목록이 여기에 표시됩니다 -->
                   </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- 상권 위치 지도 시각화 -->
+            <div class="mb-4" id="analysis-map-section" style="display: none;">
+              <h5 class="text-primary border-bottom border-primary pb-2 mb-3">
+                <i class="bi bi-map me-2"></i>
+                <span data-lang="KOR">상권 위치 지도</span>
+                <span data-lang="ENG" style="display: none;">Commercial Area Map</span>
+                <span data-lang="ESP" style="display: none;">Mapa del Área Comercial</span>
+              </h5>
+              
+              <!-- 지도 컨트롤 UI -->
+              <div class="card border-0 mb-3">
+                <div class="card-body p-3" style="background-color: #f8f9fa;">
+                  <div class="row align-items-center">
+                    <!-- 지도 모드 탭 -->
+                    <div class="col-md-6">
+                      <div class="btn-group w-100" role="group" aria-label="지도 표시 모드">
+                        <input type="radio" class="btn-check" name="mapMode" id="populationMode" value="population" checked>
+                        <label class="btn btn-outline-success map-mode-tab" for="populationMode" data-mode="population" onclick="changeMapMode('population')">
+                          <i class="bi bi-people me-1"></i>
+                          <span data-lang="KOR">거주인구</span>
+                          <span data-lang="ENG" style="display: none;">Population</span>
+                          <span data-lang="ESP" style="display: none;">Población</span>
+                        </label>
+                        
+                        <input type="radio" class="btn-check" name="mapMode" id="workplaceMode" value="workplace">
+                        <label class="btn btn-outline-primary map-mode-tab" for="workplaceMode" data-mode="workplace" onclick="changeMapMode('workplace')">
+                          <i class="bi bi-briefcase me-1"></i>
+                          <span data-lang="KOR">직장인구</span>
+                          <span data-lang="ENG" style="display: none;">Workplace</span>
+                          <span data-lang="ESP" style="display: none;">Trabajo</span>
+                        </label>
+                        
+                        <input type="radio" class="btn-check" name="mapMode" id="shopsMode" value="shops">
+                        <label class="btn btn-outline-warning map-mode-tab" for="shopsMode" data-mode="shops" onclick="changeMapMode('shops')">
+                          <i class="bi bi-shop me-1"></i>
+                          <span data-lang="KOR">주변상점</span>
+                          <span data-lang="ENG" style="display: none;">Shops</span>
+                          <span data-lang="ESP" style="display: none;">Tiendas</span>
+                        </label>
+                      </div>
+                    </div>
+                    
+                    <!-- 버퍼 범위 선택 -->
+                    <div class="col-md-4">
+                      <div class="btn-group w-100" role="group" aria-label="버퍼 범위">
+                        <input type="radio" class="btn-check" name="bufferSize" id="buffer300" value="300" checked>
+                        <label class="btn btn-outline-info buffer-btn" for="buffer300" data-size="300" onclick="changeBufferSize(300)">
+                          <span data-lang="KOR">300m</span>
+                          <span data-lang="ENG" style="display: none;">300m</span>
+                          <span data-lang="ESP" style="display: none;">300m</span>
+                        </label>
+                        
+                        <input type="radio" class="btn-check" name="bufferSize" id="buffer1000" value="1000">
+                        <label class="btn btn-outline-danger buffer-btn" for="buffer1000" data-size="1000" onclick="changeBufferSize(1000)">
+                          <span data-lang="KOR">1000m</span>
+                          <span data-lang="ENG" style="display: none;">1000m</span>
+                          <span data-lang="ESP" style="display: none;">1000m</span>
+                        </label>
+                      </div>
+                    </div>
+                    
+                    <!-- 지도 상태 표시 -->
+                    <div class="col-md-2 text-end">
+                      <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        <span id="map-status">300m 반경 거주인구 데이터</span>
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 지도 컨테이너 -->
+              <div class="position-relative">
+                <div id="analysis-openmap" style="height: 500px; width: 100%; border: 1px solid #dee2e6; border-radius: 8px;">
+                  <!-- 지도가 여기에 로드됩니다 -->
+                </div>
+                
+                <!-- 지도 로딩 오버레이 -->
+                <div id="map-loading" class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" 
+                     style="background: rgba(255,255,255,0.8); border-radius: 8px; display: none;">
+                  <div class="text-center">
+                    <div class="spinner-border text-primary mb-2" role="status">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <div class="text-muted">
+                      <span data-lang="KOR">지도 데이터 로딩 중...</span>
+                      <span data-lang="ENG" style="display: none;">Loading map data...</span>
+                      <span data-lang="ESP" style="display: none;">Cargando datos del mapa...</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 지도 범례 -->
+              <div class="row mt-3">
+                <div class="col-md-6">
+                  <div class="card border-0" style="background-color: #f8f9fa;">
+                    <div class="card-body p-2">
+                      <h6 class="mb-2">
+                        <i class="bi bi-palette me-1"></i>
+                        <span data-lang="KOR">범례</span>
+                        <span data-lang="ENG" style="display: none;">Legend</span>
+                        <span data-lang="ESP" style="display: none;">Leyenda</span>
+                      </h6>
+                      <div class="d-flex flex-wrap gap-3">
+                        <div class="d-flex align-items-center">
+                          <div class="me-2" style="width: 12px; height: 12px; background-color: #dc3545; border-radius: 50%;"></div>
+                          <small>
+                            <span data-lang="KOR">분석 위치</span>
+                            <span data-lang="ENG" style="display: none;">Analysis Location</span>
+                            <span data-lang="ESP" style="display: none;">Ubicación de Análisis</span>
+                          </small>
+                        </div>
+                        <div class="d-flex align-items-center" id="legend-population">
+                          <div class="me-2" style="width: 12px; height: 12px; background-color: #28a745; border-radius: 50%;"></div>
+                          <small>
+                            <span data-lang="KOR">거주인구</span>
+                            <span data-lang="ENG" style="display: none;">Population</span>
+                            <span data-lang="ESP" style="display: none;">Población</span>
+                          </small>
+                        </div>
+                        <div class="d-flex align-items-center" id="legend-workplace" style="display: none;">
+                          <div class="me-2" style="width: 12px; height: 12px; background-color: #007bff; border-radius: 50%;"></div>
+                          <small>
+                            <span data-lang="KOR">직장인구</span>
+                            <span data-lang="ENG" style="display: none;">Workplace</span>
+                            <span data-lang="ESP" style="display: none;">Trabajo</span>
+                          </small>
+                        </div>
+                        <div class="d-flex align-items-center" id="legend-shops" style="display: none;">
+                          <div class="me-2" style="width: 12px; height: 12px; background-color: #ffc107; border-radius: 50%;"></div>
+                          <small>
+                            <span data-lang="KOR">상점</span>
+                            <span data-lang="ENG" style="display: none;">Shops</span>
+                            <span data-lang="ESP" style="display: none;">Tiendas</span>
+                          </small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="card border-0" style="background-color: #f8f9fa;">
+                    <div class="card-body p-2">
+                      <h6 class="mb-2">
+                        <i class="bi bi-circle me-1"></i>
+                        <span data-lang="KOR">분석 반경</span>
+                        <span data-lang="ENG" style="display: none;">Analysis Radius</span>
+                        <span data-lang="ESP" style="display: none;">Radio de Análisis</span>
+                      </h6>
+                      <div class="d-flex flex-wrap gap-3">
+                        <div class="d-flex align-items-center">
+                          <div class="me-2" style="width: 20px; height: 3px; background-color: #4a90e2; border-radius: 2px;"></div>
+                          <small>300m</small>
+                        </div>
+                        <div class="d-flex align-items-center">
+                          <div class="me-2" style="width: 20px; height: 3px; background-color: #f44336; border-radius: 2px;"></div>
+                          <small>1000m</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 사용법 안내 -->
+              <div class="alert alert-info mt-3">
+                <div class="row">
+                  <div class="col-md-6">
+                    <h6 class="alert-heading mb-2">
+                      <i class="bi bi-lightbulb me-2"></i>
+                      <span data-lang="KOR">지도 사용법</span>
+                      <span data-lang="ENG" style="display: none;">How to Use Map</span>
+                      <span data-lang="ESP" style="display: none;">Cómo Usar el Mapa</span>
+                    </h6>
+                    <ul class="mb-0" style="font-size: 0.85rem;">
+                      <li data-lang="KOR">상단 탭을 클릭하여 표시할 데이터 선택</li>
+                      <li data-lang="ENG" style="display: none;">Click top tabs to select data to display</li>
+                      <li data-lang="ESP" style="display: none;">Haga clic en las pestañas superiores para seleccionar datos</li>
+                      
+                      <li data-lang="KOR">300m/1000m 버튼으로 분석 반경 조정</li>
+                      <li data-lang="ENG" style="display: none;">Use 300m/1000m buttons to adjust analysis radius</li>
+                      <li data-lang="ESP" style="display: none;">Use botones 300m/1000m para ajustar radio de análisis</li>
+                    </ul>
+                  </div>
+                  <div class="col-md-6">
+                    <h6 class="alert-heading mb-2">
+                      <i class="bi bi-mouse me-2"></i>
+                      <span data-lang="KOR">상점 정보 보기</span>
+                      <span data-lang="ENG" style="display: none;">View Shop Information</span>
+                      <span data-lang="ESP" style="display: none;">Ver Información de Tienda</span>
+                    </h6>
+                    <ul class="mb-0" style="font-size: 0.85rem;">
+                      <li data-lang="KOR">상점 마커에 마우스를 올리면 간단한 정보 표시</li>
+                      <li data-lang="ENG" style="display: none;">Hover over shop markers for brief info</li>
+                      <li data-lang="ESP" style="display: none;">Pase el cursor sobre marcadores de tienda para info</li>
+                      
+                      <li data-lang="KOR">상점 마커를 클릭하면 상세 정보 팝업</li>
+                      <li data-lang="ENG" style="display: none;">Click shop markers for detailed popup</li>
+                      <li data-lang="ESP" style="display: none;">Haga clic en marcadores para popup detallado</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
             </div>
