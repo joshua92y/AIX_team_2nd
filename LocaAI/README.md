@@ -53,3 +53,5 @@ ssh 접속
 ssh -i .\aix-701-14-web-secure ubuntu@ec2-56-155-21-149.ap-northeast-3.compute.amazonaws.com
 
 df -h # 남은용량 확인
+docker rmi -f $(docker images -q) 도커 이미지 전체 삭제
+

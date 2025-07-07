@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const userInfoDataElement = document.getElementById("user-info-data");
     if (userInfoDataElement) {
       currentUserInfo = JSON.parse(userInfoDataElement.textContent);
-      console.log("User info loaded in chat_main.js:", currentUserInfo);  // 디버깅용 로그
+      
     }
   } catch (e) {
     console.error("Error parsing user info JSON in chat_main.js:", e);
@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", function () {
     .then(data => {
       if (data.status === 'ok') {
         currentSessionId = data.session_id;
-        console.log("New session created in chat_main.js:", currentSessionId);  // 디버깅용 로그
+
       }
     })
     .catch(error => console.error("Error creating session in chat_main.js:", error));
@@ -111,15 +111,64 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function appendToStreamingMessage(chunk) {
     if (!currentStreamingMessageElement) {
-      // 첫 스트리밍 메시지 시 웰컴 메시지 숨기기
-      const welcomeMessage = chatMessagesArea.querySelector('.chat-welcome-message');
-      if (welcomeMessage) {
-        welcomeMessage.style.display = 'none';
-      }
+      // 새로운 스트리밍 메시지 생성
+      const messageId = Date.now();
+      currentStreamingMessageElement = document.createElement('div');
+      currentStreamingMessageElement.className = 'd-flex align-items-start mb-3';
+      currentStreamingMessageElement.setAttribute('data-message-id', messageId);
       
+      // 봇 메시지 HTML 구조
+      currentStreamingMessageElement.innerHTML = `
+        <div class="bg-primary rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; min-width: 32px;">
+          <i class="bi bi-robot text-white" style="font-size: 14px;"></i>
+        </div>
+        <div class="flex-grow-1">
+          <div class="bg-light rounded p-3 shadow-sm">
+            <div class="d-flex align-items-center mb-2">
+              <small class="text-muted">
+                <span data-lang="KOR">ChatBot</span>
+                <span data-lang="ENG" style="display: none;">ChatBot</span>
+                <span data-lang="ESP" style="display: none;">ChatBot</span>
+              </small>
+              <span class="badge bg-success ms-2">
+                <span data-lang="KOR">온라인</span>
+                <span data-lang="ENG" style="display: none;">Online</span>
+                <span data-lang="ESP" style="display: none;">En línea</span>
+              </span>
+            </div>
+            <div class="message-content"></div>
+          </div>
+        </div>
+      `;
+      
+      // 채팅 컨테이너에 추가
+      const chatContainer = document.getElementById('messages');
+      if (chatContainer) {
+        chatContainer.appendChild(currentStreamingMessageElement);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+    }
+    
+    // 기존 메시지에 텍스트 추가
+    const contentElement = currentStreamingMessageElement.querySelector('.message-content');
+    if (contentElement) {
+      streamingTextContent += chunk;
+      contentElement.innerHTML = marked.parse(streamingTextContent);
+      
+      // 스크롤 아래로
+      const chatContainer = document.getElementById('messages');
+      if (chatContainer) {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+    }
+  }
+  
+  function finalizeStreamingMessage() {
+    if (currentStreamingMessageElement) {
       // 새 스트리밍 메시지 엘리먼트 생성
       currentStreamingMessageElement = document.createElement("div");
       currentStreamingMessageElement.className = "message-entry assistant-message";
+      currentStreamingMessageElement.setAttribute("data-message-id", generateUUID()); // 디버깅용 ID 추가
       
       const bubble = document.createElement("div");
       bubble.className = "message-bubble";
@@ -141,17 +190,25 @@ document.addEventListener("DOMContentLoaded", function () {
       streamingTextContent += chunk;
       bubble.innerHTML = marked.parse(streamingTextContent);
       scrollToBottom();
+
     }
   }
   
   function finalizeStreamingMessage() {
+    console.log("🏁 finalizeStreamingMessage 호출됨 - 현재 element:", !!currentStreamingMessageElement);
+    
     // 최종 스트리밍 메시지를 채팅 리스트에 반영
     if (currentStreamingMessageElement) {
+      const messageId = currentStreamingMessageElement.getAttribute("data-message-id");
+      console.log("🔚 스트리밍 메시지 완료 - ID:", messageId);
+      
       const bubble = currentStreamingMessageElement.querySelector(".message-bubble");
       if (bubble && window.addChatMessage) {
         window.addChatMessage(streamingTextContent, "assistant", currentSessionId);
       }
     }
+    
+    console.log("🧹 스트리밍 상태 초기화");
     currentStreamingMessageElement = null;
     streamingTextContent = "";
     hideTyping();
@@ -183,25 +240,26 @@ document.addEventListener("DOMContentLoaded", function () {
           session_id: currentSessionId || "",
           language: "ko"
         };
-        console.log("🚀 초기 WebSocket 연결 데이터 전송:", initPayload);
+
         websocket.send(JSON.stringify(initPayload));
         isWebSocketInitialized = true;
       }
     };
 
     websocket.onmessage = (event) => {
-      hideTyping();
       try {
         const data = JSON.parse(event.data);
         console.log("📨 WebSocket 메시지 수신:", data);
         
         if (data.error) {
+          hideTyping();
           displayNotification(`오류: ${data.error}`, "error");
           finalizeStreamingMessage();
         } else if (data.chunk) {
-          // 실시간 스트리밍 처리
+          // 실시간 스트리밍 처리 - 타이핑은 계속 표시
           appendToStreamingMessage(data.chunk);
         } else if (data.done) {
+          hideTyping();
           finalizeStreamingMessage();
           // 새 세션 ID가 생성되었을 때 채팅 리스트 매니저 업데이트
           if (data.session_id && currentSessionId !== data.session_id) {
@@ -217,6 +275,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }, 500);
           }
         } else if (data.answer) {
+          hideTyping();
           displayMessage(data.answer, "assistant");
           // 일반 응답 후에도 채팅 리스트 새로고침
           if (window.chatListManager && window.chatListManager.refreshChatList) {
@@ -227,6 +286,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       } catch (e) {
         console.error("❌ WebSocket 메시지 처리 오류:", e);
+        hideTyping();
         displayNotification("서버 응답 처리 중 오류", "error");
         finalizeStreamingMessage();
       }
@@ -259,6 +319,17 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!websocket) setupWebSocket();
       return;
     }
+
+    // 새 메시지 전송 전 스트리밍 상태 초기화
+
+    if (currentStreamingMessageElement) {
+      const oldMessageId = currentStreamingMessageElement.getAttribute("data-message-id");
+      
+      finalizeStreamingMessage();
+    }
+    currentStreamingMessageElement = null;
+    streamingTextContent = "";
+    console.log("🧹 메시지 전송 전 상태 초기화 완료");
 
     // 현재 선택된 채팅 ID 가져오기
     if (window.getCurrentChatId) {
