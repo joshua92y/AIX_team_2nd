@@ -493,7 +493,7 @@ function loadRealMapData(mode) {
   };
   
   // Django API 호출
-  fetch('/ai-analyzer/api/map-data/', {
+  fetch('/ai_analyzer/api/map-data/', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -811,14 +811,25 @@ function showShopInfoPopup(coordinate, shopData) {
   
   const currentLang = window.getCurrentAILanguage ? window.getCurrentAILanguage() : 'ko';
   
+  // 생존률 배지 색상 결정
+  let survivalBadgeClass = 'bg-secondary';
+  if (shopData.survival_rate >= 70) {
+    survivalBadgeClass = 'bg-success';
+  } else if (shopData.survival_rate >= 50) {
+    survivalBadgeClass = 'bg-warning';
+  } else if (shopData.survival_rate >= 30) {
+    survivalBadgeClass = 'bg-danger';
+  }
+  
   const content = document.getElementById('popup-content');
   content.innerHTML = `
     <div class="shop-popup">
       <h6 class="mb-2">${shopData.name}</h6>
       <div class="mb-1"><strong>${currentLang === 'en' ? 'Category:' : currentLang === 'es' ? 'Categoría:' : '업종:'}</strong> ${shopData.category}</div>
-      <div class="mb-1"><strong>${currentLang === 'en' ? 'Address:' : currentLang === 'es' ? 'Dirección:' : '주소:'}</strong> ${shopData.address}</div>
+      <div class="mb-1"><strong>${currentLang === 'en' ? 'Location:' : currentLang === 'es' ? 'Ubicación:' : '위치:'}</strong> ${shopData.dong_name || shopData.address}</div>
       ${shopData.phone ? `<div class="mb-1"><strong>${currentLang === 'en' ? 'Phone:' : currentLang === 'es' ? 'Teléfono:' : '전화:'}</strong> ${shopData.phone}</div>` : ''}
       ${shopData.rating ? `<div class="mb-1"><strong>${currentLang === 'en' ? 'Rating:' : currentLang === 'es' ? 'Calificación:' : '평점:'}</strong> ⭐ ${shopData.rating}</div>` : ''}
+      ${shopData.survival_rate ? `<div class="mb-1"><strong>${currentLang === 'en' ? 'Survival Rate:' : currentLang === 'es' ? 'Tasa de Supervivencia:' : '생존률:'}</strong> <span class="badge ${survivalBadgeClass}">${shopData.survival_rate}%</span></div>` : ''}
     </div>
   `;
   
