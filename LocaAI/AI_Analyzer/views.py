@@ -3453,14 +3453,15 @@ def get_population_data(center_point, radius):
                 emd_cd = dong_result[0]
                 emd_kor_nm = dong_result[1]
                 
-                # 해당 행정동 및 인근 행정동의 거주인구 데이터 조회
+                # 해당 행정동 및 인근 행정동의 거주인구 데이터 조회 (PostGIS 좌표 변환 사용)
                 cursor.execute("""
                     SELECT 
                         dl.emd_kor_nm,
                         dl.emd_cd,
                         dl.총생활인구수_sum,
-                        ad.geom
-                    FROM dong_life_5186 dl
+                        ST_X(ST_Transform(ST_Centroid(ad.geom), 4326)) as lng,
+                        ST_Y(ST_Transform(ST_Centroid(ad.geom), 4326)) as lat
+                    FROM dong_life dl
                     JOIN "행정동구역" ad ON dl.emd_cd = ad.emd_cd
                     WHERE dl.emd_cd LIKE %s
                         AND dl.총생활인구수_sum > 0
@@ -3472,37 +3473,23 @@ def get_population_data(center_point, radius):
                 
                 result_data = []
                 for row in results:
-                    dong_name, dong_code, population, geom_wkb = row
+                    dong_name, dong_code, population, lng, lat = row
                     
-                    if geom_wkb:
-                        # 행정동 중심점 계산
-                        cursor.execute("""
-                            SELECT ST_X(ST_Centroid(geom)), ST_Y(ST_Centroid(geom))
-                            FROM "행정동구역"
-                            WHERE emd_cd = %s
-                        """, [dong_code])
-                        
-                        center_result = cursor.fetchone()
-                        if center_result:
-                            x_coord, y_coord = center_result
-                            
-                            # EPSG:5186 -> WGS84 변환
-                            transformer = Transformer.from_crs("EPSG:5186", "EPSG:4326", always_xy=True)
-                            lng, lat = transformer.transform(x_coord, y_coord)
-                            
-                            result_data.append({
-                                "lat": lat,
-                                "lng": lng,
-                                "population": int(population),
-                                "dong_name": dong_name,
-                                "dong_code": dong_code,
-                                "age_20": int(population * 0.2),  # 임시 연령대 분포
-                                "age_30": int(population * 0.25),
-                                "age_40": int(population * 0.25),
-                                "age_50": int(population * 0.2),
-                                "age_60": int(population * 0.1),
-                                "distance": 0
-                            })
+                    # 좌표 유효성 검사 (서울 범위 내)
+                    if lng and lat and (126.7 <= lng <= 127.3 and 37.4 <= lat <= 37.7):
+                        result_data.append({
+                            "lat": lat,
+                            "lng": lng,
+                            "population": int(population),
+                            "dong_name": dong_name,
+                            "dong_code": dong_code,
+                            "age_20": int(population * 0.2),  # 임시 연령대 분포
+                            "age_30": int(population * 0.25),
+                            "age_40": int(population * 0.25),
+                            "age_50": int(population * 0.2),
+                            "age_60": int(population * 0.1),
+                            "distance": 0
+                        })
                 
                 print(f"📊 거주인구 데이터 조회 완료: {len(result_data)}개 (행정동별)")
                 return result_data
@@ -3536,15 +3523,18 @@ def get_workplace_data(center_point, radius):
                 emd_cd = dong_result[0]
                 emd_kor_nm = dong_result[1]
                 
-                # 해당 행정동 및 인근 행정동의 직장인구 데이터 조회
+                # 해당 행정동 및 인근 행정동의 직장인구 데이터 조회 (PostGIS 좌표 변환 사용)
                 cursor.execute("""
                     SELECT 
                         dw.emd_kor_nm,
                         dw.emd_cd,
                         dw.총_직장_인구_수_sum,
                         dw.남성_직장_인구_수_sum,
-                        dw.여성_직장_인구_수_sum
-                    FROM dong_work_5186 dw
+                        dw.여성_직장_인구_수_sum,
+                        ST_X(ST_Transform(ST_Centroid(ad.geom), 4326)) as lng,
+                        ST_Y(ST_Transform(ST_Centroid(ad.geom), 4326)) as lat
+                    FROM dong_work dw
+                    JOIN "행정동구역" ad ON dw.emd_cd = ad.emd_cd
                     WHERE dw.emd_cd LIKE %s
                         AND dw.총_직장_인구_수_sum > 0
                     ORDER BY dw.총_직장_인구_수_sum DESC
@@ -3555,23 +3545,10 @@ def get_workplace_data(center_point, radius):
                 
                 result_data = []
                 for row in results:
-                    dong_name, dong_code, total_workers, male_workers, female_workers = row
+                    dong_name, dong_code, total_workers, male_workers, female_workers, lng, lat = row
                     
-                    # 행정동 중심점 계산
-                    cursor.execute("""
-                        SELECT ST_X(ST_Centroid(geom)), ST_Y(ST_Centroid(geom))
-                        FROM "행정동구역"
-                        WHERE emd_cd = %s
-                    """, [dong_code])
-                    
-                    center_result = cursor.fetchone()
-                    if center_result:
-                        x_coord, y_coord = center_result
-                        
-                        # EPSG:5186 -> WGS84 변환
-                        transformer = Transformer.from_crs("EPSG:5186", "EPSG:4326", always_xy=True)
-                        lng, lat = transformer.transform(x_coord, y_coord)
-                        
+                    # 좌표 유효성 검사 (서울 범위 내)
+                    if lng and lat and (126.7 <= lng <= 127.3 and 37.4 <= lat <= 37.7):
                         result_data.append({
                             "lat": lat,
                             "lng": lng,
@@ -3615,21 +3592,23 @@ def get_shops_data(center_point, radius):
                 emd_cd = dong_result[0]
                 emd_kor_nm = dong_result[1]
                 
-                # 해당 행정동 및 인근 행정동의 상점 데이터 조회
+                # 해당 행정동 및 인근 행정동의 상점 데이터 조회 (PostGIS 좌표 변환 사용)
                 cursor.execute("""
                     SELECT 
                         ds."EMD_KOR_NM",
-                        ds."EMD_CD",
                         ds."UPTAENM",
-                        ds."X",
-                        ds."Y",
-                        ds."RESULT"
-                    FROM dong_store_complete_matched ds
-                    WHERE ds."EMD_CD" LIKE %s
+                        ds."BPLCNM",
+                        ds."SITEWHLADDR",
+                        ds."result",
+                        ST_X(ST_Transform(ST_SetSRID(ST_MakePoint(ds."X", ds."Y"), 2097), 4326)) as lon,
+                        ST_Y(ST_Transform(ST_SetSRID(ST_MakePoint(ds."X", ds."Y"), 2097), 4326)) as lat
+                    FROM dong_store ds
+                    JOIN "행정동구역" ad ON ds."EMD_KOR_NM" = ad.emd_kor_nm
+                    WHERE ad.emd_cd LIKE %s
                         AND ds."X" IS NOT NULL 
                         AND ds."Y" IS NOT NULL
                         AND ds."UPTAENM" IS NOT NULL
-                    ORDER BY ds."RESULT" DESC
+                    ORDER BY ds."result" DESC
                     LIMIT 50
                 """, [emd_cd[:5] + '%'])  # 같은 구의 행정동들
                 
@@ -3637,25 +3616,21 @@ def get_shops_data(center_point, radius):
                 
                 result_data = []
                 for row in results:
-                    dong_name, dong_code, uptaenm, x_coord, y_coord, survival_rate = row
+                    dong_name, uptaenm, bplcnm, address, survival_rate, lng, lat = row
                     
-                    if x_coord and y_coord:
-                        # EPSG:5186 -> WGS84 변환
-                        transformer = Transformer.from_crs("EPSG:5186", "EPSG:4326", always_xy=True)
-                        lng, lat = transformer.transform(float(x_coord), float(y_coord))
-                        
+                    # 좌표 유효성 검사 (서울 범위 내)
+                    if lng and lat and (126.7 <= lng <= 127.3 and 37.4 <= lat <= 37.7):
                         result_data.append({
-                            "id": f"{dong_code}_{len(result_data)}",
+                            "id": f"{len(result_data)}_{uptaenm}",
                             "lat": lat,
                             "lng": lng,
-                            "name": f"{uptaenm} {len(result_data) + 1}",
+                            "name": bplcnm or f"{uptaenm} {len(result_data) + 1}",
                             "category": uptaenm or "기타",
-                            "address": f"{dong_name}",
+                            "address": address or dong_name,
                             "phone": f"02-{random.randint(1000, 9999)}-{random.randint(1000, 9999)}",
                             "rating": round(random.uniform(3.5, 4.8), 1),
                             "survival_rate": round(float(survival_rate * 100), 1) if survival_rate else 0,
                             "dong_name": dong_name,
-                            "dong_code": dong_code,
                             "distance": 0
                         })
                 
